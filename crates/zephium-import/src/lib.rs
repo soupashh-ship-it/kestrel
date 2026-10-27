@@ -1,6 +1,6 @@
 //! Reads bookmarks and history from other browsers on this device. Pure
 //! readers: they find profiles, copy what a running browser holds open, and
-//! return neutral values. Nothing here writes to Zephium's own storage.
+//! return neutral values. Nothing here writes to Kestrel's own storage.
 
 #![forbid(unsafe_code)]
 
@@ -112,7 +112,7 @@ pub struct Profile {
     pub name: String,
     pub bookmarks: bool,
     pub history: bool,
-    /// Sites kept in the sidebar, which Zephium calls Essentials.
+    /// Sites kept in the sidebar, which Kestrel calls Essentials.
     pub essentials: bool,
 }
 
@@ -295,7 +295,7 @@ pub fn essentials(
 
 /// Caps a tree's size and depth: folders past the depth limit are opened
 /// into their parent, and reading stops at the node budget. Only links
-/// Zephium would open are kept, so what is counted is what can be added.
+/// Kestrel would open are kept, so what is counted is what can be added.
 fn bound(nodes: Vec<ImportNode>, depth: usize, budget: &mut usize) -> Vec<ImportNode> {
     let mut kept = Vec::new();
     for node in nodes {

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories={{categories}}
+{{#if comment}}
+Comment={{comment}}
+{{/if}}
+Exec={{exec}} %U
+StartupWMClass=app.kestrel
+Icon={{icon}}
+Name=Kestrel
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/http;x-scheme-handler/https;{{#if mime_type}}{{mime_type}}{{/if}}

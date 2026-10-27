@@ -14,7 +14,6 @@ import * as sidebar from "$session/sidebar-mode.svelte";
 import Shell from "../Shell.svelte";
 import { paint, settle } from "./look-bench";
 
-vi.mock("../WorkWorkspace.svelte", async () => await import("./StageStub.svelte"));
 vi.mock("$shared/ipc/bindings", async () => {
   const { mockBindings } = await import("$shared/testing/bindings");
   return mockBindings({

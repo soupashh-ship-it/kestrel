@@ -35,7 +35,7 @@ thread_local! {
     static FADE: Cell<u64> = const { Cell::new(0) };
 }
 
-/// Zephium's own Reduce Motion preference, alongside the system's.
+/// Kestrel's own Reduce Motion preference, alongside the system's.
 static REDUCE_MOTION: AtomicBool = AtomicBool::new(false);
 
 pub fn set_reduce_motion(reduce: bool) {

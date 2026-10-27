@@ -80,7 +80,7 @@ pub(crate) struct Ivars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumHiddenPageLoadDelegate"]
+    #[name = "KestrelHiddenPageLoadDelegate"]
     #[ivars = Ivars]
     pub(crate) struct LoadDelegate;
 

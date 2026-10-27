@@ -256,9 +256,6 @@ impl Shell {
         self.forget_page_permission_documents_of_item(id);
         self.cancel_pending_presentation(id);
         self.cancel_favicon_attempt(id);
-        if self.work_pane.as_ref().is_some_and(|pane| pane.tab == id) {
-            self.clear_work_pane();
-        }
         if matches!(
             self.residency.discard_probes.get(&id),
             Some(PendingDiscardProbe::Closing { .. })

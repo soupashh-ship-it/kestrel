@@ -1,4 +1,4 @@
-//! Fixed-origin HTTPS transport for authenticated Zephium repositories.
+//! Fixed-origin HTTPS transport for authenticated Kestrel repositories.
 //!
 //! This crate owns only the untrusted network boundary shared by independent
 //! update domains. It grants no package, catalog, activation, or filesystem
@@ -508,7 +508,7 @@ mod tests {
             Url::parse("https://cdn.example/targets/").unwrap(),
             Duration::from_secs(30),
             Duration::from_secs(10),
-            "Zephium-Test-Updater/1",
+            "Kestrel-Test-Updater/1",
         )
         .unwrap()
     }
@@ -557,7 +557,7 @@ mod tests {
                     target.clone(),
                     Duration::from_secs(30),
                     Duration::from_secs(10),
-                    "Zephium-Test-Updater/1",
+                    "Kestrel-Test-Updater/1",
                 )
                 .unwrap_err(),
                 FixedOriginTransportConfigError::InvalidBaseUrl,
@@ -570,7 +570,7 @@ mod tests {
                 target,
                 Duration::from_secs(5),
                 Duration::from_secs(6),
-                "Zephium-Test-Updater/1",
+                "Kestrel-Test-Updater/1",
             )
             .unwrap_err(),
             FixedOriginTransportConfigError::InvalidDeadlines

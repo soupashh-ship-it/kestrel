@@ -5,23 +5,6 @@
 // The native-input feasibility harness remains independently feature-gated and
 // optimized-build-refused. The production agent owner below contains no probe
 // route and is reachable only through the dormant `agentic-browser` port.
-#[cfg(feature = "agentic-browser")]
-mod agent_context;
-#[cfg(feature = "agentic-browser")]
-mod agent_history;
-#[cfg(feature = "agentic-browser")]
-pub(crate) mod work_seed_metadata;
-#[cfg(feature = "agentic-browser")]
-pub(crate) use agent_history::AgentHistoryBackTicket;
-#[cfg(feature = "native-agentic-input-probe")]
-mod agentic_input_probe;
-#[cfg(any(
-    feature = "native-agentic-input-probe",
-    feature = "native-agentic-semantic-probe"
-))]
-mod agentic_probe_resources;
-#[cfg(feature = "native-agentic-semantic-probe")]
-mod agentic_semantic_probe;
 pub(crate) mod browsing_data;
 #[cfg(any(test, feature = "windows-cdp-spike"))]
 #[allow(dead_code)]
@@ -47,50 +30,24 @@ pub use fullscreen::{install_fullscreen_observer, FullscreenObserver};
 mod cookie_storage_diagnostic;
 #[cfg(feature = "native-agentic-work-lifetime-diagnostic")]
 pub(crate) use cookie_storage_diagnostic::shutdown_admission as diagnose_shutdown_admission;
-#[cfg(feature = "agentic-browser")]
-pub(crate) mod browse_reader;
+// The bounded native capture adapter, compiled unconditionally: opening a
+// local application from a page is ordinary browsing, not an agent action.
+mod apps;
 #[cfg(feature = "agentic-browser")]
 // The host is the sole transaction owner. Physical Windows qualification is
 // still required before claiming runtime behavior beyond cross-compilation.
 mod cookie_transfer;
 pub(crate) mod extensions;
+mod native_paths;
 #[cfg(feature = "agentic-browser")]
 pub(crate) mod page_glow;
-#[cfg(feature = "agentic-browser")]
-mod semantic_action;
-#[cfg(feature = "agentic-browser")]
-// Compiled and lifecycle-bound while invocation remains closed until the
-// physical Windows isolated-world qualifier promotes the support claim.
-#[allow(dead_code)]
-mod semantic_runtime;
-// The bounded native capture adapter is compiled now, but the Windows host
-// keeps screenshot dispatch closed with semantic support until qualification.
-mod apps;
-mod native_paths;
 pub(crate) use apps::{external_app_name, open_external_app};
 mod page_memory;
 mod paint;
 pub(crate) use page_memory::{main_frame_id, sample_renderers};
-#[cfg(feature = "agentic-browser")]
-#[allow(dead_code)]
-mod semantic_screenshot;
 mod stage;
-pub use stage::{forget_window_caption_offset, set_window_caption_offset};
-#[cfg(feature = "agentic-browser")]
-mod work_rendering;
 pub(crate) use native_paths::{webview2_download_path, webview2_user_data_path};
-#[cfg(feature = "agentic-browser")]
-pub use work_rendering::{install_work_rendering_backing, remove_work_rendering_backing};
-#[cfg(feature = "agentic-browser")]
-mod work_network;
-#[cfg(feature = "agentic-browser")]
-mod work_presentation;
-#[cfg(feature = "agentic-browser")]
-pub(crate) use semantic_screenshot::capture_work_frame;
-#[cfg(feature = "agentic-browser")]
-pub(crate) use work_presentation::{
-    PresentationState, WorkHumanPresentation, WorkObservationPresentation,
-};
+pub use stage::{forget_window_caption_offset, set_window_caption_offset};
 mod timeout;
 
 #[cfg(feature = "agentic-browser")]
@@ -108,22 +65,6 @@ pub(crate) use timeout::{schedule_browser_timeout, ContentPolicyTimeout};
 
 #[cfg(feature = "agentic-browser")]
 pub(crate) use crate::platform::agent_cookie_preflight::map_cookie_transfer_deadline;
-#[cfg(feature = "agentic-browser")]
-pub(crate) use agent_context::{
-    build_owned_agent_view, build_owned_work_view, AgentNavigationCommit, AgentNavigationTerminal,
-    AgentOwnedProfile, AgentOwnedView, AgentOwnedViewCallbacks, AgentOwnedViewConstructionError,
-    WorkStoreSeed,
-};
-#[cfg(feature = "native-agentic-input-probe")]
-pub(crate) use agentic_input_probe::run as run_agentic_input_matrix;
-#[cfg(feature = "native-agentic-semantic-probe")]
-pub(crate) use agentic_semantic_probe::run as run_agentic_semantic_probe;
-#[cfg(all(debug_assertions, feature = "native-agentic-semantic-probe"))]
-pub(crate) use agentic_semantic_probe::run_cookie_persistence_control;
-#[cfg(feature = "native-agentic-semantic-probe")]
-pub(crate) use agentic_semantic_probe::run_semantic_action_guard_probe;
-#[cfg(feature = "native-agentic-semantic-probe")]
-pub(crate) use agentic_semantic_probe::run_work_application_probe;
 #[cfg(feature = "agentic-browser")]
 pub(crate) use cookie_transfer::{
     selected_profile_cookie_manager, WindowsAgentCookieCleanup, WindowsAgentCookieTerminal,

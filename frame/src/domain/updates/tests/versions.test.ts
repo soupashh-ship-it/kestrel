@@ -24,14 +24,14 @@ describe("versions", () => {
     expect(systemUpdateTarget([])).toBeNull();
     expect(
       systemUpdateTarget([
-        { kind: "review_overdue", update_target: "zephium" },
+        { kind: "review_overdue", update_target: "kestrel" },
         { kind: "unreviewed_runtime", update_target: "browser_runtime" },
-        { kind: "update_recommended", update_target: "zephium" },
+        { kind: "update_recommended", update_target: "kestrel" },
       ]),
     ).toBeNull();
     expect(
       systemUpdateTarget([
-        { kind: "review_overdue", update_target: "zephium" },
+        { kind: "review_overdue", update_target: "kestrel" },
         { kind: "update_recommended", update_target: "operating_system" },
       ]),
     ).toBe("operating_system");

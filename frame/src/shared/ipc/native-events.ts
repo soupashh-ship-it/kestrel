@@ -1,12 +1,5 @@
 import type {
-  WorkEnvironmentChanged,
-  WorkChanged,
-  WorkHumanChanged,
-  WorkDecisionPreferenceChanged,
-  WorkModelsChanged,
-  AccountChanged,
   PanelState,
-  PageAssistChanged,
   ProfilesView,
   FaviconsView,
   NoteOpenRequested,
@@ -31,8 +24,6 @@ import type {
   SearchChanged,
   TabChanged,
   UiCommand,
-  VoiceChanged,
-  VoiceLevels,
   SwipeScroll,
   WebExtensionAccessRequested,
 } from "./bindings";
@@ -55,13 +46,6 @@ function scopedEvent<T>(name: string) {
 // with @tauri-apps/api/event: its listen command accepts a caller-selected
 // target, which would let the launcher panel subscribe to main-window state.
 export const nativeEventNames = {
-  workEnvironmentChanged: "zephium:work-environment-changed",
-  workChanged: "zephium:work-changed",
-  workHumanChanged: "zephium:work-human-changed",
-  workDecisionPreferenceChanged: "zephium:work-decision-preference-changed",
-  workModelsChanged: "zephium:work-models-changed",
-  pageAssistChanged: "zephium:page-assist-changed",
-  accountChanged: "zephium:account-changed",
   panelState: "zephium:panel-state",
   favicons: "zephium:favicons",
   noteOpenRequested: "zephium:note-open-requested",
@@ -92,24 +76,11 @@ export const nativeEventNames = {
   runtimeStatusChanged: "zephium:runtime-status",
   blockerStatusChanged: "zephium:blocker-status",
   focusChanged: "zephium:focus",
-  voiceChanged: "zephium:voice-changed",
-  voiceLevels: "zephium:voice-levels",
   swipeScroll: "zephium:swipe",
   profilesChanged: "zephium:profiles",
 } as const;
 
 export const events = {
-  workEnvironmentChanged: scopedEvent<WorkEnvironmentChanged>(
-    nativeEventNames.workEnvironmentChanged,
-  ),
-  workChanged: scopedEvent<WorkChanged>(nativeEventNames.workChanged),
-  workHumanChanged: scopedEvent<WorkHumanChanged>(nativeEventNames.workHumanChanged),
-  workDecisionPreferenceChanged: scopedEvent<WorkDecisionPreferenceChanged>(
-    nativeEventNames.workDecisionPreferenceChanged,
-  ),
-  workModelsChanged: scopedEvent<WorkModelsChanged>(nativeEventNames.workModelsChanged),
-  pageAssistChanged: scopedEvent<PageAssistChanged>(nativeEventNames.pageAssistChanged),
-  accountChanged: scopedEvent<AccountChanged>(nativeEventNames.accountChanged),
   favicons: scopedEvent<FaviconsView>(nativeEventNames.favicons),
   noteOpenRequested: scopedEvent<NoteOpenRequested>(nativeEventNames.noteOpenRequested),
   resourceClose: scopedEvent<string>(nativeEventNames.resourceClose),
@@ -151,8 +122,6 @@ export const events = {
   runtimeStatusChanged: scopedEvent<RuntimeStatusChanged>(nativeEventNames.runtimeStatusChanged),
   blockerStatusChanged: scopedEvent<BlockerStatusChanged>(nativeEventNames.blockerStatusChanged),
   focusChanged: scopedEvent<FocusChanged>(nativeEventNames.focusChanged),
-  voiceChanged: scopedEvent<VoiceChanged>(nativeEventNames.voiceChanged),
-  voiceLevels: scopedEvent<VoiceLevels>(nativeEventNames.voiceLevels),
   swipeScroll: scopedEvent<SwipeScroll>(nativeEventNames.swipeScroll),
   profilesChanged: scopedEvent<ProfilesView>(nativeEventNames.profilesChanged),
 };

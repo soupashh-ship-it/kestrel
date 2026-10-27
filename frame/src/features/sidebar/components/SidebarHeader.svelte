@@ -18,7 +18,6 @@
   import { IS_MAC, IS_WINDOWS } from "$shared/platform";
   import { fullscreen } from "$shared/lib/fullscreen.svelte";
   import IconButton from "$shared/ui/IconButton";
-  import ModeTabs from "./ModeTabs.svelte";
   import SidebarSearch from "./SidebarSearch.svelte";
   import WindowControls from "$shared/ui/WindowControls";
 
@@ -118,9 +117,8 @@
     {:else if IS_MAC}
       <div style:height="8px" aria-hidden="true"></div>
     {/if}
-    <ModeTabs compact />
     <div class="flex items-center gap-0.5">
-      <!-- Its menu acts on the page and the column's shape; Work has neither. -->
+      <!-- Its menu acts on the page and the column's shape. -->
       {#if pageControls}<IconButton
           icon={EllipsisIcon}
           label={m.ui_sidebar_options()}
@@ -147,9 +145,7 @@
     <!-- Beside a tool panel the panel's own close button already gives the
          column back, so a second way to the same shape would only crowd the
          lights; search stands there instead. -->
-    {#if launcher && IS_WINDOWS}<span class="flex w-14 shrink-0 justify-center"
-        ><ModeTabs compact /></span
-      >{:else if launcher}<span class="ms-1.5 flex"><SidebarSearch /></span>{:else}<IconButton
+    {#if launcher}<span class="ms-1.5 flex"><SidebarSearch /></span>{:else}<IconButton
         icon={SidebarLeftIcon}
         label={m.ui_compact_mode()}
         onclick={ontoggle}

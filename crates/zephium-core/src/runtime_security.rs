@@ -8,20 +8,20 @@
 /// Why an admitted native browser runtime still deserves user attention.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RuntimeSecurityAdvisoryKind {
-    /// Zephium's embedded vendor review is older than its maintenance SLA.
+    /// Kestrel's embedded vendor review is older than its maintenance SLA.
     ReviewOverdue,
     /// The runtime satisfies the hard floor but is below the latest reviewed
-    /// security release recommended by this Zephium build.
+    /// security release recommended by this Kestrel build.
     UpdateRecommended,
     /// A newer stable runtime passed every mandatory capability/provenance
-    /// check but its release line postdates this Zephium build's review.
+    /// check but its release line postdates this Kestrel build's review.
     UnreviewedRuntime,
 }
 
 /// Fixed, non-page-derived destination of the recommended maintenance action.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RuntimeSecurityUpdateTarget {
-    Zephium,
+    Kestrel,
     OperatingSystem,
     BrowserRuntime,
 }
@@ -42,7 +42,7 @@ impl RuntimeSecurityAdvisory {
     pub const fn review_overdue() -> Self {
         Self {
             kind: RuntimeSecurityAdvisoryKind::ReviewOverdue,
-            update_target: RuntimeSecurityUpdateTarget::Zephium,
+            update_target: RuntimeSecurityUpdateTarget::Kestrel,
         }
     }
 
@@ -56,7 +56,7 @@ impl RuntimeSecurityAdvisory {
     pub const fn unreviewed_runtime() -> Self {
         Self {
             kind: RuntimeSecurityAdvisoryKind::UnreviewedRuntime,
-            update_target: RuntimeSecurityUpdateTarget::Zephium,
+            update_target: RuntimeSecurityUpdateTarget::Kestrel,
         }
     }
 
@@ -88,7 +88,7 @@ impl RuntimeSecurityAdvisories {
     const UNREVIEWED_RUNTIME: u8 = 1 << 4;
     const ORDERED: [RuntimeSecurityAdvisory; 5] = [
         RuntimeSecurityAdvisory::review_overdue(),
-        RuntimeSecurityAdvisory::update_recommended(RuntimeSecurityUpdateTarget::Zephium),
+        RuntimeSecurityAdvisory::update_recommended(RuntimeSecurityUpdateTarget::Kestrel),
         RuntimeSecurityAdvisory::update_recommended(RuntimeSecurityUpdateTarget::OperatingSystem),
         RuntimeSecurityAdvisory::update_recommended(RuntimeSecurityUpdateTarget::BrowserRuntime),
         RuntimeSecurityAdvisory::unreviewed_runtime(),
@@ -109,7 +109,7 @@ impl RuntimeSecurityAdvisories {
             RuntimeSecurityAdvisoryKind::ReviewOverdue => Self::REVIEW_OVERDUE,
             RuntimeSecurityAdvisoryKind::UnreviewedRuntime => Self::UNREVIEWED_RUNTIME,
             RuntimeSecurityAdvisoryKind::UpdateRecommended => match advisory.update_target {
-                RuntimeSecurityUpdateTarget::Zephium => Self::UPDATE_ZEPHIUM,
+                RuntimeSecurityUpdateTarget::Kestrel => Self::UPDATE_ZEPHIUM,
                 RuntimeSecurityUpdateTarget::OperatingSystem => Self::UPDATE_OPERATING_SYSTEM,
                 RuntimeSecurityUpdateTarget::BrowserRuntime => Self::UPDATE_BROWSER_RUNTIME,
             },

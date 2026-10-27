@@ -17,7 +17,7 @@
 //! delegated access and rejects untrusted package contents. Root/administrator,
 //! malicious code already running with the same user authority, and mutation
 //! rights delegated through an accepted ancestor ACL are outside the guarantee;
-//! the lease lock only serializes cooperating Zephium processes. Exact identity
+//! the lease lock only serializes cooperating Kestrel processes. Exact identity
 //! checks detect observed path redirection and stickily quarantine the lease.
 
 #![deny(missing_docs)]

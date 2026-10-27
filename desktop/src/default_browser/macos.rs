@@ -59,7 +59,7 @@ pub(crate) fn request(done: Box<dyn FnOnce() + Send>) {
             done();
         }
     });
-    // http carries the consent prompt and makes Zephium the default web
+    // http carries the consent prompt and makes Kestrel the default web
     // browser; https is set after it so both schemes agree.
     let http = RcBlock::new(move |_error: *mut NSError| {
         NSWorkspace::sharedWorkspace()

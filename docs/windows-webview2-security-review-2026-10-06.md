@@ -12,7 +12,7 @@ unaffected.
 list Stable 154.0.4258.62 on October 5 as incorporating the latest Chromium
 security updates, with CVE details to follow. An October 6 entry then states
 that Microsoft is aware of recent Chromium security fixes and is working on a
-security fix. Under Zephium's policy that notice sets
+security fix. Under Kestrel's policy that notice sets
 `PRODUCTION_RELEASE_BLOCKED_ON_OUTSTANDING_VENDOR_FIX`: publication waits
 until Microsoft ships a Stable release after October 6 and the floor moves to
 it.

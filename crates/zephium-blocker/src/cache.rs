@@ -53,7 +53,7 @@ const MAX_RECORD_BYTES: usize = RECORD_HEADER_BYTES
     + MAX_COSMETIC_PAYLOAD_BYTES
     + RECORD_CHECKSUM_BYTES;
 
-/// Private directory used only for Zephium's compiled blocker cache.
+/// Private directory used only for Kestrel's compiled blocker cache.
 ///
 /// Persistence is an optimization. If this root cannot be proven private,
 /// locked, and structurally safe, the worker compiles from authenticated

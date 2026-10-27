@@ -938,26 +938,15 @@ fn raw_native_media_surfaces_are_deny_only_or_exactly_brokered_per_view() {
     assert!(source.contains(
         ".with_permission_decisions_saved(!matches!(partition, Partition::Ephemeral(_)))"
     ));
-    // Agent, Work and extension views are built elsewhere and keep denying
-    // every request without ever saving an answer.
-    for other in [
-        include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/src/platform/windows/agent_context.rs"
-        )),
-        include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/src/platform/macos/agent_context.rs"
-        )),
-        include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/src/host/webext_windows.rs"
-        )),
-    ] {
-        assert!(other.contains(".with_permission_handler(|_| wry::PermissionResponse::Deny)"));
-        assert!(!other.contains("with_permission_decisions_saved"));
-        assert!(!other.contains("PermissionResponse::Prompt"));
-    }
+    // Extension views are built elsewhere and keep denying every request
+    // without ever saving an answer.
+    let other = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/host/webext_windows.rs"
+    ));
+    assert!(other.contains(".with_permission_handler(|_| wry::PermissionResponse::Deny)"));
+    assert!(!other.contains("with_permission_decisions_saved"));
+    assert!(!other.contains("PermissionResponse::Prompt"));
 }
 
 #[test]
@@ -1038,10 +1027,6 @@ fn only_tabs_a_person_reads_may_take_element_fullscreen() {
     let sources = [
         include_str!("../construction.rs"),
         include_str!("../webext_windows.rs"),
-        include_str!("../../platform/macos/agent_context.rs"),
-        include_str!("../../platform/windows/agent_context.rs"),
-        include_str!("../../platform/windows/agentic_semantic_probe.rs"),
-        include_str!("../../platform/windows/agentic_input_probe.rs"),
     ];
     let enabled: usize = sources
         .iter()

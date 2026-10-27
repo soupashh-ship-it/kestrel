@@ -11,8 +11,6 @@ impl Shell {
             Command::SetTabMuted { id, muted } => self.operation_set_tab_muted(id, muted),
             Command::MediaPlayer { id, action } => self.operation_media_player(id, action),
             Command::ShowBrowserPage(page) => self.operation_show_browser_page(page),
-            Command::WorkPaneShow { target, rect } => self.operation_work_pane_show(target, rect),
-            Command::WorkPaneHide => self.operation_work_pane_hide(),
             Command::Open => self.operation_open(),
             Command::Activate(id) => self.operation_activate(id),
             Command::Close(id) => self.operation_close(id),
@@ -335,11 +333,7 @@ impl Shell {
         else {
             return operation_result(OperationOutcome::Rejected, OperationReason::InvalidInput);
         };
-        // Work hands an address back to Browse rather than opening it behind itself.
-        if (self.active_browser_page() == Some(crate::BrowserPage::Work)
-            || (new_tab && self.active_browser_page().is_some()))
-            && !self.browser_return_ready
-        {
+        if new_tab && self.active_browser_page().is_some() && !self.browser_return_ready {
             self.browser_after_return = Some(Box::new(Command::OpenUrl { input, new_tab }));
             return self.operation_show_browser_page(None);
         }
@@ -385,11 +379,7 @@ impl Shell {
         &mut self,
         request: Option<zephium_core::ports::engine::FindRequest>,
     ) {
-        let page = if self.active_browser_page().is_some() {
-            self.work_pane_tab()
-        } else {
-            self.windows.focused().and_then(|window| window.active)
-        };
+        let page = self.windows.focused().and_then(|window| window.active);
         if let Some(previous) = self
             .find_target
             .filter(|previous| Some(*previous) != page || request.is_none())
@@ -589,10 +579,7 @@ impl Shell {
     }
 
     pub(super) fn operation_navigate(&mut self, id: ItemId, input: String) -> OperationDisposition {
-        if self.active_browser_page().is_some()
-            && !self.browser_return_ready
-            && !self.work_pane_shows(id)
-        {
+        if self.active_browser_page().is_some() && !self.browser_return_ready {
             self.browser_after_return = Some(Box::new(
                 if self.items.tab(id).is_some_and(|tab| {
                     matches!(tab.content, zephium_core::item::TabContent::BrowserOwned(_))
@@ -947,18 +934,16 @@ impl Shell {
     }
 
     pub(super) fn operation_run_command(&mut self, id: &str) -> OperationDisposition {
-        // A shortcut means the page in front. Work's pane tab inside Work; a
-        // window page such as Settings or History stands over the active tab,
-        // so it has no tab to act on; otherwise the active tab, including a
-        // browser-owned one like Extensions.
+        // A shortcut means the page in front. A window page such as Settings or
+        // History stands over the active tab, so it has no tab to act on;
+        // otherwise the active tab, including a browser-owned one like
+        // Extensions.
         let window_page = self.windows.focused().and_then(|window| {
             self.browser_page
                 .filter(|(owner, _)| *owner == window.id)
                 .map(|(_, page)| page)
         });
-        let in_work = window_page == Some(crate::BrowserPage::Work);
         let active = match window_page {
-            Some(crate::BrowserPage::Work) => self.work_pane_tab(),
             Some(_) => None,
             None => self.windows.focused().and_then(|window| window.active),
         };
@@ -969,16 +954,10 @@ impl Shell {
             "window.togglePrivate" => self.operation_toggle_private(),
             "window.showRegular" => self.operation_show_regular(),
             "window.showPrivate" => self.operation_show_private(),
-            "tab.close" if in_work => self.operation_work_pane_hide(),
             "tab.close" if window_page.is_some() => self.operation_show_browser_page(None),
             "tab.close" => active.map_or_else(
                 || operation_result(OperationOutcome::NoOp, OperationReason::NoFocusedWindow),
                 |id| self.operation_close(id),
-            ),
-            "work.pane.close" => self.operation_work_pane_hide(),
-            "work.pane.openInBrowse" => active.filter(|_| in_work).map_or_else(
-                || operation_result(OperationOutcome::NoOp, OperationReason::StateUnchanged),
-                |id| self.operation_activate(id),
             ),
             "tab.reopen" => self.operation_reopen_closed_tab(None),
             _ if id.starts_with("tab.reopen=") => {

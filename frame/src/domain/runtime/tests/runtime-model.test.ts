@@ -14,7 +14,7 @@ describe("runtime notifications", () => {
     expect(runtimeNotifications(clear)).toEqual([]);
   });
 
-  it("separates a known system update from an overdue Zephium review", () => {
+  it("separates a known system update from an overdue Kestrel review", () => {
     expect(
       runtimeNotifications({
         ...clear,
@@ -39,7 +39,7 @@ describe("runtime notifications", () => {
         security_advisories: [
           {
             kind: "review_overdue",
-            update_target: "zephium",
+            update_target: "kestrel",
           },
         ],
       })[0]?.title,
@@ -55,11 +55,11 @@ describe("runtime notifications", () => {
         security_advisories: [
           {
             kind: "review_overdue",
-            update_target: "zephium",
+            update_target: "kestrel",
           },
           {
             kind: "unreviewed_runtime",
-            update_target: "zephium",
+            update_target: "kestrel",
           },
         ],
       }).map((notification) => notification.id),
@@ -69,7 +69,7 @@ describe("runtime notifications", () => {
   it("deduplicates malformed repeats and treats unreviewed runtimes as warnings", () => {
     const notification = {
       kind: "unreviewed_runtime" as const,
-      update_target: "zephium" as const,
+      update_target: "kestrel" as const,
     };
     expect(
       runtimeNotifications({
@@ -96,7 +96,7 @@ describe("runtime notifications", () => {
       id: "user_content_degraded",
       title: "Some add-on changes weren't applied",
       detail:
-        "Some extension or userscript changes couldn't be applied. Zephium kept previous verified versions when available.",
+        "Some extension or userscript changes couldn't be applied. Kestrel kept previous verified versions when available.",
       tone: "warning",
     });
   });

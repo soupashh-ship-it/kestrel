@@ -7,7 +7,7 @@ Read this before touching `frame/`. It is the working contract for UI work;
 
 - Svelte 5 runes + strict TypeScript + Vite 8.
 - Tailwind CSS v4, token-first. Bits UI supplies narrowly adopted accessible
-  behavior; Zephium owns every visual component.
+  behavior; Kestrel owns every visual component.
 - Icons come only from the MIT/free packages `@hugeicons/svelte` and
   `@hugeicons/core-free-icons`, wrapped by `src/shared/ui/Icon`.
 - Inter Variable are bundled through Fontsource and
@@ -192,11 +192,6 @@ reads and write readback are bounded, disposal invalidates their observations, a
 newer events take precedence over older reads. The readback fallback remains until
 Rust supplies a truthful committed preference projection. An inability to confirm a
 write is not proof that the write did not happen.
-
-The Browse disposition ledger is not the Work command protocol. Work uses the
-runtime-owned profile/Work scope, decimal revisions and replayable command receipts
-specified in [agent-work-persistence.md](agent-work-persistence.md); do not route Work command IDs through the
-Browse operation-ID parser.
 
 The session sidebar/tools modules and the string UI-command transport are transitional
 while the unified typed surface migration remains incomplete. Do not use them as patterns for new

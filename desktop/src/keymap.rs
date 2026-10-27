@@ -20,7 +20,6 @@ type EngineTable = Box<dyn Fn(Vec<Shortcut>) + Send + Sync>;
 #[derive(Default)]
 pub(crate) struct Keymap {
     overrides: RwLock<HashMap<String, String>>,
-    work_pane_shown: AtomicBool,
     /// Feature switches as stored, in `FEATURES` order; a feature off takes
     /// its keys and menu items away.
     off: [AtomicBool; FEATURES.len()],
@@ -84,14 +83,11 @@ impl Keymap {
     }
 
     /// Commands a page-level key table may fire. The launcher is global and
-    /// registered on its own; Work keys exist only while the pane is shown, so
-    /// a bare Escape never leaves an ordinary page.
+    /// registered on its own.
     fn engine_table(&self) -> Vec<Shortcut> {
-        let shown = self.work_pane_shown.load(Ordering::Acquire);
         self.resolved()
             .iter()
             .filter(|command| command.group != Group::Global)
-            .filter(|command| shown || command.group != Group::Work)
             .filter(|command| self.offers(command.id))
             .filter_map(|command| shortcut(command.id, command.accelerator.as_deref()?))
             .collect()
@@ -146,20 +142,11 @@ impl Keymap {
         }
     }
 
-    #[cfg(target_os = "macos")]
-    pub(crate) fn work_pane_shown(&self) -> bool {
-        self.work_pane_shown.load(Ordering::Acquire)
-    }
-
     fn feature_on(&self, feature: &str) -> bool {
         FEATURES
             .iter()
             .position(|known| *known == feature)
             .is_none_or(|index| !self.off[index].load(Ordering::Acquire))
-    }
-
-    pub(crate) fn ai_enabled(&self) -> bool {
-        self.feature_on("ai")
     }
 
     /// Whether a command's feature is on, so it is matched, listed and run.
@@ -190,14 +177,6 @@ impl Keymap {
         }
     }
 
-    pub(crate) fn set_work_pane_shown(&self, app: &tauri::AppHandle, shown: bool) {
-        if self.work_pane_shown.swap(shown, Ordering::AcqRel) == shown {
-            return;
-        }
-        self.refresh_tables();
-        self.rebuild_menu_bar(app);
-    }
-
     /// Off the main thread a menu setter blocks on the main thread, which may
     /// be waiting on this caller; hand the rebuild over instead. It reads the
     /// state when it runs, so out-of-order changes settle on the latest one.
@@ -210,8 +189,7 @@ impl Keymap {
                 let Some(keymap) = handle.try_state::<Keymap>() else {
                     return;
                 };
-                if install_menu_bar(&handle, &keymap.overrides(), keymap.work_pane_shown()).is_err()
-                {
+                if install_menu_bar(&handle, &keymap.overrides()).is_err() {
                     write_diagnostic(format_args!("menu: menu bar was not rebuilt"));
                 }
             });
@@ -241,7 +219,7 @@ impl Keymap {
         }
         self.refresh_tables();
         #[cfg(target_os = "macos")]
-        if install_menu_bar(app, &self.overrides(), self.work_pane_shown()).is_err() {
+        if install_menu_bar(app, &self.overrides()).is_err() {
             write_diagnostic(format_args!("keymap: menu bar was not rebuilt"));
         }
         emit_to_privileged(
@@ -301,7 +279,6 @@ pub(crate) enum KeymapGroup {
     Help,
     Keys,
     Global,
-    Work,
 }
 
 impl From<Group> for KeymapGroup {
@@ -317,7 +294,6 @@ impl From<Group> for KeymapGroup {
             Group::Help => Self::Help,
             Group::Keys => Self::Keys,
             Group::Global => Self::Global,
-            Group::Work => Self::Work,
         }
     }
 }
@@ -498,60 +474,6 @@ pub(crate) fn keymap_reset(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn page_tables_carry_work_keys_only_while_the_pane_is_shown() {
-        let keymap = Keymap::default();
-        let has_escape = |table: &[Shortcut]| table.iter().any(|s| s.id == "work.pane.close");
-        assert!(!has_escape(&keymap.engine_table()));
-        keymap.work_pane_shown.store(true, Ordering::Release);
-        assert!(has_escape(&keymap.engine_table()));
-        assert!(!keymap
-            .engine_table()
-            .iter()
-            .any(|s| s.id == "launcher.toggle"));
-    }
-
-    #[test]
-    fn each_feature_switch_takes_only_its_own_keys() {
-        let keymap = Keymap::default();
-        keymap.follow_preference("notes.enabled", "false");
-        keymap.follow_preference("ai.enabled", "false");
-        assert!(!keymap.offers("tool.notes") && !keymap.offers("note.new"));
-        assert!(!keymap.offers("work.dictate"));
-        assert!(keymap.offers("tool.tasks") && keymap.offers("tool.time"));
-        assert!(keymap.offers("work.pane.close") && keymap.offers("tab.new"));
-        assert!(!keymap.engine_table().iter().any(|s| s.id == "tool.notes"));
-        assert!(!keymap.follow_preference("ui.theme", "nord"));
-    }
-
-    #[test]
-    fn work_keys_leave_every_table_while_work_is_off() {
-        let keymap = Keymap::default();
-        keymap.work_pane_shown.store(true, Ordering::Release);
-        assert!(keymap.follow_preference("work.enabled", "false"));
-        assert!(!keymap.follow_preference("work.enabled", "false"));
-        assert!(keymap.ai_enabled());
-        assert!(!keymap.offers("work.pane.close"));
-        assert!(!keymap
-            .engine_table()
-            .iter()
-            .any(|s| s.id.starts_with("work.pane.")));
-        #[cfg(target_os = "macos")]
-        assert!(!read(&keymap.key_table)
-            .iter()
-            .any(|(_, id)| id.starts_with("work.pane.")));
-        keymap.follow_preference("work.enabled", "true");
-        assert!(keymap.offers("work.pane.close"));
-        assert!(keymap
-            .engine_table()
-            .iter()
-            .any(|s| s.id == "work.pane.close"));
-        #[cfg(target_os = "macos")]
-        assert!(read(&keymap.key_table)
-            .iter()
-            .any(|(_, id)| *id == "work.dictate"));
-    }
 
     #[test]
     fn page_keys_use_the_platform_primary_modifier() {

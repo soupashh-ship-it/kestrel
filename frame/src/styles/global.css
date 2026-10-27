@@ -27,7 +27,7 @@
 @source not inline("blur");
 
 /*
- * Zephium's chrome is tonal. Surfaces step by luminance, not by outline;
+ * Kestrel's chrome is tonal. Surfaces step by luminance, not by outline;
  * depth exists only where something genuinely floats or is physically moved
  * (a popover, the launcher, a switch thumb, a segmented pill). Everything
  * else is a flat translucent fill on a real native material, so the same

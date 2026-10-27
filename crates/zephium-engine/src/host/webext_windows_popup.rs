@@ -31,7 +31,7 @@ impl PopupWindow {
                 lpfnWndProc: Some(window_proc),
                 hInstance: module.into(),
                 hbrBackground: HBRUSH(GetStockObject(BLACK_BRUSH).0),
-                lpszClassName: w!("ZephiumExtensionPopup"),
+                lpszClassName: w!("KestrelExtensionPopup"),
                 ..Default::default()
             };
             RegisterClassW(&class);
@@ -54,7 +54,7 @@ impl PopupWindow {
             let hwnd = CreateWindowExW(
                 WS_EX_TOOLWINDOW,
                 class.lpszClassName,
-                w!("Extension — Zephium"),
+                w!("Extension — Kestrel"),
                 WS_POPUP | WS_THICKFRAME,
                 top.x,
                 top.y,

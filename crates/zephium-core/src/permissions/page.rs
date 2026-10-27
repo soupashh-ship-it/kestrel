@@ -107,7 +107,7 @@ impl PageOrigin {
     /// The component form avoids interpolating an attacker-controlled host
     /// into a URL string. `url` performs host parsing (including IPv6 and IDN
     /// canonicalization), and this aggregate still admits only HTTP(S) tuple
-    /// origins under Zephium's navigation policy.
+    /// origins under Kestrel's navigation policy.
     pub fn from_native_components(
         scheme: &str,
         host: &str,

@@ -1,4 +1,4 @@
-//! Opening Zephium at login. macOS lists the app under Open at Login through
+//! Opening Kestrel at login. macOS lists the app under Open at Login through
 //! `SMAppService`; Windows keeps a per-user `Run` value. Either way the answer
 //! is read back from the system, so a change made in its own settings shows.
 
@@ -97,7 +97,7 @@ mod windows {
         RRF_RT_REG_BINARY, RRF_RT_REG_SZ,
     };
 
-    const NAME: &str = "Zephium";
+    const NAME: &str = "Kestrel";
     const RUN: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
     const APPROVED: &str =
         r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
@@ -300,8 +300,8 @@ mod tests {
     #[test]
     fn run_value_quotes_the_executable_and_approval_reads_task_manager() {
         assert_eq!(
-            run_value(r"C:\Program Files\Zephium\Zephium.exe"),
-            r#""C:\Program Files\Zephium\Zephium.exe""#
+            run_value(r"C:\Program Files\Kestrel\Kestrel.exe"),
+            r#""C:\Program Files\Kestrel\Kestrel.exe""#
         );
         assert!(startup_approved(None));
         assert!(startup_approved(Some(&[2, 0, 0, 0])));

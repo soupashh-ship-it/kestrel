@@ -14,38 +14,34 @@ describe("settings discovery", () => {
   });
 });
 
-it("finds the agent destinations without exposing unimplemented controls", async () => {
+it("finds only destinations this build implements", async () => {
   const { searchSettings, searchSections, sections } = await import("../lib/settings-model");
   expect(sections.some((section) => String(section.id) === "plugins")).toBe(false);
-  expect(searchSections("models").some((section) => section.id === "ai")).toBe(true);
-  expect(searchSections("site access").some((section) => section.id === "sites")).toBe(true);
-  expect(searchSections("MCP").some((section) => section.id === "mcp")).toBe(true);
-  for (const query of ["API key", "Jev", "TypeSafe"]) {
-    expect(searchSettings(query).map(({ section, target }) => ({ section, target }))).toEqual([
-      { section: "ai", target: "work.decisions.key" },
-    ]);
-  }
-  expect(searchSettings("Decisions").some((result) => result.section === "work")).toBe(false);
+  const retired = new Set(["work", "ai", "skills", "memory", "sites", "mcp", "account"]);
+  for (const id of retired)
+    expect(sections.some((section) => String(section.id) === id)).toBe(false);
+  for (const query of [
+    "models",
+    "site access",
+    "MCP",
+    "API key",
+    "Jev",
+    "TypeSafe",
+    "account",
+    "dictation",
+  ])
+    expect(searchSettings(query).some((result) => retired.has(String(result.section)))).toBe(false);
+  expect(searchSections("models").some((section) => String(section.id) === "ai")).toBe(false);
   expect(searchSettings("reset settings").some((result) => result.target === "about.reset")).toBe(
     true,
   );
 });
 
-it("offers Account through the identity card and search, outside the groups", async () => {
-  const { groups, sections, searchSettings } = await import("../lib/settings-model");
-  const account = sections.find((section) => String(section.id) === "account");
-  expect(account).toBeDefined();
-  expect(groups.some((group) => String(group.id) === account!.group)).toBe(false);
-  expect(searchSettings("account").some((result) => String(result.section) === "account")).toBe(
-    true,
-  );
-});
-
-it("groups sections as Browser, Work and App with stable ids", async () => {
+it("groups sections as Browser and App with stable ids", async () => {
   const { groups, sections } = await import("../lib/settings-model");
   const listed = (group: string) =>
     sections.filter((section) => section.group === group).map((section) => section.id);
-  expect(groups.map((group) => group.id)).toEqual(["browser", "work", "app"]);
+  expect(groups.map((group) => group.id)).toEqual(["browser", "app"]);
   expect(listed("browser").filter((id) => id !== "profiles")).toEqual([
     "general",
     "appearance",
@@ -56,7 +52,6 @@ it("groups sections as Browser, Work and App with stable ids", async () => {
     "focus",
     "performance",
   ]);
-  expect(listed("work")).toEqual(["work", "ai", "skills", "memory", "sites", "mcp"]);
   expect(listed("app")).toEqual(["features", "shortcuts", "about"]);
 });
 
@@ -82,7 +77,7 @@ it("finds the page zoom options", async () => {
   }
 });
 
-it("takes each feature's pages out of navigation and search while its switch is off", async () => {
+it("takes a feature's page out of navigation and search while its switch is off", async () => {
   const off = new Set<string>();
   vi.resetModules();
   vi.doMock("$domain/preferences", async (actual) => {
@@ -90,25 +85,16 @@ it("takes each feature's pages out of navigation and search while its switch is 
     return {
       preferences: {
         ...real.preferences,
-        aiEnabled: () => !off.has("ai"),
         enabled: (feature: string) => !off.has(feature),
       },
     };
   });
-  const { shownSections, searchSettings, searchSections } = await import("../lib/settings-model");
+  const { shownSections, searchSections } = await import("../lib/settings-model");
   const shown = () => shownSections().map((section) => section.id);
-  expect(shown()).toEqual(expect.arrayContaining(["work", "ai", "focus", "features"]));
-  off.add("ai");
-  const gone = new Set(["ai", "skills", "memory", "sites", "mcp"]);
-  expect(shown().filter((id) => gone.has(id))).toEqual([]);
-  expect(shown()).toContain("work");
-  for (const query of ["models", "skills", "memory", "site access", "MCP", "API key", "dictation"])
-    expect(searchSettings(query).some((result) => gone.has(result.section))).toBe(false);
-  expect(searchSections("models").some((section) => gone.has(section.id))).toBe(false);
-  off.add("work");
+  expect(shown()).toEqual(expect.arrayContaining(["focus", "features"]));
+  expect(searchSections("focus").some((section) => section.id === "focus")).toBe(true);
   off.add("time");
-  expect(shown()).not.toContain("work");
   expect(shown()).not.toContain("focus");
-  expect(searchSettings("AI").map((result) => result.target)).toContain("ai.enabled");
+  expect(searchSections("focus").some((section) => section.id === "focus")).toBe(false);
   vi.doUnmock("$domain/preferences");
 });

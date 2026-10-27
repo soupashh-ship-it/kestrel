@@ -1460,7 +1460,7 @@ struct PageIvars {
 objc2::define_class!(
     #[unsafe(super(objc2::runtime::NSObject))]
     #[thread_kind = objc2::MainThreadOnly]
-    #[name = "ZephiumWebExtPageDelegate"]
+    #[name = "KestrelWebExtPageDelegate"]
     #[ivars = PageIvars]
     struct PageDelegate;
 

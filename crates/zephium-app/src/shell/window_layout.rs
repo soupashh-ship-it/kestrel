@@ -43,9 +43,7 @@ impl Shell {
         // to is untouched and returns with the next layout after it.
         let tree = if let Some(id) = filling {
             Some(Pane::Leaf(id))
-        } else if browser_page_active {
-            self.work_pane_tree()
-        } else if self.browser_return_hidden {
+        } else if browser_page_active || self.browser_return_hidden {
             None
         } else {
             self.pane_tree()
@@ -72,17 +70,6 @@ impl Shell {
         let native_policy_available = self.blocker.native_policy_available(win.profile);
         if !self.window_visible || !native_policy_available || privileged_overlay_active {
             l.content = None;
-        }
-        // The Work pane is the one content rect that coexists with full-window
-        // chrome: the native leaf floats above the canvas inside a hole the
-        // chrome draws around the applied rect. Modal prompts still win.
-        let pane_admitted = browser_page_active
-            && !self.page_permissions.is_visible()
-            && self.window_visible
-            && native_policy_available;
-        let work_pane = self.work_pane_layout(pane_admitted && present);
-        if let Some(pane) = work_pane.as_ref().filter(|pane| pane.presented) {
-            l.content = Some(Rect::new(pane.x, pane.y, pane.width, pane.height));
         }
         if filling.is_some() {
             l.content = Some(Rect::new(0.0, 0.0, win.size.width, win.size.height));
@@ -130,10 +117,7 @@ impl Shell {
             }
             _ => Vec::new(),
         };
-        (self.emit)(Projection::Layout(LayoutState {
-            dividers,
-            work_pane,
-        }));
+        (self.emit)(Projection::Layout(LayoutState { dividers }));
         let applied = self.engine.set_content(win.id, tree, l.content);
         self.reconcile_page_permission_placement();
         applied

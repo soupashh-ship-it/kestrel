@@ -116,8 +116,6 @@ impl Shell {
     pub(super) fn operation_bookmark_page(&mut self, tab: Option<ItemId>) -> OperationDisposition {
         let page = if tab.is_some() {
             tab.filter(|id| self.item_in_focused_scope(*id))
-        } else if self.active_browser_page().is_some() {
-            self.work_pane_tab()
         } else {
             self.windows.focused().and_then(|window| window.active)
         };

@@ -940,7 +940,7 @@ fn wide(s: &str) -> Vec<u16> {
 fn indicator_class() -> PCWSTR {
     static NAME: OnceLock<Vec<u16>> = OnceLock::new();
     let name = NAME.get_or_init(|| {
-        let name = wide("ZephiumIndicator");
+        let name = wide("KestrelIndicator");
         let class = WNDCLASSW {
             lpfnWndProc: Some(plain_proc),
             lpszClassName: PCWSTR(name.as_ptr()),
@@ -992,7 +992,7 @@ const COVER_EXTENT: i32 = 0x4000;
 fn cover_class() -> PCWSTR {
     static NAME: OnceLock<Vec<u16>> = OnceLock::new();
     let name = NAME.get_or_init(|| {
-        let name = wide("ZephiumPaintCover");
+        let name = wide("KestrelPaintCover");
         let class = WNDCLASSW {
             lpfnWndProc: Some(cover_proc),
             lpszClassName: PCWSTR(name.as_ptr()),

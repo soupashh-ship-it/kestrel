@@ -7,7 +7,7 @@
  * own subtree with `data-theme-scope` and gets its own ladder.
  *
  * Each step is the graphite ladder's own distance from ground toward ink,
- * so Zephium's seeds land on graphite. `--seed-k` scales every step: 0.5 at
+ * so Kestrel's seeds land on graphite. `--seed-k` scales every step: 0.5 at
  * no contrast, 1 at the default and 1.5 at full. The chrome steps are
  * mirrored in Rust (zephium_core::theme), which paints the window's ground.
  *

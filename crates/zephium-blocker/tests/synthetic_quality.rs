@@ -109,7 +109,7 @@ fn line_strategy() -> impl Strategy<Value = String> {
                 0 => synthetic_rule(index, variant),
                 1 => format!("||fuzz-{index}.invalid^{mutation}"),
                 2 => format!("@@||fuzz-{index}.invalid^$domain=site.invalid{mutation}"),
-                3 => format!("! Zephium synthetic comment {mutation}"),
+                3 => format!("! Kestrel synthetic comment {mutation}"),
                 4 => format!("0.0.0.0 host-{index}.invalid {mutation}"),
                 _ => mutation,
             }

@@ -104,7 +104,7 @@ impl Model {
     }
     /// A launcher is transient: it goes away when focus moves to the browser
     /// or to another application. An owned native surface, such as a menu or
-    /// dialog, keeps Zephium active and does not count as leaving.
+    /// dialog, keeps Kestrel active and does not count as leaving.
     pub fn focus(&mut self, panel_focused: bool, main_focused: bool, app_active: bool) {
         if self.presented && !panel_focused && (main_focused || !app_active) {
             self.hide();
@@ -197,7 +197,7 @@ mod tests {
     fn owned_native_surface_does_not_dismiss_search() {
         let mut m = Model::default();
         m.search();
-        // A menu/dialog owns focus, but Zephium is still the active application.
+        // A menu/dialog owns focus, but Kestrel is still the active application.
         m.focus(false, false, true);
         assert!(m.snapshot().visible);
         m.focus(false, false, false);

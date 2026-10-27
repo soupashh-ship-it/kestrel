@@ -1,6 +1,6 @@
 //! What clearing browsing data asks of the web engine, and what it answers.
 //!
-//! Zephium's own history, favicons and download list live in the store and
+//! Kestrel's own history, favicons and download list live in the store and
 //! never pass through here; only the website data a persistent profile's
 //! engine keeps for the pages it loaded does.
 

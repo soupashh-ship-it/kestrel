@@ -1,5 +1,5 @@
 /**
- * Whether Zephium is the default browser, as the system reports it. Asking is
+ * Whether Kestrel is the default browser, as the system reports it. Asking is
  * the system's decision (macOS confirms, Windows opens its Settings), so the
  * answer is always read back, never assumed.
  */

@@ -1,5 +1,5 @@
 /** The wordmark's letters as one path, in the coordinates of its own file
- *  (`public/zephium-wordmark.svg`), so the page can cut them out of its
+ *  (`public/kestrel-wordmark.svg`), so the page can cut them out of its
  *  ground and fill them from one vector drawn in the same pass. */
 export const WORDMARK = {
   /** The file's view box. */

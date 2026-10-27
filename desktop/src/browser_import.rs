@@ -63,7 +63,7 @@ pub(crate) enum ImportProblemView {
     Permission,
     Unreadable,
     Missing,
-    /// Zephium could not keep what was read.
+    /// Kestrel could not keep what was read.
     Storage,
 }
 
@@ -327,6 +327,23 @@ impl ImportedOrigins {
         }
     }
 
+    #[cfg(test)]
+    fn wanted(self) -> Vec<String> {
+        let Self {
+            mut listed,
+            seen,
+            visited,
+        } = self;
+        let mut visited: Vec<(String, u32)> = visited
+            .into_iter()
+            .filter(|(origin, _)| !seen.contains(origin))
+            .collect();
+        visited.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        listed.extend(visited.into_iter().map(|(origin, _)| origin));
+        listed.truncate(zephium_import::MAX_ICONS);
+        listed
+    }
+
     fn note(&mut self, work: &zephium_app::ImportWork) {
         fn walk(origins: &mut ImportedOrigins, nodes: &[zephium_import::ImportNode]) {
             for node in nodes {
@@ -352,22 +369,6 @@ impl ImportedOrigins {
             }
             zephium_app::ImportWork::Icons(_) => {}
         }
-    }
-
-    fn wanted(self) -> Vec<String> {
-        let Self {
-            mut listed,
-            seen,
-            visited,
-        } = self;
-        let mut visited: Vec<(String, u32)> = visited
-            .into_iter()
-            .filter(|(origin, _)| !seen.contains(origin))
-            .collect();
-        visited.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-        listed.extend(visited.into_iter().map(|(origin, _)| origin));
-        listed.truncate(zephium_import::MAX_ICONS);
-        listed
     }
 }
 

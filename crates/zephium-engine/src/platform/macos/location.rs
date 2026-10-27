@@ -141,8 +141,8 @@ pub(crate) fn serve(view: &WKWebView) {
     }
 }
 
-/// Whether macOS will refuse Zephium a position: Location Services is off,
-/// or the person or a profile turned it off for Zephium. Asking the system
+/// Whether macOS will refuse Kestrel a position: Location Services is off,
+/// or the person or a profile turned it off for Kestrel. Asking the system
 /// first is left to the moment a site is allowed, so an undecided Mac is not
 /// blocked.
 pub(crate) fn blocked_by_system() -> bool {
@@ -276,7 +276,7 @@ fn plan(status: CLAuthorizationStatus, wanted: bool, high: bool, asked: bool) ->
 }
 
 /// Runs Core Location exactly while an allowed page listens and macOS lets
-/// Zephium, asking macOS the first time a page needs it.
+/// Kestrel, asking macOS the first time a page needs it.
 fn reconcile(mtm: MainThreadMarker) {
     let Some((manager, stop, plan)) = with_state(mtm, |state| {
         let mut listening = state.clients.iter().filter(|c| c.updating).peekable();
@@ -379,7 +379,7 @@ fn fail(mtm: MainThreadMarker, message: &CStr) {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumGeolocationProvider"]
+    #[name = "KestrelGeolocationProvider"]
     struct Delegate;
 
     unsafe impl NSObjectProtocol for Delegate {}

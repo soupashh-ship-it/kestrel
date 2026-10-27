@@ -23,7 +23,7 @@ fn policy(data: &[u8]) -> String {
             1 => output.push_str(&format!(
                 "@@||case-{index}.fuzz.invalid^$domain=source.invalid{mutation}\n"
             )),
-            _ => output.push_str(&format!("! Zephium synthetic mutation {mutation}\n")),
+            _ => output.push_str(&format!("! Kestrel synthetic mutation {mutation}\n")),
         }
     }
     output

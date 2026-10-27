@@ -6,9 +6,6 @@ mod task_lists;
 mod task_query;
 use zephium_core::ids::{ProfileId, ResourceId};
 use zephium_core::resources::*;
-use zephium_core::work::{
-    artifact::WorkArtifactDataV1, WorkArtifactId, WorkError, WorkExecutionId, WorkId,
-};
 
 /// Receipts carried into a new run, newest first. Every caller keeps its
 /// request IDs in memory, so an older receipt can only answer a replay from
@@ -36,7 +33,6 @@ fn kind(value: ResourceKind) -> &'static str {
     match value {
         ResourceKind::Note => "note",
         ResourceKind::Task => "task",
-        ResourceKind::Object => "object",
         ResourceKind::Media => "media",
     }
 }
@@ -176,9 +172,7 @@ fn project(draft: &ResourceDraft) -> TaskProjection<'_> {
             sort_key: sort_key.as_deref(),
             work: work.as_deref(),
         },
-        ResourceContent::Note { .. }
-        | ResourceContent::Object { .. }
-        | ResourceContent::Media { .. } => TaskProjection {
+        ResourceContent::Note { .. } | ResourceContent::Media { .. } => TaskProjection {
             completed: None,
             due_date: None,
             due_time: None,
@@ -217,7 +211,6 @@ fn search_text(draft: &ResourceDraft) -> String {
                 pending.extend(node.content.iter().rev());
             }
         }
-        ResourceContent::Object { object } => text.push_str(&object.data.plain_text()),
         ResourceContent::Media { asset } => {
             text.push('\n');
             text.push_str(&asset.name);
@@ -354,60 +347,9 @@ fn list(conn: &Connection, query: ResourceQuery) -> rusqlite::Result<ResourceRes
     };
     Ok(ResourceResponse::Page { items, next })
 }
-fn preserve_artifact(
-    tx: &Connection,
-    profile: ProfileId,
-    objective: WorkId,
-    execution: WorkExecutionId,
-    artifact: WorkArtifactId,
-    basis: WorkObjectBasis,
-    title: Option<String>,
-) -> Result<ResourceDraft, ResourceError> {
-    let (fact, value) = super::work_document::runtime_store::read_artifact_fact(
-        tx, profile, objective, execution, artifact,
-    )
-    .map_err(|error| match error {
-        WorkError::NotFound => ResourceError::NotFound,
-        _ => ResourceError::Unavailable,
-    })?;
-    let user = fact.user_artifacts.iter().find(|u| u.artifact == artifact);
-    let (data, evidence) = match basis {
-        WorkObjectBasis::Original => (value.data.clone(), value.evidence.clone()),
-        WorkObjectBasis::UserRevision { revision } => {
-            let Some(user) = user.filter(|u| u.revision == revision && u.edited_data.is_some())
-            else {
-                return Err(ResourceError::NotFound);
-            };
-            (user.edited_data.clone().unwrap(), user.evidence.clone())
-        }
-    };
-    if matches!(data, WorkArtifactDataV1::BrowserResourcePreview { .. }) {
-        return Err(ResourceError::Invalid);
-    }
-    Ok(ResourceDraft {
-        title: title.unwrap_or_else(|| value.title.clone()),
-        pinned: false,
-        content: ResourceContent::Object {
-            object: WorkObjectV1 {
-                version: 1,
-                data,
-                evidence,
-                provenance: Some(WorkObjectProvenance {
-                    objective,
-                    execution,
-                    artifact,
-                    basis,
-                    review: value.review,
-                }),
-            },
-        },
-        related: vec![],
-    })
-}
-
 pub(super) fn mutate(
     conn: &mut Connection,
-    profile: ProfileId,
+    _profile: ProfileId,
     command: ResourceCommand,
 ) -> rusqlite::Result<ResourceResponse> {
     if matches!(
@@ -466,29 +408,6 @@ pub(super) fn mutate(
                 tx.query_row("SELECT count(*) FROM user_resources", [], |r| r.get(0))?;
             if count >= MAX_RESOURCES as i64 {
                 return Ok(error(ResourceError::Capacity));
-            }
-            (ResourceId::generate().to_string(), draft, 1, now, false)
-        }
-        ResourceIntent::PreserveArtifact {
-            objective,
-            execution,
-            artifact,
-            basis,
-            title,
-        } => {
-            let count: i64 =
-                tx.query_row("SELECT count(*) FROM user_resources", [], |r| r.get(0))?;
-            if count >= MAX_RESOURCES as i64 {
-                return Ok(error(ResourceError::Capacity));
-            }
-            let draft =
-                match preserve_artifact(&tx, profile, objective, execution, artifact, basis, title)
-                {
-                    Ok(draft) => draft,
-                    Err(error) => return Ok(ResourceResponse::Error { error }),
-                };
-            if !draft.validate() {
-                return Ok(error(ResourceError::Invalid));
             }
             (ResourceId::generate().to_string(), draft, 1, now, false)
         }

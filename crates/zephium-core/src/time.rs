@@ -1,4 +1,4 @@
-//! Time: where attention went while Zephium was in front, kept per site in
+//! Time: where attention went while Kestrel was in front, kept per site in
 //! hour buckets, and focus sessions that keep chosen sites shut.
 //!
 //! Attention is counted from transitions alone: a segment is the monotonic
@@ -31,7 +31,6 @@ const ROUNDS_PER_LONG_BREAK: u32 = 4;
 pub enum Place {
     /// A registrable domain, such as `youtube.com`.
     Site(String),
-    Work,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -612,7 +611,7 @@ mod tests {
         let mut ledger = Ledger::default();
         ledger.spend(&Segment {
             profile: profile(),
-            place: Place::Work,
+            place: Place::Site("github.com".into()),
             end_ms: 10 * HOUR_MS + 600_000,
             duration_ms: HOUR_MS + 900_000,
         });
@@ -630,7 +629,7 @@ mod tests {
         let mut ledger = Ledger::default();
         ledger.spend(&Segment {
             profile: profile(),
-            place: Place::Work,
+            place: Place::Site("github.com".into()),
             end_ms: 3 * HOUR_MS,
             duration_ms: 1_000,
         });

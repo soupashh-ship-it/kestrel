@@ -25,7 +25,7 @@ pub struct AudioObserverIvars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumAudioObserver"]
+    #[name = "KestrelAudioObserver"]
     #[ivars = AudioObserverIvars]
     pub struct AudioObserver;
     impl AudioObserver {

@@ -2,21 +2,18 @@ import "$styles/global.css";
 import { test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import type { AccountV1, LoginItemStatus } from "$shared/ipc/bindings";
-import { accountFixture } from "$shared/testing/account";
+import type { LoginItemStatus } from "$shared/ipc/bindings";
 import * as settings from "../lib/settings-state.svelte";
 import type { SettingsSection } from "../lib/settings-model";
 import SettingsLookStage from "./SettingsLookStage.svelte";
 
 const native = vi.hoisted(() => ({
-  account: null as AccountV1 | null,
   login: { supported: true, enabled: false, needs_approval: false } as LoginItemStatus,
 }));
 // A look bench, not a contract test: commands the pages read in passing
 // answer nothing, and the ones the shot depends on answer for real.
 vi.mock("$shared/ipc/bindings", async () => {
   const known: Record<string, (...args: never[]) => Promise<unknown>> = {
-    accountGet: async () => ({ account: native.account!, fault: null, retry_after: null }),
     loginItemStatus: async () => native.login,
     defaultBrowserStatus: async () => ({ is_default: false, can_request: true }),
     aboutInfo: async () => ({ version: "1.0.0-beta.2", os: "macOS 26.1", arch: "arm64" }),
@@ -48,8 +45,7 @@ async function shoot(name: string, section: SettingsSection) {
 
 test("Settings pages in their final shape, both themes", async () => {
   await page.viewport(1280, 860);
-  native.account = accountFixture();
-  let screen = await render(SettingsLookStage);
+  const screen = await render(SettingsLookStage);
   await settle();
   await shoot("general", "general");
   await shoot("tabs", "tabs");
@@ -58,16 +54,5 @@ test("Settings pages in their final shape, both themes", async () => {
   await shoot("appearance", "appearance");
   native.login = { supported: true, enabled: true, needs_approval: true };
   await shoot("general-approval", "general");
-  await screen.unmount();
-
-  native.account = accountFixture({
-    signed_in: true,
-    email: "ada@example.com",
-    name: "Ada Lovelace",
-    plan: "pro",
-  });
-  screen = await render(SettingsLookStage);
-  await settle();
-  await shoot("account-signed-in", "account");
   await screen.unmount();
 });

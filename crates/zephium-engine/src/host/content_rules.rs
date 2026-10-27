@@ -38,7 +38,7 @@ const CONTENT_RULE_CACHE_GC_TIMEOUT: std::time::Duration = std::time::Duration::
 #[cfg(not(target_os = "windows"))]
 const MAX_CONTENT_RULE_CACHE_GC_CANDIDATES: usize = 8;
 #[cfg(not(target_os = "windows"))]
-const CONTENT_RULE_IDENTIFIER_PREFIX: &str = "app.zephium.rules.v1.";
+const CONTENT_RULE_IDENTIFIER_PREFIX: &str = "app.kestrel.rules.v1.";
 
 impl EngineHost {
     /// Validate a source candidate through the same bounded native compiler
@@ -1809,7 +1809,7 @@ mod tests {
             None
         );
         assert_eq!(
-            parse_content_rule_identifier("app.zephium.rules.v1.not-a-digest"),
+            parse_content_rule_identifier("app.kestrel.rules.v1.not-a-digest"),
             None
         );
         assert_eq!(

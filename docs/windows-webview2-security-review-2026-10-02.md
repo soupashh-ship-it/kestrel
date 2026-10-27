@@ -16,7 +16,7 @@ No newer outstanding Stable fix was identified in those notes at review time.
 
 [Stable release notes](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnote-stable-channel)
 confirm 154.0.4258.53 as the October 1 Stable update. Extended Stable Edge 152
-is a different servicing line, not an exception to Zephium's Evergreen floor.
+is a different servicing line, not an exception to Kestrel's Evergreen floor.
 
 [Microsoft's WebView2 runtime notes](https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes/runtime/)
 explain its shared binaries and updates with Edge. Edge publication alone is
@@ -30,7 +30,7 @@ returned these exact WebView2 packages, each dated October 1:
 | x64 | 154.0.4258.53 | 217117008 |
 
 [Microsoft's API compatibility contract](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/versioning#forward-compatibility-of-apis)
-preserves released APIs in later runtimes. Zephium still independently requires
+preserves released APIs in later runtimes. Kestrel still independently requires
 native capability, identity, confinement and provenance checks at startup;
 version arithmetic does not substitute for those checks. Stable majors above
 154 retain the unreviewed-runtime advisory. Beta, Dev and Canary remain denied.

@@ -168,7 +168,6 @@ impl Shell {
             return None;
         }
         let place = match self.active_browser_page() {
-            Some(crate::BrowserPage::Work) => Place::Work,
             Some(_) => return None,
             None => {
                 let tab = self.items.tab(window.active?)?;

@@ -1,7 +1,7 @@
 # Blocker fuzz harness
 
 This is an independent, non-published `cargo-fuzz` workspace. Its targets use
-only bounded, Zephium-authored inputs under the reserved `.invalid` namespace.
+only bounded, Kestrel-authored inputs under the reserved `.invalid` namespace.
 They perform no network or filesystem I/O.
 
 The retained seeds are regression starting points, not evidence of a completed

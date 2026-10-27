@@ -592,7 +592,7 @@ impl Redactor {
         }
     }
 
-    /// A path stays when it is somewhere the system or Zephium itself keeps
+    /// A path stays when it is somewhere the system or Kestrel itself keeps
     /// things; anywhere else it names the person's files.
     fn path(&mut self, path: &str) -> String {
         if !is_shared_location(path) {
@@ -915,7 +915,7 @@ fn ends_path(chunk: &str) -> bool {
             .is_some_and(|name| name.trim_start_matches('.').contains('.'))
 }
 
-/// Folders the system or Zephium keep their own things in. Names there are
+/// Folders the system or Kestrel keep their own things in. Names there are
 /// not the person's.
 fn is_shared_location(path: &str) -> bool {
     const UNIX: &[&str] = &[
@@ -1239,22 +1239,22 @@ mod tests {
     #[test]
     fn home_folders_become_a_tilde_on_both_systems() {
         assert_eq!(
-            clean("log at /Users/jane/Library/Logs/app.zephium/zephium.log"),
-            "log at ~/Library/Logs/app.zephium/zephium.log"
+            clean("log at /Users/jane/Library/Logs/app.kestrel/zephium.log"),
+            "log at ~/Library/Logs/app.kestrel/zephium.log"
         );
         assert_eq!(
-            clean(r"opened C:\Users\Jane Doe\AppData\Roaming\app.zephium\zephium.db"),
-            r"opened ~\AppData\Roaming\app.zephium\zephium.db"
+            clean(r"opened C:\Users\Jane Doe\AppData\Roaming\app.kestrel\zephium.db"),
+            r"opened ~\AppData\Roaming\app.kestrel\zephium.db"
         );
         assert_eq!(
             clean(
-                r#"Os { code: 3, message: "no C:\\Users\\Jane Doe\\AppData\\Local\\app.zephium\\EBWebView" }"#
+                r#"Os { code: 3, message: "no C:\\Users\\Jane Doe\\AppData\\Local\\app.kestrel\\EBWebView" }"#
             ),
-            r#"Os { code: 3, message: "no ~\\AppData\\Local\\app.zephium\\EBWebView" }"#
+            r#"Os { code: 3, message: "no ~\\AppData\\Local\\app.kestrel\\EBWebView" }"#
         );
         assert_eq!(
-            clean(r"cwd \\?\C:\Users\Jane Doe\AppData\Roaming\app.zephium"),
-            r"cwd ~\AppData\Roaming\app.zephium"
+            clean(r"cwd \\?\C:\Users\Jane Doe\AppData\Roaming\app.kestrel"),
+            r"cwd ~\AppData\Roaming\app.kestrel"
         );
         assert_eq!(
             clean(r"c:\users\JANE DOE\appdata\local\temp\x.tmp"),
@@ -1308,10 +1308,10 @@ mod tests {
     #[test]
     fn the_places_apps_keep_their_own_files_stay_readable() {
         for line in [
-            "from /Applications/Zephium.app/Contents/MacOS/Zephium",
+            "from /Applications/Kestrel.app/Contents/MacOS/Kestrel",
             "loaded /System/Library/Frameworks/WebKit.framework/WebKit",
             r"module C:\Windows\System32\kernel32.dll",
-            r"module C:\Program Files\Zephium\zephium.exe loaded",
+            r"module C:\Program Files\Kestrel\zephium.exe loaded",
         ] {
             let out = clean(line);
             assert!(
@@ -1320,12 +1320,12 @@ mod tests {
             );
         }
         assert_eq!(
-            clean("data in /Users/jane/Library/Application Support/app.zephium/zephium.db"),
-            "data in ~/Library/Application Support/app.zephium/zephium.db"
+            clean("data in /Users/jane/Library/Application Support/app.kestrel/zephium.db"),
+            "data in ~/Library/Application Support/app.kestrel/zephium.db"
         );
         assert_eq!(
-            clean("data in ~/Library/Application Support/app.zephium/webext/packages/abcdefghijklmnopabcdefghijklmnop/1.0.crx"),
-            "data in ~/Library/Application Support/app.zephium/webext/packages/<extension1>/1.0.crx"
+            clean("data in ~/Library/Application Support/app.kestrel/webext/packages/abcdefghijklmnopabcdefghijklmnop/1.0.crx"),
+            "data in ~/Library/Application Support/app.kestrel/webext/packages/<extension1>/1.0.crx"
         );
     }
 
@@ -1434,7 +1434,7 @@ mod tests {
     #[test]
     fn a_whole_nslog_line_with_a_page_in_it_loses_the_page() {
         let out = gone(
-            "2026-10-25 14:03:21.123 Zephium[4242:99887] [Process] Failed to load https://mail.example.com/inbox?user=jane@example.com with Error Domain=NSURLErrorDomain Code=-1009 \"The Internet connection appears to be offline.\" UserInfo={NSErrorFailingURLStringKey=https://mail.example.com/inbox, NSLocalizedDescription=The Internet connection appears to be offline.}",
+            "2026-10-25 14:03:21.123 Kestrel[4242:99887] [Process] Failed to load https://mail.example.com/inbox?user=jane@example.com with Error Domain=NSURLErrorDomain Code=-1009 \"The Internet connection appears to be offline.\" UserInfo={NSErrorFailingURLStringKey=https://mail.example.com/inbox, NSLocalizedDescription=The Internet connection appears to be offline.}",
             &["mail.example", "jane", "inbox"],
         );
         assert!(out.contains("NSURLErrorDomain Code=-1009"), "{out}");

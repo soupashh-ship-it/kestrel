@@ -35,13 +35,7 @@ const SETTINGS: &[(&str, &str)] = &[
     ("tabs", "ui.tab-layout"),
     ("memory", "performance.memory"),
 ];
-const FEATURES: &[(&str, &str)] = &[
-    ("AI", "ai"),
-    ("Work", "work"),
-    ("Notes", "notes"),
-    ("Tasks", "tasks"),
-    ("Time", "time"),
-];
+const FEATURES: &[(&str, &str)] = &[("Notes", "notes"), ("Tasks", "tasks"), ("Time", "time")];
 
 /// The text for a bug report: version, system and the redacted recent log.
 #[tauri::command]
@@ -192,7 +186,7 @@ fn redactor(app: &tauri::AppHandle) -> Redactor {
 fn app_line(app: &tauri::AppHandle) -> String {
     let version = app.package_info().version.to_string();
     let revision = option_env!("ZEPHIUM_BUILD_REVISION").unwrap_or("unknown");
-    format!("Zephium {version}, {}", build_label(revision))
+    format!("Kestrel {version}, {}", build_label(revision))
 }
 
 /// The commit and whether the tree was clean: `882c92d8f1a2`, `…+dirty`.
@@ -392,7 +386,7 @@ fn compose(rows: &[(&str, String)], crash: Vec<String>, log: Vec<String>) -> Str
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_or(0, |since| since.as_secs());
-    let mut text = format!("Zephium diagnostics\nCreated: {}\n", utc(now));
+    let mut text = format!("Kestrel diagnostics\nCreated: {}\n", utc(now));
     for (label, value) in rows {
         text.push_str(&format!("{label}: {value}\n"));
     }
@@ -538,14 +532,14 @@ mod tests {
     #[test]
     fn a_recent_crash_is_included_and_an_old_one_is_not() {
         let dir = tempfile::tempdir().unwrap();
-        let report = "Zephium 1.0.3 stopped at desktop/src/lib.rs:1:2: bad value for https://example.com/a\nstack\n\nframe /Users/jane/x\n";
+        let report = "Kestrel 1.0.3 stopped at desktop/src/lib.rs:1:2: bad value for https://example.com/a\nstack\n\nframe /Users/jane/x\n";
         std::fs::write(dir.path().join(CRASH), report).unwrap();
         let now = SystemTime::now();
         let lines = crash_lines(dir.path(), &mut redactor(), now);
         assert!(lines[0].starts_with("Last crash, 20"));
         assert_eq!(
             lines[1],
-            "Zephium 1.0.3 stopped at desktop/src/lib.rs:1:2: bad value for <url>"
+            "Kestrel 1.0.3 stopped at desktop/src/lib.rs:1:2: bad value for <url>"
         );
         assert_eq!(lines.last().map(String::as_str), Some("frame <path>"));
         let later = now + CRASH_AGE + Duration::from_secs(60);
@@ -558,7 +552,7 @@ mod tests {
         let log = [
             "ts_ms=1792627200000 session=1792627200000-4242 startup: WebView2 runtime selected at launch: 156.0.4314.42",
             "ts_ms=1792627200100 session=1792627200000-4242 updates: error sending request for url (https://updates.example.org/v1/latest.json?token=abc123)",
-            "ts_ms=1792627200200 session=1792627200000-4242 store: cannot open /Users/jane/Library/Application Support/app.zephium/zephium.db for jane@example.com",
+            "ts_ms=1792627200200 session=1792627200000-4242 store: cannot open /Users/jane/Library/Application Support/app.kestrel/zephium.db for jane@example.com",
             "ts_ms=1792627200300 session=1792627200000-4242 work: phase=lead title=\"My bank statement\" query=cats and dogs content=redacted",
             "ts_ms=1792627200400 session=1792627200000-4242 account: Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl",
             "ts_ms=1792627200500 session=1792627200000-4242 extensions: could not update abcdefghijklmnopabcdefghijklmnop: HTTP 500 from update.googleapis.com",
@@ -567,15 +561,15 @@ mod tests {
         std::fs::write(dir.path().join(LOG), log.join("\n") + "\n").unwrap();
         let lines = recent_lines(dir.path(), &mut redactor());
         let rows = vec![
-            ("App", "Zephium 1.0.3, build 882c92d8f1a2".to_owned()),
+            ("App", "Kestrel 1.0.3, build 882c92d8f1a2".to_owned()),
             ("Channel", "stable".to_owned()),
             ("System", "macOS 26.1.0 (arm64)".to_owned()),
             ("Web engine", "WebKit 21622.2.11 (Safari 26.1)".to_owned()),
         ];
         let text = compose(&rows, Vec::new(), lines);
 
-        assert!(text.starts_with("Zephium diagnostics\nCreated: 20"));
-        assert!(text.contains("\nApp: Zephium 1.0.3, build 882c92d8f1a2\n"));
+        assert!(text.starts_with("Kestrel diagnostics\nCreated: 20"));
+        assert!(text.contains("\nApp: Kestrel 1.0.3, build 882c92d8f1a2\n"));
         assert!(text.contains("\nLog, last 7 lines"));
         assert!(text.contains("WebView2 runtime selected at launch: 156.0.4314.42"));
         assert!(text.contains("zephium.db for <email>"));

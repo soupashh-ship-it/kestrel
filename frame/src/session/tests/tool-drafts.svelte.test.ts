@@ -9,7 +9,7 @@ describe("shared tool views with independent session state", () => {
     expect(toolSession("profile-b", "notes").draft).toBe("");
   });
   it("bounds retained text and normalizes invalid scroll values", () => {
-    const state = toolSession("bounded", "ai");
+    const state = toolSession("bounded", "bookmarks");
     editTool(state, { draft: "x".repeat(20000), query: "x".repeat(2000), scrollTop: NaN });
     expect(state.draft).toHaveLength(16384);
     expect(state.query).toHaveLength(1024);
@@ -18,7 +18,7 @@ describe("shared tool views with independent session state", () => {
   it("evicts the least recently used draft, never the one in use", () => {
     const open = toolSession("in-use", "notes");
     editTool(open, { draft: "Still being written" });
-    const tools: ToolKind[] = ["notes", "tasks", "ai", "history", "downloads", "time"];
+    const tools: ToolKind[] = ["notes", "tasks", "bookmarks", "history", "downloads", "time"];
     for (let i = 0; i < 30; i++) {
       toolSession(`other-${i}`, tools[i % tools.length]!);
       // The mounted view reads its draft as it renders.

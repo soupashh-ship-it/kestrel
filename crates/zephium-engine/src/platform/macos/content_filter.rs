@@ -66,7 +66,7 @@ impl Drop for ContentPolicyRegistration {
     fn drop(&mut self) {
         self._pause.take();
         if let (Some(manager), Some(list)) = (&self.manager, &self.list) {
-            // Remove only the exact Zephium-owned object. `removeAll...`
+            // Remove only the exact Kestrel-owned object. `removeAll...`
             // would erase future extension/user-script policy sharing this
             // controller.
             unsafe { manager.removeContentRuleList(list) };
@@ -110,7 +110,7 @@ impl ContentPolicyCacheMaintenanceCancellation {
 
 const MAX_CACHE_IDENTIFIERS_PER_PAGE: usize = 128;
 const MAX_CACHE_IDENTIFIER_CURSOR: usize = 4_096;
-const MAX_CACHE_IDENTIFIER_BYTES: usize = "app.zephium.rules.v1.".len() + 64;
+const MAX_CACHE_IDENTIFIER_BYTES: usize = "app.kestrel.rules.v1.".len() + 64;
 
 #[cfg(feature = "agentic-browser")]
 pub(crate) fn install_on_view(
@@ -417,7 +417,7 @@ fn content_policy_cache_page(
 fn content_policy_cache_window(total: usize, cursor: usize) -> (usize, usize, bool, bool) {
     // The hard cursor ceiling prevents a corrupt native inventory from
     // turning maintenance into unbounded main-thread iteration. Normal GC
-    // keeps Zephium's namespace far below it.
+    // keeps Kestrel's namespace far below it.
     let start = cursor.min(MAX_CACHE_IDENTIFIER_CURSOR).min(total);
     let end = start
         .saturating_add(MAX_CACHE_IDENTIFIERS_PER_PAGE)
@@ -718,7 +718,7 @@ fn rule_identifier(digest: [u8; 32]) -> String {
     use std::fmt::Write as _;
 
     let mut identifier = String::with_capacity(20 + 64);
-    identifier.push_str("app.zephium.rules.v1.");
+    identifier.push_str("app.kestrel.rules.v1.");
     for byte in digest {
         let _ = write!(identifier, "{byte:02x}");
     }
@@ -741,7 +741,7 @@ mod tests {
     fn rule_identifiers_are_namespaced_and_digest_exact() {
         let left = rule_identifier([0; 32]);
         let right = rule_identifier([1; 32]);
-        assert_eq!(left.len(), "app.zephium.rules.v1.".len() + 64);
+        assert_eq!(left.len(), "app.kestrel.rules.v1.".len() + 64);
         assert_ne!(left, right);
         assert!(left
             .bytes()
@@ -768,7 +768,7 @@ mod tests {
             LookupFailureAction::Fail
         );
 
-        let foreign_domain = NSString::from_str("app.zephium.tests.not-webkit");
+        let foreign_domain = NSString::from_str("app.kestrel.tests.not-webkit");
         let foreign_error = unsafe {
             NSError::errorWithDomain_code_userInfo(
                 &foreign_domain,

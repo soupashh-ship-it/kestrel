@@ -52,12 +52,11 @@ impl ActivityWrite {
         }
         let mut site_bytes = 0usize;
         for tally in tallies {
-            if let Place::Site(site) = &tally.place {
-                if site.len() > MAX_SITE_BYTES {
-                    return None;
-                }
-                site_bytes = site_bytes.checked_add(site.capacity())?;
+            let Place::Site(site) = &tally.place;
+            if site.len() > MAX_SITE_BYTES {
+                return None;
             }
+            site_bytes = site_bytes.checked_add(site.capacity())?;
         }
         Some((tallies.capacity(), site_bytes))
     }

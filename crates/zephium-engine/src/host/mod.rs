@@ -1,7 +1,3 @@
-#[cfg(feature = "agentic-browser")]
-mod agent_context;
-#[cfg(all(feature = "agentic-browser", target_os = "windows"))]
-mod agent_cookie_source;
 #[cfg(any(target_os = "macos", target_os = "windows"))]
 mod automatic_pip;
 mod blocker_statistics;
@@ -43,11 +39,6 @@ mod page_open;
 mod page_ops;
 #[cfg(target_os = "macos")]
 mod page_permissions;
-#[cfg(all(
-    feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
-))]
-pub(crate) mod page_reader;
 mod permits;
 mod popup_sites;
 mod profiles;
@@ -60,27 +51,6 @@ mod style_worker;
 mod webext;
 #[cfg(target_os = "windows")]
 mod webext_windows;
-#[cfg(all(
-    feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
-))]
-pub(crate) mod work_frames;
-#[cfg(all(
-    feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
-))]
-mod work_resource;
-#[cfg(feature = "agentic-browser")]
-pub(crate) use work_resource::visual_store::{FreshNativeStore, FreshStoreLoss};
-#[cfg(any(target_os = "macos", target_os = "windows"))]
-mod work_session_presence;
-#[cfg(all(feature = "agentic-browser", target_os = "windows"))]
-mod work_windows;
-#[cfg(all(
-    feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
-))]
-pub(crate) use work_resource::notify_work_resource;
 
 #[cfg(test)]
 pub(crate) use dispatch::make_unavailable_for_test;
@@ -664,7 +634,6 @@ pub(crate) struct EngineHost {
     /// Finished page loads per profile and host in ordinary tabs: a count,
     /// never a URL, path or page fact.
     #[cfg(any(target_os = "macos", target_os = "windows"))]
-    work_site_loads: HashMap<(ProfileId, String), u64>,
     #[cfg(target_os = "macos")]
     webext: webext::WebextHost,
     #[cfg(target_os = "windows")]
@@ -763,6 +732,3 @@ pub(crate) struct EngineHost {
 
 #[cfg(test)]
 mod tests;
-
-#[cfg(all(target_os = "macos", feature = "native-agentic-semantic-probe"))]
-pub(crate) mod anonymous_session_probe;

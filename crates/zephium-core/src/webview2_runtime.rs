@@ -18,7 +18,7 @@ use winreg::RegKey;
 
 use crate::ids::ProfileId;
 
-const REGISTRY_PARENT: &str = r"Software\Zephium";
+const REGISTRY_PARENT: &str = r"Software\Kestrel";
 const LEASE_FILE: &str = ".zephium-lifecycle.lock";
 const GENERATION_MARKER: &str = ".zephium-webview2-generation-v1";
 const MARKER_PREFIX: &str = "zephium-webview2-runtime-generation-v1\n";
@@ -60,7 +60,7 @@ pub struct RuntimeGeneration {
     root: PathBuf,
     generation: String,
     kind: RuntimeGenerationKind,
-    // Deny all sharing modes. This independently prevents two Zephium parent
+    // Deny all sharing modes. This independently prevents two Kestrel parent
     // processes from classifying/removing one root concurrently while the
     // outer single-instance plugin is still settling.
     _lease: File,
@@ -258,7 +258,7 @@ fn measure_tree(
 
 fn remediation_error(reason: &str) -> io::Error {
     io::Error::other(format!(
-        "{reason}. Fully restart Windows and start Zephium again so prior-boot WebView2 generations can be reclaimed. If this persists, keep Zephium closed and move the affected runtime directory aside for manual recovery"
+        "{reason}. Fully restart Windows and start Kestrel again so prior-boot WebView2 generations can be reclaimed. If this persists, keep Kestrel closed and move the affected runtime directory aside for manual recovery"
     ))
 }
 
@@ -397,7 +397,7 @@ fn maintain_generations(
         }
         if status == MarkerStatus::Missing {
             // Migrate a bounded direct generation created by pre-provenance
-            // Zephium into the safe baseline. It is marked current-boot and
+            // Kestrel into the safe baseline. It is marked current-boot and
             // cannot be reclaimed until a later reboot, so an old child still
             // terminating during this launch remains protected.
             measure_tree(&path, &mut usage, true)?;

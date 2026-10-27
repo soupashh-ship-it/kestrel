@@ -1,6 +1,6 @@
 # Security maintenance runbook
 
-Zephium deliberately treats the operating-system WebView runtime and the
+Kestrel deliberately treats the operating-system WebView runtime and the
 application build graph as security-sensitive release inputs. The checks
 described here fail closed. A red check is an instruction to review evidence,
 not a deadline or advisory string to extend mechanically.
@@ -60,8 +60,8 @@ Runtime startup never downloads this policy and never scrapes Apple,
 Microsoft, or WebKitGTK pages. Those pages are unstable, unsigned inputs from
 the client's perspective and would add latency, failure modes, and an
 unnecessary first-party network observation. The embedded reviewed policy is
-authoritative for startup. If Zephium later refreshes policy independently of
-an application release, it must do so asynchronously through Zephium-signed,
+authoritative for startup. If Kestrel later refreshes policy independently of
+an application release, it must do so asynchronously through Kestrel-signed,
 rollback-resistant update metadata, persist only an authenticated newer
 policy, and retain the embedded hard floor as the offline fallback.
 
@@ -72,7 +72,7 @@ For each platform:
 1. Read the vendor's current security advisory and release-note source, not a
    search result or version aggregator.
 2. Identify every vendor-supported operating-system or stable runtime line
-   Zephium claims to support. Preview and development channels remain hard
+   Kestrel claims to support. Preview and development channels remain hard
    failures. Decide explicitly whether a newer stable line preserves the
    mandatory native capabilities and can run with an unreviewed-runtime
    advisory; never infer that from an arbitrary numeric version alone.
@@ -137,7 +137,7 @@ it must not be converted into a passing audit.
 ## Native-boundary fork maintenance
 
 The in-tree Tauri, Tauri Runtime Wry, and Wry forks are narrow native security
-adapters and therefore part of Zephium's trusted computing base. Monitor
+adapters and therefore part of Kestrel's trusted computing base. Monitor
 upstream security releases and the files touched by every upstream change.
 Follow the `REBASE.md` in each fork for every update; a version-only bump or
 blind merge is prohibited. Tauri and Tauri Runtime Wry share an upstream
@@ -159,7 +159,7 @@ coverage as release evidence to make CI green.
 
 ### Linux
 
-Zephium does not ship on Linux. CI compiles and unit-tests the workspace there
+Kestrel does not ship on Linux. CI compiles and unit-tests the workspace there
 but runs no native WebKitGTK sandbox job and produces no Linux runtime
 evidence.
 
@@ -169,14 +169,14 @@ launcher chord still opens from the focused main window and closes from the
 focused launcher panel. After permission is restored, verify one activation per
 press, immediate fallback after an authoritative `ShortcutsChanged` removal,
 and no activation after browser shutdown begins. Run this against the packaged
-artifact whose installed entry is exactly `app.zephium.desktop`; raw `cargo`
+artifact whose installed entry is exactly `app.kestrel.desktop`; raw `cargo`
 or `tauri dev` execution does not prove portal application identity.
 
 A teardown-only GLib-GIO warning from a sandbox child saying that release of an
-`app.zephium.Sandboxed.WebProcess-*` bus name failed because its connection was
+`app.kestrel.Sandboxed.WebProcess-*` bus name failed because its connection was
 already closed is a WebKit child-process cleanup diagnostic. Do not hide it
 with a GLib log handler or by weakening the WebKit sandbox. It is acceptable
-only when Zephium exits cleanly and it is not accompanied by an
+only when Kestrel exits cleanly and it is not accompanied by an
 `engine: web process terminated` event, a core dump, a hang, or a surviving
 auxiliary process. Any of those accompanying symptoms turns it into a native
 runtime failure: retain the journal and core, record the exact WebKitGTK/GLib

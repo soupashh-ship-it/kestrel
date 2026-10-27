@@ -146,7 +146,7 @@ impl Hub {
     }
 
     /// Icons another browser held. An origin with a row keeps it, and only
-    /// free rows are filled, so this never replaces or evicts an icon Zephium
+    /// free rows are filled, so this never replaces or evicts an icon Kestrel
     /// fetched itself.
     pub(crate) fn import_favicons(
         &mut self,

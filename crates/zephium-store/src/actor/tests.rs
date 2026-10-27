@@ -47,10 +47,7 @@ fn rgba() -> Vec<u8> {
 fn test_store_with_sender(tx: SyncSender<Cmd>) -> SqliteStore {
     let (_exit, exited) = mpsc::sync_channel(1);
     SqliteStore {
-        work_document_admission: OnceLock::new(),
         resource_admission: Arc::new(AtomicUsize::new(0)),
-        #[cfg(feature = "work-execution")]
-        work_admission: OnceLock::new(),
         tx,
         latest_session: Arc::new(Mutex::new(None)),
         pending_visits: Arc::new(Mutex::new(PendingVisits::new())),
@@ -59,7 +56,6 @@ fn test_store_with_sender(tx: SyncSender<Cmd>) -> SqliteStore {
         page_permission_mutation_admission: Arc::new(Mutex::new(
             PagePermissionMutationAdmission::default(),
         )),
-        agent_audit_delivery_admission: OnceLock::new(),
         activity_admission: Arc::new(Mutex::new(activity::ActivityAdmission::default())),
         lifecycle: RwLock::new(ActorLifecycle {
             join: None,
@@ -1902,7 +1898,7 @@ fn imported_favicons_fill_free_rows_and_never_replace_held_ones() {
     );
     assert_eq!(hub.import_favicons(ProfileId::from(99), &[]), None);
 
-    // A full store takes nothing, so nothing Zephium fetched is evicted.
+    // A full store takes nothing, so nothing Kestrel fetched is evicted.
     for index in 0..1100 {
         hub.save_favicon(
             profile,
@@ -1997,13 +1993,13 @@ fn permission_setting_readback_distinguishes_missing_value_and_unavailable() {
     use zephium_core::ports::store::AppSettingReadback as Readback;
     let store = SqliteStore::in_memory().unwrap();
     assert!(matches!(
-        store.app_setting_readback("work.screenshots"),
+        store.app_setting_readback("notes.enabled"),
         Readback::Missing
     ));
-    assert!(store.set_app_setting("work.screenshots".into(), "false".into()));
+    assert!(store.set_app_setting("notes.enabled".into(), "false".into()));
     assert!(store.flush());
     assert!(
-        matches!(store.app_setting_readback("work.screenshots"), Readback::Value(value) if value == "false")
+        matches!(store.app_setting_readback("notes.enabled"), Readback::Value(value) if value == "false")
     );
     assert!(matches!(
         store.app_setting_readback(""),
@@ -3692,300 +3688,6 @@ fn legacy_import_resumes_without_duplicating_committed_history() {
         Some("complete")
     );
     assert!(!legacy_path.exists());
-}
-
-fn agent_audit_ledger() -> zephium_agentic::AgentAuditLedger {
-    use zephium_agentic::{
-        AgentAccountScope, AgentAuditEventId, AgentDelegationSpec, AgentDelegationTopology,
-        AgentEffectScope, AgentPlanNodeAuthority, AgentPlanNodeId, AgentPlanNodeScope,
-        AgentPolicyInstant, AgentRunBudget, AgentRunManifest, AgentRunManifestId, AgentRunScope,
-        AgentRunSupervisor, AgentSupervisorId, ContextRunId, SemanticEffectClass, SemanticOrigin,
-        SemanticSensitivity,
-    };
-
-    let profile = ProfileId::from(1);
-    let origin =
-        SemanticOrigin::parse("https://audit.example.test/private?secret=hidden").expect("origin");
-    let effects = AgentEffectScope::try_new(&[SemanticEffectClass::Read]).expect("effects");
-    let node = AgentPlanNodeId::generate();
-    let manifest = AgentRunManifest::try_new(
-        AgentRunManifestId::generate(),
-        ContextRunId::generate(),
-        AgentRunScope::try_new(
-            vec![profile],
-            vec![AgentAccountScope::Anonymous],
-            vec![origin.clone()],
-            SemanticSensitivity::Public,
-            effects,
-            Vec::new(),
-        )
-        .expect("scope"),
-        AgentRunBudget::try_new(10, 1_000, 1_000, 1).expect("budget"),
-        AgentPolicyInstant::from_millis(100),
-        AgentPolicyInstant::from_millis(10_000),
-        vec![AgentPlanNodeScope::new(
-            node,
-            AgentPlanNodeAuthority::try_new(
-                vec![profile],
-                vec![AgentAccountScope::Anonymous],
-                vec![origin],
-                SemanticSensitivity::Public,
-                effects,
-            )
-            .expect("authority"),
-            AgentRunBudget::try_new(10, 1_000, 1_000, 1).expect("node budget"),
-            AgentPolicyInstant::from_millis(9_000),
-        )],
-    )
-    .expect("manifest");
-    let topology =
-        AgentDelegationTopology::try_new(&manifest, vec![AgentDelegationSpec::new(node, None)])
-            .expect("topology");
-    let supervisor =
-        AgentRunSupervisor::new(AgentSupervisorId::new(1).expect("supervisor"), topology);
-    let mut ledger =
-        zephium_agentic::AgentAuditLedger::try_new(&manifest, &supervisor).expect("ledger");
-    ledger
-        .record_current(
-            &supervisor,
-            node,
-            AgentAuditEventId::new(1).expect("event"),
-            AgentPolicyInstant::from_millis(100),
-        )
-        .expect("record");
-    ledger
-}
-
-#[test]
-fn agent_audit_actor_commits_and_reconciles_the_exact_in_flight_delivery() {
-    use zephium_agentic::{
-        AgentAuditDeliveryId, AgentAuditDeliveryOutcome, AgentAuditDispatch, AgentAuditPort,
-    };
-
-    let store = SqliteStore::in_memory().expect("store");
-    let mut ledger = agent_audit_ledger();
-    let delivery = ledger
-        .begin_delivery(AgentAuditDeliveryId::new(1).expect("delivery"), 16)
-        .expect("delivery");
-    let proof = delivery.proof();
-    let (first_tx, first_rx) = mpsc::sync_channel(1);
-    assert_eq!(
-        store.append(
-            delivery,
-            Box::new(move |settlement| first_tx.send(settlement).expect("first receiver")),
-        ),
-        AgentAuditDispatch::Accepted(proof)
-    );
-    let first = first_rx
-        .recv_timeout(REPLY_TIMEOUT)
-        .expect("first settlement");
-    assert_eq!(first.outcome(), AgentAuditDeliveryOutcome::Committed);
-
-    // Model a lost shell handoff: retain the ledger, replay only the exact
-    // delivery, and require the Store to acknowledge without a second row.
-    let replay = ledger
-        .current_delivery()
-        .expect("current delivery")
-        .expect("in flight");
-    let (replay_tx, replay_rx) = mpsc::sync_channel(1);
-    assert_eq!(
-        store.append(
-            replay,
-            Box::new(move |settlement| replay_tx.send(settlement).expect("replay receiver")),
-        ),
-        AgentAuditDispatch::Accepted(proof)
-    );
-    let replayed = replay_rx
-        .recv_timeout(REPLY_TIMEOUT)
-        .expect("replay settlement");
-    assert_eq!(replayed, first);
-    ledger.settle_delivery(replayed).expect("settle ledger");
-    assert_eq!(ledger.status().committed(), 1);
-    assert_eq!(
-        store.shutdown_until(Instant::now() + REPLY_TIMEOUT),
-        StoreShutdownOutcome::Clean
-    );
-}
-
-#[test]
-fn agent_audit_admission_shares_live_readers_but_respects_terminal_exclusion() {
-    use zephium_agentic::{
-        AgentAuditDeliveryId, AgentAuditDeliveryOutcome, AgentAuditDispatch, AgentAuditPort,
-        AgentAuditSinkFailure,
-    };
-    let (tx, rx) = mpsc::sync_channel(MAX_PENDING_AGENT_AUDIT_DELIVERIES);
-    let store = test_store_with_sender(tx);
-    let mut ledger = agent_audit_ledger();
-    let first = ledger
-        .begin_delivery(AgentAuditDeliveryId::new(1).unwrap(), 16)
-        .unwrap();
-    let proof = first.proof();
-    let reader = store.lifecycle.read().unwrap();
-    assert_eq!(
-        store.append(first, Box::new(|_| {})),
-        AgentAuditDispatch::Accepted(proof)
-    );
-    drop(reader);
-    let writer = store.lifecycle.write().unwrap();
-    assert_eq!(
-        store.append(
-            ledger.current_delivery().unwrap().unwrap(),
-            Box::new(|_| panic!("refusal cannot transfer callback"))
-        ),
-        AgentAuditDispatch::Refused(proof.settle(AgentAuditDeliveryOutcome::Refused(
-            AgentAuditSinkFailure::Unavailable
-        )))
-    );
-    drop(writer);
-    drop(rx);
-}
-
-#[test]
-fn agent_audit_actor_admission_is_independently_bounded_and_releases_commands() {
-    use zephium_agentic::{
-        AgentAuditDeliveryId, AgentAuditDeliveryOutcome, AgentAuditDispatch, AgentAuditPort,
-        AgentAuditSinkFailure,
-    };
-
-    let (tx, rx) = mpsc::sync_channel(MAX_PENDING_AGENT_AUDIT_DELIVERIES);
-    let store = test_store_with_sender(tx);
-    let mut ledger = agent_audit_ledger();
-    let first = ledger
-        .begin_delivery(AgentAuditDeliveryId::new(1).expect("delivery"), 16)
-        .expect("delivery");
-    let proof = first.proof();
-    for delivery in std::iter::once(first).chain(
-        (1..MAX_PENDING_AGENT_AUDIT_DELIVERIES)
-            .map(|_| ledger.current_delivery().unwrap().unwrap()),
-    ) {
-        assert_eq!(
-            store.append(delivery, Box::new(|_| {})),
-            AgentAuditDispatch::Accepted(proof)
-        );
-    }
-    let refused = store.append(
-        ledger.current_delivery().unwrap().unwrap(),
-        Box::new(|_| panic!("capacity refusal transferred callback")),
-    );
-    assert_eq!(
-        refused,
-        AgentAuditDispatch::Refused(proof.settle(AgentAuditDeliveryOutcome::Refused(
-            AgentAuditSinkFailure::Capacity,
-        )))
-    );
-    struct PanicOnDrop;
-    impl Drop for PanicOnDrop {
-        fn drop(&mut self) {
-            panic!("integration callback destructor");
-        }
-    }
-    let callback_capture = PanicOnDrop;
-    let discard = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        store.append(
-            ledger.current_delivery().unwrap().unwrap(),
-            Box::new(move |_| {
-                let _retained_until_drop = &callback_capture;
-            }),
-        )
-    }))
-    .expect("capacity refusal contains callback destructor panic");
-    assert_eq!(
-        discard,
-        AgentAuditDispatch::Refused(proof.settle(AgentAuditDeliveryOutcome::Refused(
-            AgentAuditSinkFailure::Capacity,
-        )))
-    );
-    drop(rx);
-    assert_eq!(
-        store
-            .agent_audit_delivery_admission
-            .get()
-            .expect("admission")
-            .load(Ordering::Acquire),
-        0
-    );
-}
-
-#[test]
-fn agent_audit_completion_panic_is_contained_by_the_actor() {
-    use zephium_agentic::{AgentAuditDeliveryId, AgentAuditDispatch, AgentAuditPort};
-
-    let store = SqliteStore::in_memory().expect("store");
-    let mut ledger = agent_audit_ledger();
-    let delivery = ledger
-        .begin_delivery(AgentAuditDeliveryId::new(1).expect("delivery"), 16)
-        .expect("delivery");
-    let proof = delivery.proof();
-    assert_eq!(
-        store.append(delivery, Box::new(|_| panic!("integration callback"))),
-        AgentAuditDispatch::Accepted(proof)
-    );
-
-    let replay = ledger
-        .current_delivery()
-        .expect("current delivery")
-        .expect("in flight");
-    let (settled_tx, settled_rx) = mpsc::sync_channel(1);
-    assert_eq!(
-        store.append(
-            replay,
-            Box::new(move |settlement| settled_tx.send(settlement).expect("receiver")),
-        ),
-        AgentAuditDispatch::Accepted(proof)
-    );
-    let settlement = settled_rx
-        .recv_timeout(REPLY_TIMEOUT)
-        .expect("actor survived callback panic");
-    ledger.settle_delivery(settlement).expect("settle replay");
-    assert_eq!(
-        store.shutdown_until(Instant::now() + REPLY_TIMEOUT),
-        StoreShutdownOutcome::Clean
-    );
-}
-
-#[test]
-fn work_document_mailbox_is_lazy_bounded_and_releases_refused_owners() {
-    use zephium_core::work::{port::WorkRequest, WorkError};
-    let (tx, rx) = mpsc::sync_channel(8);
-    let store = test_store_with_sender(tx);
-    assert!(store.work_document_admission.get().is_none());
-    for _ in 0..4 {
-        store
-            .work_document(
-                1.into(),
-                WorkRequest::Read { id: 2.into() },
-                Box::new(|_| panic!("not executed")),
-            )
-            .unwrap();
-    }
-    assert_eq!(
-        store.work_document(
-            1.into(),
-            WorkRequest::Read { id: 2.into() },
-            Box::new(|_| panic!("refusal invoked callback"))
-        ),
-        Err(WorkError::Capacity)
-    );
-    for _ in 0..4 {
-        drop(rx.recv().unwrap());
-    }
-    assert_eq!(
-        store
-            .work_document_admission
-            .get()
-            .unwrap()
-            .load(Ordering::Acquire),
-        0
-    );
-    store.lifecycle.write().unwrap().terminal_admitted = true;
-    assert_eq!(
-        store.work_document(
-            1.into(),
-            WorkRequest::Read { id: 2.into() },
-            Box::new(|_| panic!("shutdown invoked callback"))
-        ),
-        Err(WorkError::Shutdown)
-    );
 }
 
 #[test]

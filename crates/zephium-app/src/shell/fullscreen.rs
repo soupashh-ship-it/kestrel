@@ -118,6 +118,7 @@ impl Shell {
             && self.items.tab(id).is_some_and(|tab| {
                 tab.has_view() && tab.content == zephium_core::item::TabContent::Web
             })
-            && self.visible_tree().is_some_and(|tree| tree.contains(id))
+            && (window.active == Some(id)
+                || window.splits.as_ref().is_some_and(|tree| tree.contains(id)))
     }
 }

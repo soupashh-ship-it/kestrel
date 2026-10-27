@@ -25,26 +25,14 @@
     shortcuts: () => import("./sections/KeyboardPage.svelte"),
     features: () => import("./sections/FeaturesPage.svelte"),
     focus: () => import("./sections/FocusPage.svelte"),
-    work: () => import("./sections/WorkPage.svelte"),
-    ai: () => import("./sections/AiPage.svelte"),
-    skills: () => import("./sections/SkillsPage.svelte"),
-    memory: () => import("./sections/MemoryPage.svelte"),
-    sites: () => import("./sections/SitesPage.svelte"),
-    mcp: () => import("./sections/ConnectionsPage.svelte"),
     performance: () => import("./sections/PerformancePage.svelte"),
-    account: () => import("./sections/AccountPage.svelte"),
     about: () => import("./sections/AboutPage.svelte"),
   };
-  // A section this build does not offer opens the first one instead; one
-  // that left with Work and AI opens the Work page, where they come back.
+  // A section this build does not offer opens the first one instead.
   let offered = $derived(shownSections());
   let current = $derived.by(() => {
     const wanted = sections.find((section) => section.id === state.section());
-    return (
-      offered.find((section) => section === wanted) ??
-      offered.find((section) => wanted?.group === "work" && section.id === "work") ??
-      offered[0]!
-    );
+    return offered.find((section) => section === wanted) ?? offered[0]!;
   });
   let loader = $derived(current.id in loaders ? loaders[current.id as keyof typeof loaders] : null);
   let results = $derived(searchSettings(state.query()));

@@ -15,7 +15,7 @@ objc2::define_class!(
     /// tracks tool tips for a page in the key window.
     #[unsafe(super(objc2_app_kit::NSWindow, objc2_app_kit::NSResponder, objc2::runtime::NSObject))]
     #[thread_kind = objc2::MainThreadOnly]
-    #[name = "ZephiumPointerGuardsWindow"]
+    #[name = "KestrelPointerGuardsWindow"]
     struct KeyWindow;
 
     impl KeyWindow {

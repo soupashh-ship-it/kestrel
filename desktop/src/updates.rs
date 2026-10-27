@@ -1,4 +1,4 @@
-//! Updates from GitHub Releases, signed with Zephium's updater key.
+//! Updates from GitHub Releases, signed with Kestrel's updater key.
 //!
 //! A check downloads a newer release in the background and parks it on disk.
 //! It installs when the person relaunches, or on macOS when they quit, always
@@ -54,7 +54,10 @@ static RELAUNCH_AFTER_EXIT: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "windows")]
 static INSTALL_AFTER_EXIT: Mutex<Option<(Parked, std::path::PathBuf)>> = Mutex::new(None);
 
-const SUPPORTED: bool = !cfg!(debug_assertions) && cfg!(any(target_os = "macos", windows));
+// This fork has no release channel of its own and must never install the
+// upstream project's builds over itself, so self-update stays off until a
+// Kestrel release endpoint and signing key are configured.
+const SUPPORTED: bool = false;
 /// The release's highlights, kept from its download for the first launch of it.
 const HIGHLIGHTS: &str = "updates.highlights";
 const MAX_HIGHLIGHTS: usize = 5;
@@ -442,7 +445,7 @@ pub(crate) fn restore(app: &tauri::AppHandle, directory: &std::path::Path) {
     if !path.exists() {
         return;
     }
-    // The installer replaced this build and exited before Zephium could clean
+    // The installer replaced this build and exited before Kestrel could clean
     // up; running the retained version means the update finished.
     if recovery::retained_version(&path)
         .is_some_and(|version| version == app.package_info().version.to_string())
@@ -484,7 +487,7 @@ fn stage(mut parked: Parked, _app: &tauri::AppHandle) -> Result<(), InstallError
 }
 
 /// The Windows installer replaces the running executable, so it starts only
-/// after Zephium has shut down completely.
+/// after Kestrel has shut down completely.
 #[cfg(target_os = "windows")]
 fn stage(mut parked: Parked, app: &tauri::AppHandle) -> Result<(), InstallError> {
     let path = lock(&app.state::<Updates>().recovery_path)
@@ -550,7 +553,7 @@ fn install_on_quit(app: &tauri::AppHandle) {
 }
 
 /// Called after the WebView2 runtime has been released. On success the
-/// installer takes over and this process exits; it relaunches Zephium itself.
+/// installer takes over and this process exits; it relaunches Kestrel itself.
 #[cfg(target_os = "windows")]
 pub(crate) fn finish_after_exit(clean: bool) {
     let Some((mut parked, _path)) = lock(&INSTALL_AFTER_EXIT).take() else {
@@ -578,9 +581,9 @@ pub(crate) fn finish_after_exit(clean: bool) {
 #[cfg(target_os = "windows")]
 fn explain_deferred_update() {
     rfd::MessageDialog::new()
-        .set_title("Zephium update postponed")
+        .set_title("Kestrel update postponed")
         .set_level(rfd::MessageLevel::Warning)
-        .set_description("Zephium could not finish the update safely. The downloaded update has been kept. Open Zephium again to retry from Settings → About.")
+        .set_description("Kestrel could not finish the update safely. The downloaded update has been kept. Open Kestrel again to retry from Settings → About.")
         .set_buttons(rfd::MessageButtons::Ok)
         .show();
 }

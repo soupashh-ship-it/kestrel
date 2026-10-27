@@ -13,13 +13,13 @@ use windows::Win32::System::Registry::{
 use windows::Win32::UI::Shell::{SHChangeNotify, ShellExecuteW, SHCNE_ASSOCCHANGED, SHCNF_IDLIST};
 use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
-pub(crate) const CLIENT: &str = "Zephium";
-pub(crate) const PROG_ID: &str = "ZephiumURL";
-const CLIENT_KEY: &str = r"Software\Clients\StartMenuInternet\Zephium";
-const CAPABILITIES: &str = r"Software\Clients\StartMenuInternet\Zephium\Capabilities";
+pub(crate) const CLIENT: &str = "Kestrel";
+pub(crate) const PROG_ID: &str = "KestrelURL";
+const CLIENT_KEY: &str = r"Software\Clients\StartMenuInternet\Kestrel";
+const CAPABILITIES: &str = r"Software\Clients\StartMenuInternet\Kestrel\Capabilities";
 const SCHEMES: [&str; 2] = ["http", "https"];
 
-/// Whether the person's own choice for both web schemes is Zephium.
+/// Whether the person's own choice for both web schemes is Kestrel.
 pub(crate) fn is_default() -> bool {
     SCHEMES.iter().all(|scheme| {
         let key = format!(
@@ -29,7 +29,7 @@ pub(crate) fn is_default() -> bool {
     })
 }
 
-/// Registers Zephium as a browser for the current user. Idempotent; the
+/// Registers Kestrel as a browser for the current user. Idempotent; the
 /// command line always points at the running executable, so it follows a
 /// moved or updated install.
 pub(crate) fn register() -> bool {
@@ -43,7 +43,7 @@ pub(crate) fn register() -> bool {
         (
             format!(r"Software\Classes\{PROG_ID}"),
             "",
-            "Zephium Web Page".into(),
+            "Kestrel Web Page".into(),
         ),
         (
             format!(r"Software\Classes\{PROG_ID}"),
@@ -103,7 +103,7 @@ pub(crate) fn register() -> bool {
     written
 }
 
-/// Opens Default apps at Zephium's own page (Windows 11), or the list on
+/// Opens Default apps at Kestrel's own page (Windows 11), or the list on
 /// Windows 10, which ignores the parameter.
 pub(crate) fn open_settings() -> bool {
     let target = HSTRING::from(format!(

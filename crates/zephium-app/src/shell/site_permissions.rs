@@ -19,7 +19,7 @@ use zephium_ipc::{
 use super::*;
 
 /// Windows saves every prompt answer in its WebView2 profile; macOS keeps
-/// Zephium's own catalog.
+/// Kestrel's own catalog.
 const ENGINE_KEEPS_DECISIONS: bool = cfg!(target_os = "windows");
 
 fn kinds() -> Vec<SitePermissionKind> {

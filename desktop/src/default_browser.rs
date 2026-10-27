@@ -1,4 +1,4 @@
-//! Whether Zephium is the default browser, and asking to become it. Each
+//! Whether Kestrel is the default browser, and asking to become it. Each
 //! platform keeps the decision with the person: macOS confirms, Windows only
 //! opens its Settings, Linux follows the desktop's own setting. The answer is
 //! always read back rather than assumed.
@@ -63,7 +63,7 @@ pub(crate) async fn default_browser_status(caller: WebviewWindow) -> Option<Defa
     Some(read_status().await)
 }
 
-/// Asks the system to make Zephium the default browser, then reports what is
+/// Asks the system to make Kestrel the default browser, then reports what is
 /// true afterwards. On Windows the answer arrives later, from Settings; chrome
 /// reads the status again when the window regains focus.
 #[tauri::command]

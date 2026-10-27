@@ -42,13 +42,13 @@ pub use worker::{
 };
 pub use zephium_core::ports::blocker::BlockerCompileFailure;
 
-/// Version of Zephium's canonical input and native-artifact format.
+/// Version of Kestrel's canonical input and native-artifact format.
 ///
 /// Increment this whenever the accepted rule subset, canonicalization, digest
 /// construction, or WebKit serialization changes.
 pub const POLICY_FORMAT_VERSION: u32 = 5;
 
-/// Exact canonical WebKit JSON schema owned by Zephium.
+/// Exact canonical WebKit JSON schema owned by Kestrel.
 pub use zephium_core::blocker::WEBKIT_ARTIFACT_FORMAT_VERSION;
 
 /// Exact `adblock-rust` version compiled into this crate.

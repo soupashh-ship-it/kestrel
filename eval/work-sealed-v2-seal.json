@@ -1,8 +1,0 @@
-{
-  "suite": "work-sealed-v2",
-  "path": "/private/tmp/zephium-sealed-eval-v2/tasks.json",
-  "sha256": "3de728d643960f6e5720f502b7378c3d858932642148bf950d1be780c2b5893c",
-  "task_count": 30,
-  "authored_on": "2026-10-11",
-  "rule": "Do not read or run tasks before the final round. Any early access invalidates this holdout."
-}

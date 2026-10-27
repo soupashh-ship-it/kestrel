@@ -69,7 +69,7 @@ pub struct UserscriptCompatibility {
 
 /// Assesses only the bounded initial runtime contract:
 ///
-/// - an omitted `@grant` selects Zephium's isolated, no-API environment;
+/// - an omitted `@grant` selects Kestrel's isolated, no-API environment;
 /// - explicit `@grant none` requires a main-world runtime and is refused;
 /// - every named grant and unsupported directive is refused;
 /// - omitted `@run-at` defaults to `document-end`, while document-start and

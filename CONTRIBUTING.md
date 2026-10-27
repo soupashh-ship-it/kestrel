@@ -1,19 +1,19 @@
-# Contributing to Zephium
+# Contributing to Kestrel
 
-Zephium is a solo-maintained project with a strong product direction. Contributions are welcome, but **alignment matters more than volume**.
+Kestrel is a solo-maintained project with a strong product direction. Contributions are welcome, but **alignment matters more than volume**.
 
 This document is about *whether* and *how* to contribute in a way that's likely to get merged, so neither of us wastes time. It's intentionally about principles, not internals - for how the code is actually laid out, read [docs/architecture.md](docs/architecture.md).
 
 ## How this project is run
 
-- Zephium has one active maintainer ([@crynta](https://github.com/crynta)).
+- Kestrel has one active maintainer ([@crynta](https://github.com/crynta)).
 - Review bandwidth is limited.
 - Not every contribution can be accepted, even if it's technically correct. Alignment with project direction matters as much as code quality.
-- For scope and direction, read [docs/product-system.md](docs/product-system.md) before opening anything non-trivial.
+- For scope and direction, read [docs/README.md](docs/README.md) before opening anything non-trivial.
 
 This is normal for a solo maintained project. A "no" on a PR is not personal.
 
-## What Zephium is
+## What Kestrel is
 
 A lightweight, FOSS, zero-telemetry browser on the OS-native webview, Rust-heavy. Supported platforms are macOS (Apple Silicon) and Windows; Linux is not supported yet.
 
@@ -95,7 +95,7 @@ A large PR that arrives without that conversation may be closed if it doesn't fi
 
 ## Respect the architecture
 
-Zephium's boundaries are enforced by CI, not by review vigilance - a PR that violates them won't pass. The ones to know:
+Kestrel's boundaries are enforced by CI, not by review vigilance - a PR that violates them won't pass. The ones to know:
 
 - The core stays pure: no I/O, no platform coupling, no `unsafe`. Side effects live at the edges, behind narrow interfaces.
 - Network access is centralized and tightly limited. This is how the **zero-telemetry guarantee is enforced structurally**, not by policy - nothing outside that one path may reach the network.
@@ -107,7 +107,7 @@ If your change needs to bend one of these, that's a design discussion before it'
 
 ## Quality bar
 
-Zephium positions itself as **lightweight, fast, secure, production-grade**. Every PR is reviewed against:
+Kestrel positions itself as **lightweight, fast, secure, production-grade**. Every PR is reviewed against:
 
 - Type-checks, lints, and formatters are clean.
 - All tests pass.
@@ -134,7 +134,7 @@ The bar is real coverage of the contract - the edge, the deny path, the malforme
 
 Pure UI, themes, and anything the type-checker already guarantees don't need tests.
 
-## What Zephium is not
+## What Kestrel is not
 
 - Not aiming for pixel-perfect rendering parity with Chrome/Firefox. We use the system webview **by design**; rendering fidelity is a known, accepted tradeoff.
 - **No telemetry, no analytics, no account requirement, no data collection - ever.** Any change that phones home will be closed.

@@ -85,7 +85,7 @@ pub fn trusted() -> bool {
     unsafe { AXIsProcessTrusted() != 0 }
 }
 
-/// Shows the system's own prompt, which also lists Zephium in the
+/// Shows the system's own prompt, which also lists Kestrel in the
 /// Accessibility pane so the person only has to switch it on.
 pub fn request() {
     let key = NSString::from_str("AXTrustedCheckOptionPrompt");

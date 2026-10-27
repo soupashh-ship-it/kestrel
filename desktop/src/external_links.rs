@@ -1,4 +1,4 @@
-//! Links other applications hand to Zephium: a clicked link once Zephium is
+//! Links other applications hand to Kestrel: a clicked link once Kestrel is
 //! the default browser, or addresses on the command line of a launch. Core
 //! admits every address before the shell sees it.
 

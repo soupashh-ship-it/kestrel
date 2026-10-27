@@ -21,7 +21,6 @@ impl Shell {
                     .into_iter()
                     .chain(window.splits.iter().flat_map(|tree| tree.tabs()))
             })
-            .chain(self.work_pane.as_ref().map(|pane| pane.tab))
             .collect();
         let spaces: Vec<SpaceId> = self
             .spaces

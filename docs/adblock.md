@@ -243,7 +243,7 @@ No test result claims Windows runtime, installer, battery or broad-web coverage.
 Use `cargo xtask check-blocker-seed` for exact bundled artifacts; blocker
 property/fuzz/fork-contract tests for compiler boundaries; and
 `synthetic_blocker_lab` for bounded matcher measurements. The native child-frame probe was removed with that delivery path. The `adblock-qa` desktop feature builds a separate,
-debug-only `app.zephium.protection-qa` application and data directory. This
+debug-only `app.kestrel.protection-qa` application and data directory. This
 feature rejects opt-level 0; use `CARGO_PROFILE_DEV_OPT_LEVEL=2` for QA builds.
 
 Before each release: run the Windows protection QA (`scripts/qualification/windows-protection.ps1`),

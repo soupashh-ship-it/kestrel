@@ -20,9 +20,6 @@ pub enum Group {
     Keys,
     /// Not placed in any menu; bound to a system-wide shortcut.
     Global,
-    /// Work pane bindings: menu-hosted so page keystrokes reach them, enabled
-    /// only while the pane is shown.
-    Work,
 }
 
 /// Default keys per platform. Conventions differ (Show All History is
@@ -71,9 +68,9 @@ impl CommandSpec {
     }
 
     /// Whether Keyboard settings may rebind it. The launcher owns its own
-    /// recorder, and Work bindings are fixed to the pane.
+    /// recorder.
     pub fn customizable(&self) -> bool {
-        self.id != "launcher.toggle" && self.group != Group::Work
+        self.id != "launcher.toggle"
     }
 }
 
@@ -406,12 +403,6 @@ pub const REGISTRY: &[CommandSpec] = &[
         Group::Window,
     ),
     command(
-        "tool.ai",
-        "Ask Zephium",
-        Keys::same("CmdOrCtrl+E"),
-        Group::Window,
-    ),
-    command(
         "tool.tasks",
         "Tasks",
         split("CmdOrCtrl+Shift+K", "Ctrl+Shift+K"),
@@ -571,25 +562,6 @@ pub const REGISTRY: &[CommandSpec] = &[
         Group::Keys,
     ),
     command(
-        "work.pane.close",
-        "Close Pane",
-        Keys::same("Escape"),
-        Group::Work,
-    ),
-    command(
-        "work.pane.openInBrowse",
-        "Open Pane in Browse",
-        Keys::same("CmdOrCtrl+Shift+Return"),
-        Group::Work,
-    ),
-    // Starts and stops dictation in the Work bar; elsewhere it does nothing.
-    command(
-        "work.dictate",
-        "Dictate",
-        Keys::same("CmdOrCtrl+Shift+D"),
-        Group::Keys,
-    ),
-    command(
         "launcher.toggle",
         "Toggle Launcher",
         Keys::same("CmdOrCtrl+Shift+Space"),
@@ -640,17 +612,14 @@ pub fn runs_as(id: &str) -> &str {
 /// Applies keymap overrides onto the defaults. An override with an empty
 /// string removes the shortcut; unknown ids, fixed commands and overrides
 /// that no longer validate fall back to the default.
-/// The feature switch a command belongs to (`ai`, `work`, `notes`, `tasks`,
-/// `time`), so a command whose feature is off is neither offered nor run.
-/// Mirrored by `commandOffered` in the frame's preferences domain.
+/// The feature switch a command belongs to (`notes`, `tasks`, `time`), so a
+/// command whose feature is off is neither offered nor run. Mirrored by
+/// `commandOffered` in the frame's preferences domain.
 pub fn feature_of(id: &str) -> Option<&'static str> {
     match id {
-        "work.dictate" | "tool.ai" | "mode.choose" => Some("ai"),
-        "browser.work" | "mode.work" => Some("work"),
         "tool.notes" | "browser.notes" | "note.new" => Some("notes"),
         "tool.tasks" | "browser.tasks" => Some("tasks"),
         "tool.time" | "browser.time" | "settings.focus" => Some("time"),
-        id if id.starts_with("work.") => Some("work"),
         id if id.starts_with("focus.") => Some("time"),
         _ => None,
     }
@@ -762,16 +731,12 @@ mod tests {
                 };
                 let parsed = Accelerator::parse(text, platform)
                     .unwrap_or_else(|| panic!("{} default {text} parses", c.id));
-                // Work pane keys are bare on purpose and enabled only while
-                // the pane is shown; every other default meets the user rule.
-                if c.group != Group::Work {
-                    assert_eq!(
-                        parsed.bindable(platform),
-                        Ok(()),
-                        "{} default {text} on {platform:?}",
-                        c.id
-                    );
-                }
+                assert_eq!(
+                    parsed.bindable(platform),
+                    Ok(()),
+                    "{} default {text} on {platform:?}",
+                    c.id
+                );
                 if let Some(other) = seen.insert(parsed, c.id) {
                     panic!("{} and {} share {text} on {platform:?}", other, c.id);
                 }
@@ -813,15 +778,10 @@ mod tests {
         let mut overrides = HashMap::new();
         overrides.insert("tab.new".into(), "Cmd+Q".into());
         overrides.insert("nav.reload".into(), "Hyper+R".into());
-        overrides.insert("work.pane.close".into(), "Cmd+K".into());
         let resolved = resolve_on(&overrides, Platform::Mac);
         let find = |id: &str| resolved.iter().find(|c| c.id == id).unwrap();
         assert_eq!(find("tab.new").accelerator.as_deref(), Some("Cmd+T"));
         assert_eq!(find("nav.reload").accelerator.as_deref(), Some("Cmd+R"));
-        assert_eq!(
-            find("work.pane.close").accelerator.as_deref(),
-            Some("Escape")
-        );
     }
 
     #[test]
@@ -838,10 +798,6 @@ mod tests {
         assert_eq!(
             validate_binding_on(&resolved, "tab.new", Some("Ctrl+V"), Platform::Other),
             Err(KeymapError::Accelerator(AcceleratorError::Reserved))
-        );
-        assert_eq!(
-            validate_binding_on(&resolved, "work.pane.close", None, Platform::Other),
-            Err(KeymapError::Fixed)
         );
         assert_eq!(
             validate_binding_on(&resolved, "nope", None, Platform::Other),
@@ -863,14 +819,6 @@ mod tests {
         let page = get("browser.history").expect("history page command");
         assert_eq!(page.keys.on(Platform::Mac), Some("CmdOrCtrl+Shift+Y"));
         assert_eq!(page.keys.on(Platform::Other), Some("Ctrl+Shift+H"));
-    }
-
-    #[test]
-    fn ask_panel_takes_the_bare_e_and_stays_rebindable() {
-        let ask = get("tool.ai").expect("ask command");
-        assert_eq!(ask.keys.on(Platform::Mac), Some("CmdOrCtrl+E"));
-        assert_eq!(ask.keys.on(Platform::Other), Some("CmdOrCtrl+E"));
-        assert!(ask.customizable());
     }
 
     #[test]
@@ -1018,10 +966,6 @@ mod tests {
 
     #[test]
     fn every_feature_command_names_its_switch() {
-        assert_eq!(feature_of("work.dictate"), Some("ai"));
-        assert_eq!(feature_of("tool.ai"), Some("ai"));
-        assert_eq!(feature_of("work.pane.close"), Some("work"));
-        assert_eq!(feature_of("browser.work"), Some("work"));
         for id in ["tool.notes", "browser.notes", "note.new"] {
             assert_eq!(feature_of(id), Some("notes"));
         }

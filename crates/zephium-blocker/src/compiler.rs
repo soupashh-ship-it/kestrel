@@ -693,7 +693,7 @@ fn webkit_equivalent_without_resource_semantics(
     mut filter: adblock::filters::network::NetworkFilter<'_>,
 ) -> Result<CbRuleEquivalent, CbRuleCreationFailure> {
     // The upstream converter targets an older Safari resource vocabulary.
-    // Zephium serializes the current WebKit resource tokens itself, so use one
+    // Kestrel serializes the current WebKit resource tokens itself, so use one
     // harmless legacy type only to obtain the audited URL/domain/load/action
     // conversion and replace its resource set before serialization.
     filter.mask.remove(NetworkFilterMask::FROM_ALL_TYPES);
@@ -1447,7 +1447,7 @@ pub enum CompileError {
     /// Upstream violated a debug-mode invariant required for conversion.
     #[error("adblock-rust violated a content-conversion invariant")]
     UpstreamInvariant,
-    /// A forbidden action passed Zephium's admission classifier.
+    /// A forbidden action passed Kestrel's admission classifier.
     #[error("a forbidden rule action passed compiler admission")]
     AdmissionInvariant,
 }

@@ -14,45 +14,17 @@ native-page-permission-probes = []
 # Compiles the intentionally non-product Windows CDP feasibility harness. The
 # default product must not contain this path until Phase 0a's live gates pass.
 windows-cdp-spike = []
-# Builds the non-shipping macOS native-input/isTrusted risk probe. Its fixture
-# dependency independently refuses optimized builds, and the engine repeats
-# that refusal at its own boundary below.
-native-agentic-input-probe = [
-    "dep:serde",
-    "dep:tempfile",
-    "dep:windows-probe-sys",
-    "dep:zephium-agentic",
-    "zephium-agentic/probe-harness",
-]
-# Builds the non-shipping platform production semantic-runtime qualifiers.
-# They reuse the production agent-context adapters but add only fixed loopback
-# fixtures and content-free pass/fail runners. The raw Windows bindings remain
-# target-specific and support only the Windows resource evidence path.
-native-agentic-semantic-probe = [
-    "agentic-browser",
-    "dep:tempfile",
-    "dep:windows-probe-sys",
-    "zephium-agentic/probe-harness",
-]
-# Actual desktop-lifecycle evidence only; never a product rendering capability.
-native-agentic-foreground-probe = ["native-agentic-semantic-probe"]
-# Two execution leases over one page in that same actual-app qualification shell.
-native-agentic-work-resource-probe = ["native-agentic-foreground-probe"]
-native-agentic-public-resource-probe = ["native-agentic-work-resource-probe"]
-# Content-free first lifetime-failure cause; no witness or rendering authority.
-native-agentic-work-lifetime-diagnostic = ["agentic-browser"]
-# Compiles the production, zero-idle agent-browser native port. The feature is
-# intentionally separate from the release-excluded probe vocabulary.
-agentic-browser = ["dep:zephium-agentic", "dep:image"]
-agentic-browser-qa = ["agentic-browser", "objc2-web-kit/WKHTTPCookieStore"]
-# Builds the headless loopback qualification of the Ask panel's Browse
-# reader and its measurements. Never part of a shipped binary.
-page-reader-probe = ["agentic-browser"]
-
-[[bin]]
-name = "macos-agentic-liveness-probe"
-path = "src/bin/macos_agentic_liveness_probe.rs"
-required-features = ["agentic-browser-qa"]
+# Retired agent-browser gates. The code they guard is gone; the empty features
+# stay declared so historical cfg sites resolve to false instead of warning.
+agentic-browser = []
+agentic-browser-qa = []
+native-agentic-input-probe = []
+native-agentic-semantic-probe = []
+native-agentic-foreground-probe = []
+native-agentic-work-resource-probe = []
+native-agentic-public-resource-probe = []
+native-agentic-work-lifetime-diagnostic = []
+page-reader-probe = []
 
 [[bin]]
 name = "macos-principal-isolation-probe"
@@ -64,38 +36,7 @@ name = "macos-page-permission-probe"
 path = "src/bin/macos_page_permission_probe.rs"
 required-features = ["native-page-permission-probes"]
 
-[[bin]]
-name = "macos-page-reader-probe"
-path = "src/bin/macos_page_reader_probe.rs"
-required-features = ["page-reader-probe"]
-
-[[bin]]
-name = "macos-agentic-input-probe"
-path = "src/bin/macos_agentic_input_probe.rs"
-required-features = ["native-agentic-input-probe"]
-
-[[bin]]
-name = "windows-agentic-input-probe"
-path = "src/bin/windows_agentic_input_probe.rs"
-required-features = ["native-agentic-input-probe"]
-
-[[bin]]
-name = "macos-agentic-semantic-probe"
-path = "src/bin/macos_agentic_semantic_probe.rs"
-required-features = ["native-agentic-semantic-probe"]
-
-[[bin]]
-name = "windows-agentic-semantic-probe"
-path = "src/bin/windows_agentic_semantic_probe.rs"
-required-features = ["native-agentic-semantic-probe"]
-
-[[bin]]
-name = "windows-cookie-persistence-control"
-path = "src/bin/windows_cookie_persistence_control.rs"
-required-features = ["native-agentic-semantic-probe"]
-
 [dependencies]
-zephium-agentic = { workspace = true, optional = true }
 zephium-core.workspace = true
 wry = { workspace = true, features = ["devtools"] }
 dirs = "6"

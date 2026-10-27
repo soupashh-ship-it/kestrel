@@ -36,7 +36,7 @@ pub(crate) fn sample(view: &WKWebView) -> MediaCaptureState {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumCaptureObserver"]
+    #[name = "KestrelCaptureObserver"]
     #[ivars = CaptureObserverIvars]
     pub struct CaptureObserver;
     impl CaptureObserver {

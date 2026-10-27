@@ -23,9 +23,9 @@ const REQUEST_INTERFACE: &str = "org.freedesktop.portal.Request";
 const SESSION_INTERFACE: &str = "org.freedesktop.portal.Session";
 const REQUEST_PATH_PREFIX: &str = "/org/freedesktop/portal/desktop/request";
 const SESSION_PATH_PREFIX: &str = "/org/freedesktop/portal/desktop/session";
-const PORTAL_DESKTOP_ID: &str = "app.zephium";
+const PORTAL_DESKTOP_ID: &str = "app.kestrel";
 const SHORTCUT_ID: &str = LAUNCHER_COMMAND_ID;
-const SHORTCUT_DESCRIPTION: &str = "Toggle Zephium launcher";
+const SHORTCUT_DESCRIPTION: &str = "Toggle Kestrel launcher";
 const CANCELLATION_POLL: Duration = Duration::from_millis(100);
 const RECONNECT_BACKOFF: [Duration; 2] = [Duration::from_millis(250), Duration::from_secs(1)];
 const MAX_PORTAL_ATTEMPTS: usize = RECONNECT_BACKOFF.len() + 1;
@@ -315,7 +315,7 @@ async fn register_host_connection(connection: &zbus::Connection) -> Result<(), P
     )
     .await
     .ok_or(PortalError::TimedOut("register the host portal connection"))?;
-    // Zephium is a host application and therefore owns one exact Registry
+    // Kestrel is a host application and therefore owns one exact Registry
     // identity. Falling back to automatic cgroup inference after rejection can
     // attribute a raw development launch to its terminal (or another scope),
     // persisting consent under the wrong application. Keep the focused GTK

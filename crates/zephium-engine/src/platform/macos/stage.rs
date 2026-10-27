@@ -66,7 +66,7 @@ struct PaintCover {
 define_class!(
     #[unsafe(super(NSView))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumNavigationPaintCover"]
+    #[name = "KestrelNavigationPaintCover"]
     struct PaintCoverView;
 
     impl PaintCoverView {
@@ -144,7 +144,7 @@ impl Drop for DragObservers {
 define_class!(
     #[unsafe(super(NSView))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumDividerFeedback"]
+    #[name = "KestrelDividerFeedback"]
     struct DividerFeedbackView;
     impl DividerFeedbackView {
         #[unsafe(method(hitTest:))]
@@ -213,7 +213,7 @@ pub struct StageIvars {
 define_class!(
     #[unsafe(super(NSView))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumContentStage"]
+    #[name = "KestrelContentStage"]
     #[ivars = StageIvars]
     pub struct ContentStage;
 

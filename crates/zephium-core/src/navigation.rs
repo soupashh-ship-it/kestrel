@@ -140,7 +140,7 @@ pub fn web_address(input: &str) -> Option<Url> {
 /// Addresses one hand-off from another application may carry.
 pub const MAX_EXTERNAL_TARGETS: usize = 16;
 
-/// An address handed to Zephium by another application: a clicked link, or
+/// An address handed to Kestrel by another application: a clicked link, or
 /// the command line of a launch. Only ordinary web pages are admitted, so a
 /// hand-off can never open an internal page, run script, or read a file.
 pub fn external_target(argument: &str) -> Option<Url> {
@@ -538,7 +538,7 @@ mod tests {
             "about:blank",
             "zephium://settings",
             "https://user:pass@example.com/",
-            "/Applications/Zephium.app",
+            "/Applications/Kestrel.app",
             "--flag",
             "",
         ] {

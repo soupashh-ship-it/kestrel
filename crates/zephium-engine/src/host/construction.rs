@@ -1092,7 +1092,7 @@ impl EngineHost {
             .with_back_forward_navigation_gestures(true)
             // WebView2 otherwise enables its address/contact suggestions by
             // default. Raw content should not silently inherit ambient form
-            // data before Zephium has an explicit, profile-scoped autofill
+            // data before Kestrel has an explicit, profile-scoped autofill
             // policy. Wry currently ignores this setting on WebKit platforms.
             .with_general_autofill_enabled(false)
             .with_navigation_handler(move |target| {
@@ -1365,7 +1365,7 @@ impl EngineHost {
                 .with_browser_accelerator_keys(false)
                 // Ctrl and the wheel zoom a person's page; the zoom listener
                 // brings what they do into the site's remembered level. Keys
-                // stay Zephium's own: browser accelerators are off above.
+                // stay Kestrel's own: browser accelerators are off above.
                 .with_hotkeys_zoom(true)
                 // A person's answer to WebView2's own permission prompt is
                 // kept in their profile, as in Edge; a private tab's lasts
@@ -1842,7 +1842,7 @@ impl EngineHost {
                 // The environment-completion hook is before controller
                 // construction. If it did not run, Wry never returned an
                 // environment and its construction guard owns any HWND cleanup.
-                // No browser-process identity existed for Zephium to retain.
+                // No browser-process identity existed for Kestrel to retain.
                 if built.is_err() {
                     self.construction_unproven.remove(&profile);
                 } else {
@@ -2077,7 +2077,7 @@ impl EngineHost {
             // lets through only a Save As the browser asked for.
             // Tabs a person reads also get WebView2's own page dialogs, which
             // name the origin that asks; agent views keep them denied.
-            // A failed load shows Zephium's explanation, never Edge's page:
+            // A failed load shows Kestrel's explanation, never Edge's page:
             // with the built-in one off, WebView2 commits a blank document.
             if unsafe { view.webview().Settings() }
                 .and_then(|settings| unsafe {
@@ -2093,7 +2093,7 @@ impl EngineHost {
                 return None;
             }
             // WebView2's own password and form autofill, saved in this
-            // profile's data folder, until Zephium has its own manager.
+            // profile's data folder, until Kestrel has its own manager.
             // Private tabs and agent views keep it off.
             if !matches!(partition, Partition::Ephemeral(_))
                 && unsafe { view.webview().Settings() }

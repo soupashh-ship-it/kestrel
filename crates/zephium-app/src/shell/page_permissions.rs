@@ -351,10 +351,8 @@ impl Shell {
             && self.window_focused
             && self.windows.focused().is_some_and(|window| {
                 window.profile == profile
-                    && match self.active_browser_page() {
-                        None => window.active == Some(item),
-                        Some(_) => self.work_pane_shows(item),
-                    }
+                    && self.active_browser_page().is_none()
+                    && window.active == Some(item)
             })
             && self.items.tab(item).is_some_and(TabState::has_view)
     }

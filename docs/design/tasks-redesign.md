@@ -6,37 +6,24 @@ Date: 2026-09-22.
 
 ## Product direction
 
-Tasks is a shared product surface for people and agents. The primary experience
-serves the person capturing, organizing, and completing work. Agents can later
-participate in the same tasks through the authoritative resource boundary.
-Agent participation is part of the design now, while Work execution and
-agentic browsing continue in their separate implementation stream.
-
-This plan follows the user's current scope: improve Tasks as a complete product,
-including its foundation and both browser and full-page experiences. Build
-natural resource-level capabilities here. Integrate runtime capabilities when
-their actual contracts arrive from the other development stream.
+Tasks is the product surface for capturing, organizing and completing work. The
+primary experience serves the person, in both the sidebar tool and the full page.
 
 References:
 
-- [Product system](../product-system.md): Browse stands alone; agents are actors.
 - [Frontend architecture](../frontend.md): ownership and native surface rules.
-- [Work persistence](../agent-work-persistence.md): runtime ownership and durable state.
 
 ## Scope and ownership
 
-| Build in the Tasks stream | Integrate with the runtime stream later |
-| --- | --- |
-| Capture, editing, scheduling, completion, restore, undo | Starting, pausing, cancelling, or resuming agent execution |
-| Task status and existing responsibility/origin presentation | Agent identities, availability, capabilities and authorization |
-| Browser context and resource relationships | Work execution, approvals, evidence and result contracts |
-| Reliable projections when another authorized actor edits a task | Agent tool admission and authenticated mutation attribution |
-| Navigation, search, organization, accessibility and performance | Binding a task to a real Work or execution |
+| Build in the Tasks stream |
+| --- |
+| Capture, editing, scheduling, completion, restore, undo |
+| Task status, responsibility and origin presentation |
+| Browser context and resource relationships |
+| Navigation, search, organization, accessibility and performance |
 
-A task remains useful with AI disabled. A task can be displayed in multiple
-surfaces without being copied. Internal agent plan steps do not automatically
-become user tasks. Task completion and execution completion are separate facts;
-their eventual relationship must be specified by the runtime integration.
+A task can be displayed in multiple surfaces without being copied. Task
+completion is a single, user-owned fact.
 
 ## Core concepts
 
@@ -191,7 +178,7 @@ Do not duplicate domain records or execution authority in Svelte.
 
 ## Visual direction
 
-Use Zephium's shared type and semantic tokens. Establish hierarchy through title
+Use Kestrel's shared type and semantic tokens. Establish hierarchy through title
 legibility, alignment, spacing, and restrained surface differences. Keep native
 material in chrome; content remains stable and readable over varied backgrounds.
 Avoid nested filled cards, a capsule around every property, decorative glass,

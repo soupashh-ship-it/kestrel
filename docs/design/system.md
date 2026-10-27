@@ -1,9 +1,8 @@
-# Zephium interface system
+# Kestrel interface system
 
-The implementation follows `product-system.md`: Browse stands alone; Work
-makes useful state visible. Geist, neutral surfaces, optical alignment, and
-restrained motion give both environments one identity. The system lives in
-`frame/src/shared/ui`, with semantic tokens and shared styles in `frame/src/styles`.
+Geist, neutral surfaces, optical alignment and restrained motion give the
+browser one identity. The system lives in `frame/src/shared/ui`, with semantic
+tokens and shared styles in `frame/src/styles`.
 
 ## Inspect the interface
 

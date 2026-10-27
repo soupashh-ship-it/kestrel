@@ -26,7 +26,7 @@
   // WebKit prefixes the browser's errors with its own; extensions compare
   // against Chrome's text.
   const native = (api, fields) =>
-    runtime.sendNativeMessage("app.zephium.webext", Object.assign({ api }, fields)).catch((error) => {
+    runtime.sendNativeMessage("app.kestrel.webext", Object.assign({ api }, fields)).catch((error) => {
       throw new Error(String((error && error.message) || error).replace(/^Invalid call to runtime\.sendNativeMessage\(\)\. /, ""));
     });
 

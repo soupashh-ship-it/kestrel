@@ -49,7 +49,7 @@ pub(crate) struct TabIvars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumWebExtTab"]
+    #[name = "KestrelWebExtTab"]
     #[ivars = TabIvars]
     pub(crate) struct Tab;
 
@@ -333,7 +333,7 @@ pub(crate) struct WindowIvars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumWebExtWindow"]
+    #[name = "KestrelWebExtWindow"]
     #[ivars = WindowIvars]
     pub(crate) struct Window;
 

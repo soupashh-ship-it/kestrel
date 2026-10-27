@@ -17,7 +17,7 @@ describe("camera", () => {
 
   it("keeps the window of every scene clear of the controls below it", () => {
     const controls = STAGE.height - 34 - 44;
-    for (const step of ["import", "essentials", "work", "ai", "ready"] as const) {
+    for (const step of ["import", "essentials", "ready"] as const) {
       const shot: Shot = SHOTS[step];
       const drawn = shot.fade ?? WINDOW.height;
       expect(shot.at[1] + shot.scale * (drawn - shot.focus[1]), step).toBeLessThanOrEqual(controls);

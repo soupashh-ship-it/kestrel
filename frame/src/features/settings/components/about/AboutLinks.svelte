@@ -19,7 +19,7 @@
     youtube: YoutubeIcon,
   };
 
-  // The link opens in a tab of Zephium, never as a navigation of Settings.
+  // The link opens in a tab of Kestrel, never as a navigation of Settings.
   function open(event: MouseEvent, url: string) {
     event.preventDefault();
     void commands.browserOpenUrl(url, true).catch(() => {});

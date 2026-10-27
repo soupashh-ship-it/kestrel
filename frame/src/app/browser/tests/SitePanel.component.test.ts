@@ -9,8 +9,6 @@ import { surface } from "$domain/surface";
 import { tabs } from "$domain/tabs";
 import Shell from "../Shell.svelte";
 
-vi.mock("../WorkWorkspace.svelte", async () => await import("./StageStub.svelte"));
-
 const native = vi.hoisted(() => ({
   list: vi.fn<(origin?: string) => Promise<SitePermissionsView | null>>(),
   set: vi.fn(async (..._args: unknown[]) => true),
@@ -304,14 +302,4 @@ test("nothing is read until the panel is opened", async () => {
   await screen.getByRole("button", { name: "Site information" }).click();
   await expect.poll(() => native.list.mock.calls.length).toBe(1);
   expect(native.refresh).toHaveBeenCalled();
-});
-
-test("Work has no address field, so no panel", async () => {
-  const screen = await shell();
-  await expect.element(screen.getByRole("button", { name: "Site information" })).toBeVisible();
-  emitNativeEvent("uiCommand", "browser.work");
-  await expect.poll(() => screen.container.querySelector("[data-work-stage-stub]")).not.toBeNull();
-  await expect
-    .element(screen.getByRole("button", { name: /Site information|Utilities/u }))
-    .not.toBeInTheDocument();
 });

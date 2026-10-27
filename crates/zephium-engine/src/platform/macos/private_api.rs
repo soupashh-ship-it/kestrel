@@ -1,4 +1,4 @@
-//! WebKit's and AppKit's private selectors Zephium relies on. Each use is
+//! WebKit's and AppKit's private selectors Kestrel relies on. Each use is
 //! guarded by `respondsToSelector:` and degrades to a feature that is
 //! unavailable, so a release of macOS that drops one is silent. This names
 //! which are gone.

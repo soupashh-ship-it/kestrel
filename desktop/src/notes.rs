@@ -63,9 +63,7 @@ impl Host for DesktopHost {
                         updated_at: record.updated_at.parse().unwrap_or(0),
                         document,
                     }),
-                    ResourceContent::Task { .. }
-                    | ResourceContent::Object { .. }
-                    | ResourceContent::Media { .. } => None,
+                    ResourceContent::Task { .. } | ResourceContent::Media { .. } => None,
                 })
                 .collect(),
         )

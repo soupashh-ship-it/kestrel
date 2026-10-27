@@ -10,7 +10,7 @@ import * as notices from "$session/notice.svelte";
 import { searchSettings } from "../lib/settings-model";
 import AboutPage from "../components/sections/AboutPage.svelte";
 
-const REPORT = vi.hoisted(() => "Zephium diagnostics\nApp: Zephium 1.0.1\nLog: 2 lines");
+const REPORT = vi.hoisted(() => "Kestrel diagnostics\nApp: Kestrel 1.0.1\nLog: 2 lines");
 
 const native = vi.hoisted(() => ({
   status: { state: "upToDate" } as UpdateStatus,
@@ -39,7 +39,6 @@ vi.mock("$shared/ipc/bindings", async () => {
 vi.mock("$domain/preferences", () => ({
   preferences: {
     value: (key: string) => ({ "updates.auto-check": "true" })[key],
-    aiEnabled: () => true,
     enabled: () => true,
     saving: () => false,
     saveFailed: () => false,
@@ -59,7 +58,7 @@ afterEach(() => {
 test("updates are checked, downloaded and relaunched from About", async () => {
   native.status = { state: "upToDate" };
   const screen = await render(AboutPage);
-  await expect.element(screen.getByText("Zephium is up to date")).toBeVisible();
+  await expect.element(screen.getByText("Kestrel is up to date")).toBeVisible();
   await expect.element(screen.getByText("Version 1.0.1")).toBeVisible();
 
   await screen.getByRole("button", { name: "Check now" }).click();
@@ -109,7 +108,7 @@ test("a system behind on security updates is explained where the rail sends peop
     session_set_aside: false,
     user_content_degraded_scope_count: 0,
     security_advisories: [
-      { kind: "review_overdue", update_target: "zephium" },
+      { kind: "review_overdue", update_target: "kestrel" },
       { kind: "update_recommended", update_target: "operating_system" },
     ],
   });
@@ -149,10 +148,10 @@ test("a postponed update remains ready with its failure explained", async () => 
   await expect.element(screen.getByRole("button", { name: "Relaunch to update" })).toBeEnabled();
 });
 
-test("the links open Zephium's own pages in a tab", async () => {
+test("the links open Kestrel's own pages in a tab", async () => {
   native.status = { state: "upToDate" };
   const screen = await render(AboutPage);
-  const links = screen.getByRole("navigation", { name: "Zephium on the web" });
+  const links = screen.getByRole("navigation", { name: "Kestrel on the web" });
   for (const [name, url] of [
     ["Website", "https://zephium.app"],
     [IS_MAC ? "Docs" : "Help", "https://zephium.app/docs"],

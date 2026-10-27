@@ -129,23 +129,26 @@ fn switching_returns_to_the_tab_each_space_left_and_drops_an_untouched_new_tab()
 }
 
 #[test]
-fn switching_spaces_from_work_keeps_the_window_in_work() {
+fn switching_spaces_steps_back_to_browsing_before_moving() {
     let (mut shell, _engine, screen, _store) = browsed();
     let home = current(&shell);
     navigate_and_commit(&mut shell, active_id(&screen), "home.example");
     let studio = create(&mut shell, "Studio", SpaceLook::default());
-    shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
+    shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Settings)));
+    assert_eq!(
+        shell.active_browser_page(),
+        Some(crate::BrowserPage::Settings)
+    );
 
     let back = space_op(&mut shell, SpaceCommand::Switch(home));
     assert_ne!(back.outcome, OperationOutcome::Rejected);
     assert_eq!(current(&shell), home);
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
+    assert_eq!(shell.active_browser_page(), None);
 
     let step = space_op(&mut shell, SpaceCommand::Step(1));
     assert_ne!(step.outcome, OperationOutcome::Rejected);
     assert_eq!(current(&shell), studio);
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
+    assert_eq!(shell.active_browser_page(), None);
 }
 
 #[test]

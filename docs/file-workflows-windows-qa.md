@@ -17,7 +17,7 @@ using the normal repository setup, then run in PowerShell:
 
 The script runs native library/desktop tests, Chromium component tests, frontend
 checks/build/CSS gate, then builds a debug executable without an installer. It
-uses `app.zephium.files-integration-qa` and the explicit Windows QA configuration.
+uses `app.kestrel.files-integration-qa` and the explicit Windows QA configuration.
 The default output is `target/debug/zephium-desktop.exe`; respect
 `CARGO_TARGET_DIR` if configured. The script does not launch it. The QA feature
 cannot be used in release builds or combined with another QA identity. 
@@ -80,7 +80,7 @@ Never weaken security policy or disable Defender to make a check pass.
   frame activation/navigation ID, so this does not claim initiating-frame consent;
   WebView2's multiple-automatic-download permission remains denied.
 - Upload selection is WebView2-owned. The pinned stable API has no equivalent
-  to Zephium's macOS initiating-frame upload broker; do not claim parity for that
+  to Kestrel's macOS initiating-frame upload broker; do not claim parity for that
   interception boundary.
 - Automatic resume/replay is not implemented. Interrupted POST/blob downloads
   must be retried from their website; replaying a saved URL would lose semantics.

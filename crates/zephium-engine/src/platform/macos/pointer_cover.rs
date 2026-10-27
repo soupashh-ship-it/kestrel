@@ -36,7 +36,7 @@ struct CoverIvars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumPointerCover"]
+    #[name = "KestrelPointerCover"]
     #[ivars = CoverIvars]
     struct Cover;
 

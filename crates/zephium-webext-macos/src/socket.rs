@@ -27,7 +27,7 @@ use serde_json::{json, Value};
 use crate::runtime::Shared;
 use crate::{json, LogLevel};
 
-pub(crate) const APPLICATION: &str = "app.zephium.socket";
+pub(crate) const APPLICATION: &str = "app.kestrel.socket";
 
 thread_local! {
     static SOCKETS: RefCell<HashMap<usize, Rc<Socket>>> = RefCell::new(HashMap::new());
@@ -278,7 +278,7 @@ pub(crate) struct DelegateIvars {
 
 define_class!(
     #[unsafe(super(NSObject))]
-    #[name = "ZephiumWebExtSocketDelegate"]
+    #[name = "KestrelWebExtSocketDelegate"]
     #[ivars = DelegateIvars]
     struct SessionDelegate;
 

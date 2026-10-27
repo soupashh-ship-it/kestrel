@@ -219,7 +219,7 @@ fn autofill_password_asks_the_engine_only_for_the_loaded_page_in_front() {
     assert_eq!(asked(&engine), [format!("autofill {page}")]);
 
     // Chrome's own pages are not web pages, and Work is never offered it.
-    for covering in [crate::BrowserPage::Settings, crate::BrowserPage::Work] {
+    for covering in [crate::BrowserPage::Settings, crate::BrowserPage::Settings] {
         shell.handle_operation(Command::ShowBrowserPage(Some(covering)));
         assert_eq!(run(&mut shell).outcome, OperationOutcome::NoOp);
     }

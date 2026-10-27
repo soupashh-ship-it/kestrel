@@ -409,14 +409,13 @@ impl Shell {
         if self.windows.focused().is_none() {
             return false;
         }
-        self.prune_work_pane();
         self.residency
             .capacity_blocked
             .retain(|id, _| self.items.tab(*id).is_some_and(|tab| !tab.has_view()));
         self.retry_capacity_requests();
         let shown: std::collections::HashSet<ItemId> = if self.window_visible {
             let mut shown: std::collections::HashSet<ItemId> = self
-                .visible_tree()
+                .pane_tree()
                 .map(|t| t.tabs().into_iter().collect())
                 .unwrap_or_default();
             // A failure in front of the page is what the person is looking
@@ -655,20 +654,16 @@ impl Shell {
         let Some(window) = self.windows.focused() else {
             return protected;
         };
-        if self.active_browser_page().is_some() {
-            if let Some(id) = self.work_pane_tab() {
-                if self.item_in_scope(id, window.profile, window.space) {
-                    protected.insert(id);
-                }
-            }
-        } else if let Some(active) = window.active {
-            if self.item_in_scope(active, window.profile, window.space) {
-                protected.insert(active);
-                if let Some(tree) = &window.splits {
-                    if tree.contains(active)
-                        && self.pane_in_scope(tree, window.profile, window.space)
-                    {
-                        protected.extend(tree.tabs());
+        if self.active_browser_page().is_none() {
+            if let Some(active) = window.active {
+                if self.item_in_scope(active, window.profile, window.space) {
+                    protected.insert(active);
+                    if let Some(tree) = &window.splits {
+                        if tree.contains(active)
+                            && self.pane_in_scope(tree, window.profile, window.space)
+                        {
+                            protected.extend(tree.tabs());
+                        }
                     }
                 }
             }
@@ -1043,7 +1038,7 @@ impl Shell {
         // id-only close here could be reordered behind recovery and destroy
         // the replacement generation.
         let active = self.windows.focused().and_then(|window| window.active);
-        let visible = active == Some(id) || self.work_pane_shows(id);
+        let visible = active == Some(id);
         self.retire_crashed_view(id, visible);
         self.items.set_loading(id, false);
         let recent = self
@@ -1069,10 +1064,8 @@ impl Shell {
 
     pub(super) fn on_profile_process_exit(&mut self, profile: ProfileId, ids: Vec<ItemId>) {
         const RETRY_WINDOW: std::time::Duration = std::time::Duration::from_secs(30);
-        let visible_order: Vec<ItemId> = self
-            .visible_tree()
-            .map(|tree| tree.tabs())
-            .unwrap_or_default();
+        let visible_order: Vec<ItemId> =
+            self.pane_tree().map(|tree| tree.tabs()).unwrap_or_default();
         let visible: std::collections::HashSet<ItemId> = visible_order.iter().copied().collect();
         let mut suppressed_visible = std::collections::HashSet::new();
         let mut effects = Vec::new();

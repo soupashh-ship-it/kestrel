@@ -5,8 +5,6 @@ use std::fmt;
 
 use ulid::Ulid;
 
-pub use crate::work::{WorkId, WorkPlanId, WorkPlanNodeId, WorkQuestionId};
-
 macro_rules! ulid_id {
     ($name:ident) => {
         #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]

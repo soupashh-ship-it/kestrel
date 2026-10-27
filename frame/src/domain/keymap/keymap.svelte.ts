@@ -46,14 +46,13 @@ export function dispose() {
   entries = [];
 }
 
-/** The command a chrome key press names, if any. The launcher is global and
- *  Work keys belong to the pane, so neither is matched here. */
+/** The command a chrome key press names, if any. The launcher is global,
+ *  so it is not matched here. */
 export function commandFor(event: KeyboardEvent, mac: boolean, pressed: string): string | null {
   if (event.isComposing || event.repeat) return null;
   const hit = entries.find(
     (entry) =>
       entry.group !== "global" &&
-      entry.group !== "work" &&
       entry.accelerator !== null &&
       sameAccelerator(entry.accelerator, pressed, mac),
   );

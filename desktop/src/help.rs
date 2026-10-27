@@ -1,4 +1,4 @@
-//! The Help menu, and where its links lead. Each opens in a tab of Zephium
+//! The Help menu, and where its links lead. Each opens in a tab of Kestrel
 //! itself; About is the About page of Settings.
 
 use tauri::menu::{
@@ -28,7 +28,7 @@ pub(crate) fn url(id: &str) -> Option<&'static str> {
 type Entries = Vec<Box<dyn IsMenuItem<tauri::Wry>>>;
 
 fn entries(handle: &tauri::AppHandle, shortcuts: &MenuItem<tauri::Wry>) -> tauri::Result<Entries> {
-    let docs = MenuItemBuilder::with_id(DOCS, menu_text::label("Zephium Help")).build(handle)?;
+    let docs = MenuItemBuilder::with_id(DOCS, menu_text::label("Kestrel Help")).build(handle)?;
     let releases =
         MenuItemBuilder::with_id(RELEASES, menu_text::label("Release Notes")).build(handle)?;
     let issues =
@@ -49,7 +49,7 @@ fn entries(handle: &tauri::AppHandle, shortcuts: &MenuItem<tauri::Wry>) -> tauri
     #[cfg(not(target_os = "macos"))]
     {
         let about =
-            MenuItemBuilder::with_id(ABOUT, menu_text::label("About Zephium")).build(handle)?;
+            MenuItemBuilder::with_id(ABOUT, menu_text::label("About Kestrel")).build(handle)?;
         entries.push(Box::new(PredefinedMenuItem::separator(handle)?));
         entries.push(Box::new(about));
     }

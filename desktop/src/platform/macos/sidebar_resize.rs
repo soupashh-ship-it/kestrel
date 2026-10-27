@@ -112,7 +112,7 @@ pub struct Ivars {
 define_class!(
     #[unsafe(super(NSView))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumSidebarResizeControl"]
+    #[name = "KestrelSidebarResizeControl"]
     #[ivars = Ivars]
     pub(super) struct Control;
     impl Control {
@@ -196,7 +196,7 @@ define_class!(
 define_class!(
     #[unsafe(super(NSView))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumSidebarResizeGuide"]
+    #[name = "KestrelSidebarResizeGuide"]
     struct Guide;
     impl Guide {
         #[unsafe(method(hitTest:))]

@@ -27,7 +27,7 @@ struct DelegateIvars {
 
 define_class!(
     #[unsafe(super(NSObject))]
-    #[name = "ZephiumFindDelegate"]
+    #[name = "KestrelFindDelegate"]
     #[ivars = DelegateIvars]
     struct FindDelegate;
 

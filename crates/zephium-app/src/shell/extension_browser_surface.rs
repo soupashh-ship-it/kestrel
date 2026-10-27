@@ -294,7 +294,7 @@ impl Shell {
         }
 
         let mut tabs = Vec::new();
-        // Current Zephium sessions expose at most one extension-visible window
+        // Current Kestrel sessions expose at most one extension-visible window
         // per profile. Reuse immutable metadata from the prior ordered surface
         // on the common unchanged-order path, avoiding URL/title copies on
         // unrelated Shell commits.

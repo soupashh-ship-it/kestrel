@@ -86,7 +86,7 @@ impl ContentPolicyCacheMaintenanceCancellation {
 
 const MAX_CACHE_IDENTIFIERS_PER_PAGE: usize = 128;
 const MAX_CACHE_IDENTIFIER_CURSOR: usize = 4_096;
-const MAX_CACHE_IDENTIFIER_BYTES: usize = "app.zephium.rules.v1.".len() + 64;
+const MAX_CACHE_IDENTIFIER_BYTES: usize = "app.kestrel.rules.v1.".len() + 64;
 
 impl ContentPolicyRegistration {
     pub(crate) fn allow_all() -> Self {
@@ -759,7 +759,7 @@ fn rule_identifier(digest: [u8; 32]) -> String {
     use std::fmt::Write as _;
 
     let mut identifier = String::with_capacity(20 + 64);
-    identifier.push_str("app.zephium.rules.v1.");
+    identifier.push_str("app.kestrel.rules.v1.");
     for byte in digest {
         let _ = write!(identifier, "{byte:02x}");
     }
@@ -777,7 +777,7 @@ mod tests {
     #[test]
     fn rule_identifier_is_exact_and_bounded() {
         let identifier = rule_identifier([0xab; 32]);
-        assert_eq!(identifier.len(), "app.zephium.rules.v1.".len() + 64);
+        assert_eq!(identifier.len(), "app.kestrel.rules.v1.".len() + 64);
         assert!(identifier.ends_with(&"ab".repeat(32)));
     }
 
@@ -788,7 +788,7 @@ mod tests {
             unsafe { exact_cache_identifier(exact.as_ptr()) },
             Some(rule_identifier([0xab; 32]))
         );
-        let short = CString::new("app.zephium.rules.v1.short").unwrap();
+        let short = CString::new("app.kestrel.rules.v1.short").unwrap();
         assert_eq!(unsafe { exact_cache_identifier(short.as_ptr()) }, None);
         let long = CString::new(format!("{}0", rule_identifier([0xab; 32]))).unwrap();
         assert_eq!(unsafe { exact_cache_identifier(long.as_ptr()) }, None);

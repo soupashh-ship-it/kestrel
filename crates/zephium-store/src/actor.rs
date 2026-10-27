@@ -5,21 +5,16 @@
 //! pending state first.
 
 mod activity;
-mod agent_audit;
-#[cfg(feature = "work-execution")]
-mod agent_work;
-mod work_document;
 
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender, SyncSender};
-use std::sync::{Arc, Mutex, OnceLock, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 
-use zephium_agentic::{AgentAuditCompletion, AgentAuditDelivery};
 use zephium_core::blocker::{BlockerConfig, BlockerConfigRevision, BlockerSitePreferences};
 use zephium_core::downloads::{DownloadStoreCall, DownloadStoreReply};
 use zephium_core::ids::ProfileId;
@@ -50,9 +45,6 @@ use crate::hub::{
 use crate::migrations;
 
 use activity::{ActivityWrite, ActivityWritePermit, PendingActivityWrites};
-use agent_audit::AgentAuditDeliveryPermit;
-#[cfg(test)]
-use agent_audit::MAX_PENDING_AGENT_AUDIT_DELIVERIES;
 
 const DEBOUNCE: Duration = Duration::from_millis(400);
 const MAX_PENDING_AGE: Duration = Duration::from_secs(2);
@@ -271,12 +263,6 @@ impl Drop for ResourcePermit {
 }
 
 enum Cmd {
-    WorkDocument(
-        ProfileId,
-        Box<zephium_core::work::port::WorkRequest>,
-        work_document::Permit,
-        zephium_core::work::port::WorkCompletion,
-    ),
     ResourceCall(
         ProfileId,
         zephium_core::resources::ResourceCall,
@@ -291,18 +277,6 @@ enum Cmd {
     ),
     LegacyNotes(ProfileId, zephium_core::ports::store::LegacyNotesDone),
     RetireLegacyNotes(ProfileId, Vec<String>, Box<dyn FnOnce(bool) + Send>),
-    #[cfg(feature = "work-execution")]
-    AgentWork(
-        zephium_agentic::AgentWorkJournalRequest,
-        agent_work::WorkPermit,
-        zephium_agentic::AgentWorkJournalCompletion,
-    ),
-    #[cfg(feature = "work-execution")]
-    AgentWorkArtifact(
-        zephium_agentic::AgentWorkArtifactRequest,
-        agent_work::WorkPermit,
-        zephium_agentic::AgentWorkArtifactCompletion,
-    ),
     SaveWake,
     VisitWake,
     SettingWake,
@@ -441,11 +415,6 @@ enum Cmd {
         Sender<ProfileDeletionAuthorizeOutcome>,
     ),
     FinalizeProfileDeletion(ProfileId, Sender<ProfileDeletionFinalizeOutcome>),
-    AppendAgentAudit(
-        AgentAuditDelivery,
-        AgentAuditDeliveryPermit,
-        AgentAuditCompletion,
-    ),
     Flush(Sender<bool>),
     Shutdown(Sender<bool>),
 }
@@ -457,10 +426,7 @@ struct ActorLifecycle {
 }
 
 pub struct SqliteStore {
-    work_document_admission: OnceLock<Arc<AtomicUsize>>,
     resource_admission: Arc<AtomicUsize>,
-    #[cfg(feature = "work-execution")]
-    work_admission: OnceLock<Arc<AtomicUsize>>,
     tx: SyncSender<Cmd>,
     latest_session: Arc<Mutex<Option<SessionState>>>,
     pending_visits: Arc<Mutex<PendingVisits>>,
@@ -468,7 +434,6 @@ pub struct SqliteStore {
     userscript_mutation_admission: Arc<Mutex<UserscriptMutationAdmission>>,
     page_permission_mutation_admission: Arc<Mutex<PagePermissionMutationAdmission>>,
     activity_admission: Arc<Mutex<activity::ActivityAdmission>>,
-    agent_audit_delivery_admission: OnceLock<Arc<AtomicUsize>>,
     lifecycle: RwLock<ActorLifecycle>,
     shutdown_clean: AtomicBool,
 }
@@ -523,22 +488,6 @@ impl SqliteStore {
         Self::spawn(Hub::in_memory()?)
     }
 
-    /// Installs protected Work routing before startup tombstone reconciliation.
-    /// Ordinary application/profile databases retain their existing location.
-    #[cfg(all(windows, feature = "work-execution"))]
-    pub fn open_with_windows_work_storage(
-        dir: impl AsRef<Path>,
-        storage: crate::WindowsWorkStorage,
-    ) -> rusqlite::Result<Self> {
-        let mut hub = Hub::open_with_windows_work_storage(dir.as_ref().to_path_buf(), storage)?;
-        if let Err(error) = hub.load_authoritative() {
-            if hub.recovery_reason().is_none() {
-                return Err(error);
-            }
-        }
-        Self::spawn(hub)
-    }
-
     fn spawn(hub: Hub) -> rusqlite::Result<Self> {
         let setting_keys = hub.app_setting_keys()?;
         // Session snapshots use a latest-value mailbox below. Bound every
@@ -586,16 +535,12 @@ impl SqliteStore {
         Ok(Self {
             resource_admission: Arc::new(AtomicUsize::new(0)),
             tx,
-            work_document_admission: OnceLock::new(),
-            #[cfg(feature = "work-execution")]
-            work_admission: OnceLock::new(),
             latest_session,
             pending_visits,
             pending_settings,
             userscript_mutation_admission,
             page_permission_mutation_admission,
             activity_admission: Arc::new(Mutex::new(activity::ActivityAdmission::default())),
-            agent_audit_delivery_admission: OnceLock::new(),
             lifecycle: RwLock::new(ActorLifecycle {
                 join: Some(join),
                 exited: Mutex::new(actor_exit),
@@ -719,15 +664,6 @@ impl SqliteStore {
 }
 
 impl Store for SqliteStore {
-    fn work_document(
-        &self,
-        profile: ProfileId,
-        request: zephium_core::work::port::WorkRequest,
-        completion: zephium_core::work::port::WorkCompletion,
-    ) -> Result<(), zephium_core::work::WorkError> {
-        self.dispatch_work_document(profile, request, completion)
-    }
-
     fn resource_call(
         &self,
         profile: ProfileId,
@@ -2196,28 +2132,6 @@ fn actor(
                     ProfileDeletionFinalizeOutcome::Failed
                 };
                 let _ = reply.send(result);
-            }
-            Some(Cmd::WorkDocument(profile, request, _permit, completion)) => {
-                let result = hub.work_document(profile, *request);
-                let _ =
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| completion(result)));
-            }
-            #[cfg(feature = "work-execution")]
-            Some(Cmd::AgentWork(request, _permit, completion)) => {
-                agent_work::settle(&mut hub, request, completion);
-            }
-            #[cfg(feature = "work-execution")]
-            Some(Cmd::AgentWorkArtifact(request, _permit, completion)) => {
-                agent_work::settle_artifact(&mut hub, request, completion);
-            }
-            Some(Cmd::AppendAgentAudit(delivery, _permit, completion)) => {
-                if let Some(message) =
-                    agent_audit::append_and_settle(&mut hub, delivery, completion).diagnostic()
-                {
-                    // `message` can only be one of the two content-free static
-                    // literals owned by the isolated agent-audit module.
-                    eprintln!("{message}");
-                }
             }
             Some(Cmd::Flush(ack)) => {
                 let settings_durable =

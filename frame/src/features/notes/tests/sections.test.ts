@@ -5,6 +5,8 @@ import { rowDate, untilEditedChanges, untilTomorrow } from "../lib/format";
 import * as m from "$shared/i18n/messages";
 
 const now = new Date(2026, 8, 24, 15, 0).getTime();
+/** The zone this machine runs in, read before any test stubs it. */
+const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 test("notes use local calendar boundaries across daylight saving changes", () => {
   vi.stubEnv("TZ", "Europe/Paris");
@@ -19,6 +21,9 @@ test("notes use local calendar boundaries across daylight saving changes", () =>
     expect(rowDate(beforeYesterday, spring)).not.toBe(m.note_yesterday());
   } finally {
     vi.unstubAllEnvs();
+    // Restoring by deleting TZ leaves V8 holding the stubbed zone; assigning
+    // it again makes the dates after this test read the machine's own zone.
+    process.env.TZ = systemTZ;
   }
 });
 const at = (days: number, hours = 12) => new Date(2026, 8, 24 - days, hours).getTime();

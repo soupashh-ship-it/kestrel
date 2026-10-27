@@ -215,7 +215,7 @@ fn bootstrap_projects_every_sanitized_runtime_security_advisory() {
             security_advisories: vec![
                 RuntimeSecurityAdvisory {
                     kind: RuntimeSecurityAdvisoryKind::ReviewOverdue,
-                    update_target: RuntimeSecurityUpdateTarget::Zephium,
+                    update_target: RuntimeSecurityUpdateTarget::Kestrel,
                 },
                 RuntimeSecurityAdvisory {
                     kind: RuntimeSecurityAdvisoryKind::UpdateRecommended,

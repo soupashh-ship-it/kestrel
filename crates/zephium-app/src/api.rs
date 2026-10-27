@@ -8,7 +8,7 @@ use zephium_core::blocker::{ContentPolicyGeneration, ProfileContentPolicyStatus}
 use zephium_core::extensions::{
     ExtensionActionRevision, ExtensionPopupAnchor, ExtensionRuntimeInstance,
 };
-use zephium_core::geometry::{Rect, Size};
+use zephium_core::geometry::Size;
 use zephium_core::ids::{ItemId, ProfileId};
 use zephium_core::ports::blocker::ContentBlocker;
 use zephium_core::ports::chrome::Chrome as GeometryChrome;
@@ -46,7 +46,7 @@ pub enum ShellTerminalFailure {
     /// store kept it untouched; the person is told so instead of facing an
     /// empty window that cannot do anything.
     SessionUnavailable,
-    /// The saved session was written by a newer Zephium and is kept for it.
+    /// The saved session was written by a newer Kestrel and is kept for it.
     SessionFromNewerVersion,
 }
 
@@ -58,7 +58,7 @@ impl std::fmt::Display for ShellTerminalFailure {
             }
             Self::ActorExitedUnexpectedly => "application shell actor exited unexpectedly",
             Self::SessionUnavailable => "the saved session could not be opened",
-            Self::SessionFromNewerVersion => "the saved session belongs to a newer Zephium",
+            Self::SessionFromNewerVersion => "the saved session belongs to a newer Kestrel",
         })
     }
 }
@@ -156,7 +156,6 @@ pub enum ContentPolicyStatusQueryOutcome {
 /// A bounded browser-owned destination rendered by the existing chrome view.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BrowserPage {
-    Work,
     Settings,
     Extensions,
     History,
@@ -172,7 +171,6 @@ pub enum BrowserPage {
 impl BrowserPage {
     pub fn command_id(self) -> &'static str {
         match self {
-            Self::Work => "browser.work",
             Self::Settings => "browser.settings",
             Self::Extensions => "browser.extensions",
             Self::History => "browser.history",
@@ -187,7 +185,6 @@ impl BrowserPage {
     /// The feature switch the page belongs to, if any.
     pub fn feature(self) -> Option<&'static str> {
         match self {
-            Self::Work => Some("work"),
             Self::Tasks => Some("tasks"),
             Self::Notes => Some("notes"),
             Self::Time => Some("time"),
@@ -201,12 +198,6 @@ pub struct TabMetadata {
     pub id: ItemId,
     pub title: String,
     pub url: Option<String>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum WorkPaneTarget {
-    Tab(ItemId),
-    Url(String),
 }
 
 /// What the tab menu can do to a tab, beyond the commands it shares with the
@@ -257,18 +248,13 @@ pub enum SpaceCommand {
 pub enum PageRequestDecision {
     Allow,
     /// Allow, and let this site open the same kind of link without asking
-    /// again until Zephium quits.
+    /// again until Kestrel quits.
     AlwaysAllow,
     Dismiss,
 }
 
 #[derive(Clone, Debug)]
 pub enum Command {
-    WorkDocument(crate::WorkDocumentSubmission),
-    WorkChanged(zephium_ipc::work::WorkChangedV1),
-    WorkEnvironmentChanged(zephium_ipc::work::WorkEnvironmentChangedV1),
-    #[cfg(feature = "work-execution")]
-    AttachRetainedWork(crate::work_resources::product::RetainedWorkAttachment),
     ResourceCall {
         expected_profile: ProfileId,
         call: Arc<zephium_core::resources::ResourceCall>,
@@ -337,7 +323,7 @@ pub enum Command {
         report: Option<zephium_core::time::TimeReport>,
         done: TimeCompletion,
     },
-    /// Whether a Zephium window is the one the person is using.
+    /// Whether a Kestrel window is the one the person is using.
     SetAppActive(bool),
     /// Whether the machine is awake and unlocked with its display on.
     SetSystemAwake(bool),
@@ -361,14 +347,6 @@ pub enum Command {
         call: Arc<zephium_core::notes::NoteCall>,
         done: NoteCompletion,
     },
-    #[cfg(feature = "work-execution")]
-    AttachWork(crate::work::WorkAttachment),
-    #[cfg(feature = "work-execution")]
-    AdmitWork(crate::work::WorkSubmission),
-    #[cfg(feature = "work-execution")]
-    WorkControl(Box<crate::work::WorkCommand>),
-    #[cfg(feature = "work-execution")]
-    WorkWake,
     /// A privileged user mutation with an externally visible admission and
     /// actor-order disposition identity. Engine callbacks and replaceable UI
     /// facts never use this wrapper.
@@ -485,19 +463,6 @@ pub enum Command {
     /// prompt under its address field.
     SetPagePermissionCardHost(bool),
     ShowBrowserPage(Option<BrowserPage>),
-    /// Shows the transient Work browser pane over an existing Space tab or a
-    /// fresh tab navigated to `Url`. `rect` is window-local and clamped.
-    WorkPaneShow {
-        target: WorkPaneTarget,
-        rect: Rect,
-    },
-    /// Replaceable geometry fact carrying the pane generation it measured.
-    WorkPaneSetRect {
-        rect: Rect,
-        generation: u32,
-    },
-    /// Hides the pane; its tab keeps every page state.
-    WorkPaneHide,
     BrowserChromeRestored {
         revision: u64,
         applied: bool,
@@ -637,9 +602,6 @@ pub enum Command {
         key: String,
         value: String,
     },
-    /// Already-revoked global image preference waiting for exact persistence.
-    #[cfg(feature = "work-planning")]
-    SetWorkScreenshots(crate::work_screenshots::PreferenceChange),
     /// Permanently removes one inactive named profile through the durable
     /// cross-store deletion coordinator. The profile id comes only from
     /// privileged chrome and is revalidated against authoritative state.
@@ -713,11 +675,6 @@ pub enum Command {
     },
     FocusedContentPolicyStatus {
         reply: SyncSender<BlockerStatusView>,
-    },
-    /// Trusted Rust-only Work binding query. No caller-selected profile/session.
-    #[cfg(feature = "work-execution")]
-    WorkProfileBinding {
-        reply: SyncSender<crate::AgentWorkProfileReadiness>,
     },
     /// Title and URL of Space tabs owned by `profile`, for context admission.
     /// Never page content; a page read is a separately authorized capability.

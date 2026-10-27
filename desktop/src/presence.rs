@@ -34,7 +34,7 @@ fn mark(app: &tauri::AppHandle, reason: u8, away: bool) {
     }
 }
 
-/// Time counts only while a Zephium window is the one in use.
+/// Time counts only while a Kestrel window is the one in use.
 pub fn report_app_active(app: &tauri::AppHandle) {
     let focused = |label: &str| {
         app.get_webview_window(label)

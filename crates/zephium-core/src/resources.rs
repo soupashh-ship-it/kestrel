@@ -360,11 +360,6 @@ pub enum ResourceContent {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         work: Option<String>,
     },
-    /// A user-owned semantic object: a table, checklist, comparison, chart,
-    /// document, or findings, editable like a note.
-    Object {
-        object: WorkObjectV1,
-    },
     /// An imported or admitted file. Bytes live in the profile's
     /// content-addressed media store; this row is its provenance and shape.
     /// Only Rust mints it, after bounded sniffing and decoding.
@@ -482,53 +477,6 @@ impl std::fmt::Debug for MediaImport {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "ipc-types", derive(specta::Type))]
 #[serde(deny_unknown_fields)]
-pub struct WorkObjectV1 {
-    pub version: u16,
-    pub data: crate::work::artifact::WorkArtifactDataV1,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub evidence: Vec<crate::work::artifact::WorkEvidenceLink>,
-    /// Set only by Rust when preserving an artifact; never accepted from callers.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub provenance: Option<WorkObjectProvenance>,
-}
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "ipc-types", derive(specta::Type))]
-#[serde(deny_unknown_fields)]
-pub struct WorkObjectProvenance {
-    pub objective: crate::work::WorkId,
-    pub execution: crate::work::WorkExecutionId,
-    pub artifact: crate::work::WorkArtifactId,
-    pub basis: WorkObjectBasis,
-    pub review: crate::work::WorkOutputReview,
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "ipc-types", derive(specta::Type))]
-#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
-pub enum WorkObjectBasis {
-    Original,
-    UserRevision { revision: crate::work::WorkRevision },
-}
-impl WorkObjectV1 {
-    pub fn validate(&self) -> bool {
-        use crate::work::artifact::WorkArtifactDataV1;
-        if self.version != 1 || self.evidence.len() > 64 {
-            return false;
-        }
-        let mut unique = std::collections::BTreeSet::new();
-        if !self
-            .evidence
-            .iter()
-            .all(|link| link.source_id != 0 && unique.insert((link.extraction_id, link.source_id)))
-        {
-            return false;
-        }
-        !matches!(self.data, WorkArtifactDataV1::BrowserResourcePreview { .. })
-            && self.data.validate_owned(self.evidence.len()).is_ok()
-    }
-}
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "ipc-types", derive(specta::Type))]
-#[serde(deny_unknown_fields)]
 pub struct ResourceDraft {
     pub title: String,
     pub pinned: bool,
@@ -566,16 +514,6 @@ pub enum ResourceIntent {
     },
     Create {
         draft: ResourceDraft,
-    },
-    /// Copy an artifact (original or the user's revision) into an Object
-    /// resource. Rust resolves data, evidence, review, and provenance.
-    PreserveArtifact {
-        objective: crate::work::WorkId,
-        execution: crate::work::WorkExecutionId,
-        artifact: crate::work::WorkArtifactId,
-        basis: WorkObjectBasis,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        title: Option<String>,
     },
     Replace {
         id: String,
@@ -661,7 +599,6 @@ pub struct TaskCounts {
 pub enum ResourceKind {
     Note,
     Task,
-    Object,
     Media,
 }
 /// Everything a list row draws, so a populated list costs one query rather than
@@ -735,17 +672,12 @@ pub enum ResourceError {
 impl ResourceDraft {
     /// Callers never supply provenance or media; only Rust admission mints them.
     pub fn caller_owned(&self) -> bool {
-        match &self.content {
-            ResourceContent::Object { object } => object.provenance.is_none(),
-            ResourceContent::Media { .. } => false,
-            _ => true,
-        }
+        !matches!(&self.content, ResourceContent::Media { .. })
     }
     pub fn kind(&self) -> ResourceKind {
         match self.content {
             ResourceContent::Note { .. } => ResourceKind::Note,
             ResourceContent::Task { .. } => ResourceKind::Task,
-            ResourceContent::Object { .. } => ResourceKind::Object,
             ResourceContent::Media { .. } => ResourceKind::Media,
         }
     }
@@ -806,7 +738,6 @@ impl ResourceDraft {
                     && sort_key.as_deref().is_none_or(valid_sort_key)
                     && work.as_deref().is_none_or(valid_id)
             }
-            ResourceContent::Object { object } => object.validate(),
             ResourceContent::Media { asset } => asset.validate(),
         }
     }
@@ -1112,9 +1043,6 @@ impl ResourceCall {
                         ResourceIntent::Create { draft } => {
                             draft.validate() && draft.caller_owned()
                         }
-                        ResourceIntent::PreserveArtifact { title, .. } => title
-                            .as_deref()
-                            .is_none_or(|t| !t.trim().is_empty() && t.len() <= 1024),
                         ResourceIntent::Replace {
                             id,
                             expected_revision,

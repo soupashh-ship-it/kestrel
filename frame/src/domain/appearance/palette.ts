@@ -117,7 +117,7 @@ export function decodeShare(text: string): SharedTheme | null {
 
 export type Resolved = { id: string; spec: ThemeSpec; custom: boolean };
 
-/** The theme the stored pair names. An unknown or broken one is Zephium. */
+/** The theme the stored pair names. An unknown or broken one is Kestrel. */
 export function resolveTheme(id: string, custom: string): Resolved {
   if (id === CUSTOM_THEME) {
     const spec = parseTheme(custom);

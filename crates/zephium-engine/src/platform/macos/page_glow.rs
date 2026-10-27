@@ -76,7 +76,7 @@ const AURORA_DARK: [[f64; 3]; 4] = [
 define_class!(
     /// The glow's root: it lays its pieces out when its size changes.
     #[unsafe(super(CALayer))]
-    #[name = "ZephiumPageGlowLayer"]
+    #[name = "KestrelPageGlowLayer"]
     struct GlowLayer;
 
     impl GlowLayer {

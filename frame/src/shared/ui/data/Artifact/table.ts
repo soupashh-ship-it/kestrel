@@ -2,9 +2,6 @@ import type { ArtifactContent } from "./artifact";
 
 type Tabular = Extract<ArtifactContent, { kind: "table" | "comparison" }>;
 
-/** What a table card shows before it counts the rest. */
-export const TABLE_CARD = { rows: 6, columns: 4 } as const;
-
 /** A figure as a source writes it: a sign, a currency, digits, a unit or a range of them. */
 const FIGURE =
   /^[+\-−]?[$€£¥]?\s?\d[\d,.\s]*(?:%|[kmb]n?|x)?(?:\s?[–-]\s?[$€£¥]?\d[\d,.\s]*(?:%|[kmb]n?)?)?$/iu;

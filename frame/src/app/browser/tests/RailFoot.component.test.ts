@@ -2,7 +2,6 @@ import "$styles/global.css";
 import { afterEach, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import { emitNativeEvent } from "$shared/testing/native-events";
 import { favicons } from "$domain/favicons";
 import { surface } from "$domain/surface";
 import { tabs } from "$domain/tabs";
@@ -11,14 +10,11 @@ import * as sidebar from "$session/sidebar-mode.svelte";
 import Shell from "../Shell.svelte";
 import { paint, settle } from "./look-bench";
 
-vi.mock("../WorkWorkspace.svelte", async () => await import("./StageStub.svelte"));
 vi.mock("$shared/ipc/bindings", async () => {
   const { mockBindings } = await import("$shared/testing/bindings");
-  const { accountFixture } = await import("$shared/testing/account");
   const id = "01J00000000000000000000001";
   return mockBindings({
     pagePermissionCardHost: async () => {},
-    accountGet: async () => ({ account: accountFixture(), fault: null, retry_after: null }),
     profilesGet: async () => ({
       status: "ok" as const,
       data: {
@@ -56,7 +52,7 @@ const box = (element: Element | null) => {
   return rect && { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
 };
 
-/** Where the foot's pieces stand, from the window's bottom edge: Work and Browse must agree. */
+/** Where the foot's pieces stand, from the window's bottom edge. */
 function foot(root: ParentNode, trigger: string) {
   const dock = root.querySelector(".dock");
   const case_ = root.querySelector(trigger);
@@ -69,7 +65,7 @@ function foot(root: ParentNode, trigger: string) {
   };
 }
 
-test("the rail's foot stands in the same place in Browse and in Work", async () => {
+test("the rail's foot keeps its place at both themes and opens the profile stack", async () => {
   await page.viewport(900, 640);
   await paint();
   const screen = await render(Shell);
@@ -85,28 +81,12 @@ test("the rail's foot stands in the same place in Browse and in Work", async () 
   };
   await shoot("foot-browse");
   const browse = foot(screen.container, ".shelf .case");
-  emitNativeEvent("uiCommand", "browser.work");
-  await expect.poll(() => screen.container.querySelector(".work-case")).not.toBeNull();
-  await settle();
-  await shoot("foot-work");
-  const work = foot(screen.container, ".work-case");
-  const stand = (side: typeof browse) => {
-    const rule = side.rules.at(-1)!;
-    return {
-      size: [side.trigger!.w, side.trigger!.h],
-      x: side.trigger!.x,
-      bottom: window.innerHeight - (side.trigger!.y + side.trigger!.h),
-      rule: [rule.x, rule.w, side.trigger!.y - (rule.y + rule.h)],
-      avatar: [side.avatar!.w, side.avatar!.y - side.trigger!.y],
-    };
-  };
   expect(browse.trigger).not.toBeNull();
-  expect(stand(work)).toEqual(stand(browse));
-  screen.container.querySelector<HTMLElement>(".work-case")!.click();
+  const rule = browse.rules.at(-1)!;
+  expect(rule).toBeDefined();
+  expect(browse.trigger!.y + browse.trigger!.h).toBeLessThanOrEqual(window.innerHeight);
+  screen.container.querySelector<HTMLElement>(".shelf .case")!.click();
   await settle();
-  await expect
-    .element(page.getByRole("menuitem", { name: "Sign in to Zephium", exact: true }))
-    .toBeVisible();
   await expect.element(page.getByRole("menuitem", { name: /^Ada Lovelace/u })).toBeVisible();
-  await shoot("foot-work-menu");
+  await shoot("foot-browse-menu");
 });

@@ -58,7 +58,9 @@ fn text(value: &str, max: usize) -> rusqlite::Result<()> {
 }
 fn id(value: &str) -> rusqlite::Result<()> {
     // The project-standard canonical ULID encoding is shared across versions.
-    zephium_core::work::WorkId::parse(value)
+    ulid::Ulid::from_string(value)
+        .ok()
+        .filter(|parsed| parsed.to_string() == value)
         .map(|_| ())
         .ok_or_else(invalid)
 }

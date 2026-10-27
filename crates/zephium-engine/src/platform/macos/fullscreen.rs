@@ -116,7 +116,7 @@ pub struct FullscreenObserverIvars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumFullscreenObserver"]
+    #[name = "KestrelFullscreenObserver"]
     #[ivars = FullscreenObserverIvars]
     pub struct FullscreenObserver;
     impl FullscreenObserver {
@@ -203,7 +203,7 @@ mod tests {
 
     define_class!(
         #[unsafe(super(NSObject))]
-        #[name = "ZephiumFullscreenStateStub"]
+        #[name = "KestrelFullscreenStateStub"]
         struct PresentingStub;
         impl PresentingStub {
             #[unsafe(method(fullscreenState))]

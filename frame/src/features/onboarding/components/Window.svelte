@@ -3,10 +3,8 @@
     ArrowDown01Icon,
     ArrowLeft02Icon,
     ArrowRight02Icon,
-    Briefcase02Icon,
     Folder01Icon,
     Globe02Icon,
-    Layers01Icon,
     PlusSignIcon,
     Refresh01Icon,
     Search01Icon,
@@ -20,29 +18,20 @@
   import { NEWTAB, PAGE } from "../lib/camera";
   import type { Site } from "../lib/catalog";
   import Mark from "$shared/ui/BrandMark";
-  import WorkCanvas from "./WorkCanvas.svelte";
 
   let {
-    mode,
     sites,
     imported,
-    playing,
-    modes = true,
     scene,
     space,
     named = true,
     timed = true,
     element = $bindable(),
   }: {
-    mode: "browse" | "work";
-    /** The Browse and Work switch, absent while Work and AI are off. */
-    modes?: boolean;
     /** What the person has kept, in sidebar order. */
     sites: Site[];
     /** What an import brought, once it has. */
     imported: { from: string; bookmarks: number } | null;
-    /** The Work run plays only while it is on screen. */
-    playing: boolean;
     /** The new tab's sky. */
     scene: Scene;
     /** The name of the space the tabs are in. */
@@ -75,7 +64,7 @@
 
 <!-- The browser itself, drawn small from the same tokens it is built from:
      the window onboarding shows is the window it hands over to. -->
-<div class="window" data-mode={mode} bind:this={element} aria-hidden="true">
+<div class="window" bind:this={element} aria-hidden="true">
   <aside class="side">
     <div class="browse">
       <div class="top">
@@ -86,10 +75,6 @@
         <Icon icon={ArrowRight02Icon} size={14} />
         <Icon icon={Refresh01Icon} size={14} />
       </div>
-      {#if modes}<div class="modes">
-          <span class="on"><Icon icon={Globe02Icon} size={13} />{m.mode_browse()}</span>
-          <span><Icon icon={Briefcase02Icon} size={13} />{m.mode_work()}</span>
-        </div>{/if}
       <div class="address">{m.search_web_short()}</div>
       <div class="space">
         <span>{space}</span><Icon icon={ArrowDown01Icon} size={11} strokeWidth={2} />
@@ -114,24 +99,6 @@
         {/each}
         {#if more}<span class="tile count" data-kept-more>+{more}</span>{/if}
       </div>
-    </div>
-
-    <div class="rail">
-      <span class="lights"><i></i><i></i><i></i></span>
-      <div class="rail-modes">
-        <span><Icon icon={Globe02Icon} size={12} /></span>
-        <span class="on"><Icon icon={Briefcase02Icon} size={12} /></span>
-      </div>
-      <span class="rail-icon"><Icon icon={Search01Icon} size={15} /></span>
-      <hr />
-      <span class="rail-icon"><Icon icon={Layers01Icon} size={15} /></span>
-      <span class="rail-icon current"><Icon icon={Globe02Icon} size={15} /></span>
-      <span class="rail-icon"><Icon icon={PlusSignIcon} size={15} /></span>
-      <span class="gap"></span>
-      {#each sites.slice(0, 3) as site (site.id)}
-        <span class="rail-disc"><Mark mark={site.mark} size={16} /></span>
-      {/each}
-      <span class="rail-disc"><Icon icon={UserIcon} size={14} /></span>
     </div>
   </aside>
 
@@ -164,9 +131,6 @@
         <b>{time}</b><span>{day}</span>
       </p>
     </div>
-    <div class="work">
-      {#if mode === "work"}<WorkCanvas {playing} />{/if}
-    </div>
   </main>
 </div>
 
@@ -189,11 +153,6 @@
       var(--shadow-overlay),
       inset 0 0 0 0.5px var(--color-border-strong);
     font-family: var(--font-sans);
-    transition: grid-template-columns 820ms var(--ease-emphasized);
-  }
-
-  .window[data-mode="work"] {
-    --side: 52px;
   }
 
   .side {
@@ -201,34 +160,13 @@
     min-inline-size: 0;
   }
 
-  .browse,
-  .rail {
+  .browse {
     position: absolute;
     inset: 0;
     display: flex;
     flex-direction: column;
-    transition: opacity 420ms var(--ease-out);
-  }
-
-  .browse {
     gap: 6px;
     inline-size: 232px;
-  }
-
-  .rail {
-    align-items: center;
-    gap: 8px;
-    inline-size: 52px;
-    padding-block-end: 2px;
-    opacity: 0;
-  }
-
-  .window[data-mode="work"] .browse {
-    opacity: 0;
-  }
-
-  .window[data-mode="work"] .rail {
-    opacity: 1;
   }
 
   .top {
@@ -255,32 +193,6 @@
 
   .gap {
     flex: 1;
-  }
-
-  .modes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    block-size: 30px;
-    padding: 2px;
-    border-radius: var(--radius-control-compact);
-    background: var(--color-fill);
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .modes span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border-radius: var(--radius-inset);
-    color: var(--color-faint);
-  }
-
-  .modes .on {
-    background: var(--color-raise-active);
-    box-shadow: var(--shadow-raise);
-    color: var(--color-text);
   }
 
   /* The head of the tab list: the space's name, and the plus that opens a
@@ -405,77 +317,6 @@
     animation: tile-in 520ms var(--ease-snap) backwards;
   }
 
-  .rail .lights {
-    gap: 5px;
-    block-size: 28px;
-    margin: 0;
-    align-items: center;
-  }
-
-  .rail .lights i {
-    inline-size: 9px;
-    block-size: 9px;
-  }
-
-  .rail-modes {
-    display: flex;
-    gap: 1px;
-    padding: 2px;
-    border-radius: var(--radius-capsule);
-    background: var(--color-fill);
-  }
-
-  .rail-modes span {
-    display: grid;
-    place-items: center;
-    inline-size: 21px;
-    block-size: 20px;
-    border-radius: var(--radius-capsule);
-    color: var(--color-faint);
-  }
-
-  .rail-modes .on {
-    background: var(--color-raise-active);
-    color: var(--color-text);
-  }
-
-  .rail-icon {
-    display: grid;
-    place-items: center;
-    inline-size: 36px;
-    block-size: 36px;
-    border-radius: var(--radius-control-compact);
-    color: var(--color-muted);
-  }
-
-  .rail-icon.current {
-    background: var(--row-active);
-    box-shadow: var(--row-rim);
-    color: var(--color-text);
-  }
-
-  .rail .gap {
-    flex: 1;
-  }
-
-  .rail-disc {
-    display: grid;
-    place-items: center;
-    inline-size: 34px;
-    block-size: 34px;
-    flex: none;
-    border-radius: var(--radius-capsule);
-    background: var(--color-card);
-    color: var(--color-muted);
-  }
-
-  .rail hr {
-    inline-size: 22px;
-    margin: 2px 0;
-    border: 0;
-    border-block-start: 1px solid var(--color-border);
-  }
-
   .pane {
     position: relative;
     overflow: hidden;
@@ -484,27 +325,10 @@
     box-shadow: inset 0 0 0 0.5px var(--color-border);
   }
 
-  .newtab,
-  .work {
+  .newtab {
     position: absolute;
     inset: 0;
-    transition: opacity 520ms var(--ease-out);
-  }
-
-  .newtab {
     background: var(--sky-paper);
-  }
-
-  .work {
-    opacity: 0;
-  }
-
-  .window[data-mode="work"] .newtab {
-    opacity: 0;
-  }
-
-  .window[data-mode="work"] .work {
-    opacity: 1;
   }
 
   .sky {
@@ -600,11 +424,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .window,
-    .browse,
-    .rail,
     .newtab,
-    .work,
     .mark,
     .when {
       transition: none;

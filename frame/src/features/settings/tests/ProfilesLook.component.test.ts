@@ -2,23 +2,19 @@ import "$styles/global.css";
 import { afterEach, test, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import type { AccountV1, ProfileEntryView, ProfilesView } from "$shared/ipc/bindings";
-import { accountFixture, usageFixture } from "$shared/testing/account";
+import type { ProfileEntryView, ProfilesView } from "$shared/ipc/bindings";
 import { preferences } from "$domain/preferences";
 import * as settings from "../lib/settings-state.svelte";
 import type { SettingsSection } from "../lib/settings-model";
 import SettingsLookStage from "./SettingsLookStage.svelte";
 
 const native = vi.hoisted(() => ({
-  account: null as AccountV1 | null,
   profiles: null as ProfilesView | null,
   settings: {} as Record<string, string>,
 }));
 // A look bench: commands a shot depends on answer for real, the rest nothing.
 vi.mock("$shared/ipc/bindings", async () => {
   const known: Record<string, (...args: never[]) => Promise<unknown>> = {
-    accountGet: async () => ({ account: native.account!, fault: null, retry_after: null }),
-    accountRefresh: async () => ({ account: native.account!, fault: null, retry_after: null }),
     profilesGet: async () => ({ status: "ok", data: native.profiles }),
     settingGet: async (key: never) => native.settings[key] ?? null,
     keymapEntries: async () => [],
@@ -41,8 +37,6 @@ vi.mock("$domain/profiles/avatar", async (original) => {
   return {
     ...actual,
     drawn: (profile: Parameters<typeof actual.drawn>[0]) => swap(actual.drawn(profile)),
-    identityAvatar: (...args: Parameters<typeof actual.identityAvatar>) =>
-      swap(actual.identityAvatar(...args)),
   };
 });
 
@@ -100,22 +94,6 @@ const roster: ProfilesView = {
   ],
 };
 
-const signedIn = (): AccountV1 => ({
-  ...accountFixture(),
-  signed_in: true,
-  email: "ada@example.com",
-  name: "Ada Lovelace",
-  plan: "pro",
-  usage: usageFixture({ used_percent: 38, allowance_used: "760000" }),
-  subscription: {
-    status: "active",
-    plan: null,
-    interval: "monthly",
-    paid_until: "2026-11-02T00:00:00Z",
-    cancel_at_period_end: false,
-  },
-});
-
 const shots = "../../../../../target/look/profiles";
 const settle = (ms = 450) => new Promise((done) => setTimeout(done, ms));
 const looks: [string, "dark" | "light", string | null][] = [
@@ -149,7 +127,6 @@ async function settingsAt(section: SettingsSection) {
 
 test("Profiles: three profiles, then the create and edit sheets", async () => {
   photo.url = paintPhoto();
-  native.account = accountFixture();
   native.profiles = roster;
   await page.viewport(1280, 860);
   const screen = await settingsAt("profiles");
@@ -170,40 +147,5 @@ test("Profiles: three profiles, then the create and edit sheets", async () => {
   await settle();
   await screen.getByRole("button", { name: "Delete Profile…" }).click();
   await look("delete-confirm", async () => {});
-  await screen.unmount();
-});
-
-test("Account: signed out, the code step, and signed in with a plan", async () => {
-  photo.url = paintPhoto();
-  native.profiles = roster;
-  await page.viewport(1280, 860);
-  native.account = accountFixture();
-  let screen = await settingsAt("account");
-  await look("account-signed-out", async () => {});
-  await screen.unmount();
-
-  native.account = { ...accountFixture(), pending_email: "ada@example.com", resend_in: 42 };
-  screen = await settingsAt("account");
-  await look("account-code", async () => {});
-  await screen.unmount();
-
-  native.account = signedIn();
-  screen = await settingsAt("account");
-  await look("account-signed-in", async () => {});
-  const scroller = document.querySelector<HTMLElement>(".settings-content")!;
-  await look("account-signed-in-lower", async () => {
-    scroller.scrollTop = scroller.scrollHeight;
-  });
-  await screen.unmount();
-
-  native.profiles = {
-    ...roster,
-    profiles: [
-      profile(1, "Personal", "default", { revision: 0, color: 4 }),
-      ...roster.profiles.slice(1),
-    ],
-  };
-  screen = await settingsAt("account");
-  await look("account-unchosen-avatar", async () => {});
   await screen.unmount();
 });

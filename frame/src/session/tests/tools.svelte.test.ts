@@ -34,15 +34,6 @@ it("opens at once and widens the column in the same step", async () => {
   tools.dispose();
   expect(host.stop).toHaveBeenCalledOnce();
 });
-it("the assistant takes a wider panel than a list, and gives it back on switching", async () => {
-  const tools = await import("../tools.svelte");
-  await tools.init();
-  tools.open("ai");
-  expect(host.extent).toHaveBeenLastCalledWith(372);
-  tools.open("notes");
-  expect(host.extent).toHaveBeenLastCalledWith(336);
-  tools.dispose();
-});
 it("explicit close invalidates a queued tool before browser return settles", async () => {
   const tools = await import("../tools.svelte");
   await tools.init();

@@ -109,7 +109,7 @@ struct PrincipalMessageHandlerIvars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumPrincipalMessageHandler"]
+    #[name = "KestrelPrincipalMessageHandler"]
     #[ivars = PrincipalMessageHandlerIvars]
     struct PrincipalMessageHandler;
 

@@ -30,7 +30,7 @@ mod zero_fixed {
 
         #[glib::object_subclass]
         impl ObjectSubclass for ZeroFixed {
-            const NAME: &'static str = "ZephiumFixed";
+            const NAME: &'static str = "KestrelFixed";
             type Type = super::ZeroFixed;
             type ParentType = gtk::Fixed;
         }
@@ -128,10 +128,10 @@ impl fmt::Display for LinuxInitError {
                 "Tauri's composition box is not a direct child of its GTK window",
             ),
             Self::ChromeReparentPostcondition => formatter.write_str(
-                "privileged WebKitGTK view did not enter the Zephium composition container",
+                "privileged WebKitGTK view did not enter the Kestrel composition container",
             ),
             Self::FixedParentPostcondition => formatter.write_str(
-                "Zephium composition container did not become the GTK window's direct child",
+                "Kestrel composition container did not become the GTK window's direct child",
             ),
             Self::TopLevelAlreadyExposed => formatter.write_str(
                 "privileged GTK window was visible before native hardening completed",
@@ -537,8 +537,8 @@ pub fn install_shortcuts(
     });
 
     // A release can be delivered to another application after focus leaves
-    // Zephium. Clear only after the compositor has had time to transfer focus
-    // between Zephium's main and panel windows; clearing synchronously on the
+    // Kestrel. Clear only after the compositor has had time to transfer focus
+    // between Kestrel's main and panel windows; clearing synchronously on the
     // main window's focus-out would let the same held key repeat into the
     // newly-focused launcher and immediately close it again.
     let focus_presses = presses;

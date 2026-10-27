@@ -181,20 +181,6 @@ fn only_tabs_a_person_reads_sign_in_or_get_certificate_exceptions() {
     for (name, source) in [
         ("profile bootstrap", rest),
         (
-            "macOS agent",
-            include_str!(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/platform/macos/agent_context.rs"
-            )),
-        ),
-        (
-            "Windows agent",
-            include_str!(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/platform/windows/agent_context.rs"
-            )),
-        ),
-        (
             "macOS extension",
             include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/host/webext.rs")),
         ),

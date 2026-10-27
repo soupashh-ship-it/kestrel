@@ -7,6 +7,3 @@ export type {
   TaskStep,
   TaskList,
 } from "$shared/ipc/bindings";
-export { mediaUrl, mediaSize, pageFrameUrl, pictureUrl, recordMediaUrl } from "./media";
-export type { MediaAssetV1, WorkPicture } from "./media";
-export { OwnedObjects } from "./owned-objects";

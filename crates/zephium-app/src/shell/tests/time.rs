@@ -52,7 +52,7 @@ fn time_counts_while_zephium_is_in_front_and_reaches_the_store_on_the_tick() {
 }
 
 #[test]
-fn sleep_stops_the_clock_and_work_counts_apart_from_sites() {
+fn sleep_stops_the_clock_and_browser_pages_are_not_counted() {
     let store = Arc::new(FakeStore::default());
     let (mut shell, _engine, screen) = setup_with(store.clone());
     shell.handle(Command::Bootstrap);
@@ -63,24 +63,21 @@ fn sleep_stops_the_clock_and_work_counts_apart_from_sites() {
     shell.handle(Command::SetSystemAwake(false));
     pause();
     shell.handle(Command::SetSystemAwake(true));
-    shell.handle(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
+    shell.handle(Command::ShowBrowserPage(Some(crate::BrowserPage::Settings)));
     pause();
     shell.handle(Command::ShowBrowserPage(None));
     shell.handle(Command::Tick);
 
     let totals = spent(&store);
-    let work = totals
-        .iter()
-        .find(|(place, ..)| *place == Place::Work)
-        .map(|(_, ms, _)| *ms)
-        .unwrap_or_default();
     let github = totals
         .iter()
         .find(|(place, ..)| *place == Place::Site("github.com".into()))
         .map(|(_, ms, _)| *ms)
         .unwrap_or_default();
-    assert!(work >= 40, "work counted {work} ms");
-    assert!(github < 40, "sleep was counted: {github} ms");
+    assert!(
+        github < 40,
+        "sleep or a browser page was counted: {github} ms"
+    );
 }
 
 #[test]

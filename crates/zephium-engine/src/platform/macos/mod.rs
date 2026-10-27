@@ -1,41 +1,14 @@
-#[cfg(feature = "agentic-browser")]
-mod agent_context;
-#[cfg(feature = "agentic-browser")]
-mod agent_history;
-#[cfg(feature = "agentic-browser-qa")]
-pub(crate) mod agentic_liveness_probe;
 #[cfg(feature = "agentic-browser-qa")]
 pub(crate) mod profile_seed_probe;
 #[cfg(feature = "agentic-browser")]
 pub(crate) use agent_history::AgentHistoryBackTicket;
-#[cfg(all(
-    feature = "native-agentic-semantic-probe",
-    feature = "agentic-browser-qa"
-))]
-pub(crate) mod agentic_decision_probe;
-#[cfg(feature = "native-agentic-foreground-probe")]
-pub(crate) mod agentic_foreground_driver;
-#[cfg(feature = "native-agentic-foreground-probe")]
-mod agentic_foreground_probe;
-#[cfg(feature = "native-agentic-input-probe")]
-mod agentic_input_probe;
-#[cfg(feature = "native-agentic-work-resource-probe")]
-pub(crate) mod agentic_resource_composition_probe;
-#[cfg(feature = "native-agentic-work-resource-probe")]
-pub(crate) mod agentic_resource_driver;
-#[cfg(feature = "native-agentic-semantic-probe")]
-mod agentic_semantic_probe;
 #[cfg(feature = "native-agentic-foreground-probe")]
 pub(crate) use agentic_foreground_probe::ForegroundRenderingLease;
 mod apps;
 mod automatic_pip;
-#[cfg(feature = "agentic-browser")]
-pub(crate) mod browse_reader;
 pub(crate) mod browsing_data;
 #[cfg(feature = "agentic-browser")]
 pub(crate) mod page_glow;
-#[cfg(feature = "page-reader-probe")]
-mod page_reader_probe;
 #[cfg(feature = "page-reader-probe")]
 pub(crate) use page_reader_probe::run as run_page_reader_probe;
 pub(crate) mod audio;
@@ -57,21 +30,11 @@ pub(crate) use apps::{external_app_name, open_external_app};
 mod paint;
 pub(crate) use paint::{PageSnapshot, PaintCover};
 mod session_state;
-pub(crate) use session_state::{SessionCaptureRefusal, SessionState};
-#[cfg(feature = "agentic-browser")]
-mod semantic_action;
-#[cfg(feature = "agentic-browser")]
-mod semantic_runtime;
-#[cfg(feature = "agentic-browser")]
-mod semantic_screenshot;
 #[cfg(feature = "agentic-browser")]
 pub(crate) use semantic_screenshot::capture_work_frame;
+pub(crate) use session_state::{SessionCaptureRefusal, SessionState};
 #[cfg(any(feature = "agentic-browser", feature = "native-agentic-input-probe"))]
 mod passive_page;
-#[cfg(feature = "agentic-browser")]
-mod work_human_presentation;
-#[cfg(feature = "agentic-browser")]
-mod work_observation_presentation;
 #[cfg(feature = "agentic-browser")]
 pub(crate) use work_human_presentation::WorkHumanPresentation;
 #[cfg(feature = "native-agentic-work-resource-probe")]

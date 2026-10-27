@@ -7,7 +7,6 @@ import {
   HistoryIcon,
   Download01Icon,
   Bookmark02Icon,
-  BubbleChatIcon,
 } from "@hugeicons/core-free-icons";
 export const tools = {
   notes: {
@@ -23,13 +22,6 @@ export const tools = {
     empty: m.tool_tasks_empty,
     icon: CheckListIcon,
     load: () => import("./previews/TasksView.svelte"),
-  },
-  ai: {
-    title: m.tool_zephium,
-    description: m.tool_zephium_help,
-    empty: m.tool_zephium,
-    icon: BubbleChatIcon,
-    load: () => import("./previews/ChatView.svelte"),
   },
   history: {
     title: m.browser_history_title,

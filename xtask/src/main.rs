@@ -1,21 +1,10 @@
 //! Single deterministic entrypoint for the workspace gate: `cargo xtask ci`.
 
 mod adblock_provenance;
-mod agent_controller_boundary;
-mod agent_model_catalog_boundary;
-mod agent_runtime_boundary;
-mod agentic_evidence;
-mod agentic_probe_boundary;
 mod blocker_seed;
-mod foreground_rendering_boundary;
 mod macos_process_family;
-mod page_assist_boundary;
-mod page_reader_boundary;
 mod password_manager_qa;
 mod webext_suite;
-mod work_composition_boundary;
-mod work_persistence_boundary;
-mod work_resource_boundary;
 
 use std::process::{exit, Command};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -52,12 +41,6 @@ fn main() {
             check_engine_floors(strict_flag(&arguments[1..], "check-engine-floors"))
         }
         Some("check-release-engine-security") => check_release_engine_security(),
-        Some("check-agentic-probe-boundary") => check_agentic_probe_boundary(),
-        Some("check-agent-model-catalog-boundary") => check_agent_model_catalog_boundary(),
-        Some("check-page-assist-boundary") => check_page_assist_boundary(),
-        Some("check-page-reader-boundary") => check_page_reader_boundary(),
-        Some("check-agent-controller-boundary") => check_agent_controller_boundary(),
-        Some("check-agent-runtime-boundary") => check_agent_runtime_boundary(),
         Some("check-advisory-exceptions") => {
             check_advisory_exceptions(strict_flag(&arguments[1..], "check-advisory-exceptions"))
         }
@@ -593,7 +576,6 @@ fn check_engine_floors(strict: bool) {
 /// sources are still within their upstream recommended refresh cadence at
 /// the exact publication boundary.
 fn check_release_engine_security() {
-    check_agentic_probe_boundary();
     check_engine_floors(true);
     check_advisory_exceptions(true);
     let now = SystemTime::now()
@@ -621,12 +603,6 @@ fn check_release_engine_security() {
 
 fn ci() {
     share_workspace_target_dir();
-    check_agentic_probe_boundary();
-    check_agent_model_catalog_boundary();
-    check_page_assist_boundary();
-    check_page_reader_boundary();
-    check_agent_controller_boundary();
-    check_agent_runtime_boundary();
     check_engine_floors(false);
     check_advisory_exceptions(false);
     check_blocker_security_fork();
@@ -648,128 +624,6 @@ fn ci() {
             "warnings",
         ],
     );
-    // The ordinary desktop graph intentionally excludes Work execution. Test
-    // and lint its enabled production path explicitly; probe-harness here only
-    // permits deterministic localhost fixtures, never a live provider run.
-    for target in ["--all-targets", "--lib"] {
-        run(
-            "cargo",
-            &[
-                "clippy",
-                "--locked",
-                "-p",
-                "zephium-agent-controller",
-                "--features",
-                "provider-transport",
-                target,
-                "--",
-                "-D",
-                "warnings",
-            ],
-        );
-    }
-    run(
-        "cargo",
-        &[
-            "test",
-            "--locked",
-            "-p",
-            "zephium-agent-controller",
-            "--features",
-            "probe-harness",
-        ],
-    );
-    run(
-        "cargo",
-        &[
-            "check",
-            "--locked",
-            "--release",
-            "-p",
-            "zephium-agent-controller",
-            "--features",
-            "provider-transport",
-        ],
-    );
-    // Work admission and Store fencing are intentionally absent from the
-    // default desktop graph; exercise their real shipping paths explicitly.
-    for package in ["zephium-app", "zephium-store"] {
-        for target in ["--all-targets", "--lib"] {
-            run(
-                "cargo",
-                &[
-                    "clippy",
-                    "--locked",
-                    "-p",
-                    package,
-                    "--features",
-                    "work-execution",
-                    target,
-                    "--",
-                    "-D",
-                    "warnings",
-                ],
-            );
-        }
-        run(
-            "cargo",
-            &[
-                "test",
-                "--locked",
-                "-p",
-                package,
-                "--features",
-                "work-execution",
-            ],
-        );
-        run(
-            "cargo",
-            &[
-                "check",
-                "--locked",
-                "--release",
-                "-p",
-                package,
-                "--features",
-                "work-execution",
-            ],
-        );
-    }
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
-    for (package, features) in [
-        ("zephium-work-composition", "durable-runtime"),
-        ("zephium-desktop", "work-product"),
-    ] {
-        for target in ["--all-targets", "--lib"] {
-            run(
-                "cargo",
-                &[
-                    "clippy",
-                    "--locked",
-                    "-p",
-                    package,
-                    "--features",
-                    features,
-                    target,
-                    "--",
-                    "-D",
-                    "warnings",
-                ],
-            );
-        }
-        run(
-            "cargo",
-            &[
-                "check",
-                "--locked",
-                "--release",
-                "-p",
-                package,
-                "--features",
-                features,
-            ],
-        );
-    }
     // `--all-targets` enables test-only references while linting library
     // artifacts, which can hide dead production paths behind cfg(test).
     run(
@@ -807,72 +661,6 @@ fn ci() {
     run("pnpm", &["--dir", "frame", "run", "check"]);
     run("pnpm", &["--dir", "frame", "run", "build"]);
     run("pnpm", &["--dir", "frame", "run", "check:styles"]);
-}
-
-fn check_agentic_probe_boundary() {
-    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    if let Err(error) = agentic_probe_boundary::check(&repository)
-        .and_then(|()| work_composition_boundary::check(&repository))
-        .and_then(|()| work_persistence_boundary::check(&repository))
-        .and_then(|()| work_resource_boundary::check(&repository))
-        .and_then(|()| agent_runtime_boundary::check(&repository))
-    {
-        eprintln!("agentic diagnostic release boundary failed: {error}");
-        exit(1);
-    }
-    let runtime = repository.join("crates/zephium-agentic/assets/semantic-runtime-v1.js");
-    let runtime = runtime.to_str().unwrap_or_else(|| {
-        eprintln!("semantic runtime asset path is not valid UTF-8");
-        exit(1);
-    });
-    run("node", &["--check", runtime]);
-    let smoke = repository.join("eval/agentic-browsing/semantic-runtime-smoke-v1.js");
-    let smoke = smoke.to_str().unwrap_or_else(|| {
-        eprintln!("semantic runtime smoke path is not valid UTF-8");
-        exit(1);
-    });
-    run("node", &[smoke, runtime]);
-    run("node", &[smoke, runtime, "--without-document-parent-brand"]);
-}
-
-fn check_agent_model_catalog_boundary() {
-    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    if let Err(error) = agent_model_catalog_boundary::check(&repository) {
-        eprintln!("agent model catalog architecture boundary failed: {error}");
-        exit(1);
-    }
-}
-
-fn check_page_assist_boundary() {
-    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    if let Err(error) = page_assist_boundary::check(&repository) {
-        eprintln!("page assist architecture boundary failed: {error}");
-        exit(1);
-    }
-}
-
-fn check_page_reader_boundary() {
-    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    if let Err(error) = page_reader_boundary::check(&repository) {
-        eprintln!("page reader boundary failed: {error}");
-        exit(1);
-    }
-}
-
-fn check_agent_controller_boundary() {
-    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    if let Err(error) = agent_controller_boundary::check(&repository) {
-        eprintln!("agent controller architecture boundary failed: {error}");
-        exit(1);
-    }
-}
-
-fn check_agent_runtime_boundary() {
-    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    if let Err(error) = agent_runtime_boundary::check(&repository) {
-        eprintln!("agent runtime architecture boundary failed: {error}");
-        exit(1);
-    }
 }
 
 #[cfg(target_os = "macos")]

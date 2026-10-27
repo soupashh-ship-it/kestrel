@@ -103,7 +103,7 @@ calls have a 20-second deadline. The runner also bounds each child process.
 
 The diagnostic fixture reports native API results. It does not replace tab,
 permission or action APIs. Selected-profile and `agent-lab` views reproduce
-relevant profile-sharing topologies; they do not execute Zephium's production
+relevant profile-sharing topologies; they do not execute Kestrel's production
 Work adapter. Report topology evidence separately from product qualification.
 
 CDP is used only for deliberate diagnostic operations. Resource scenarios do

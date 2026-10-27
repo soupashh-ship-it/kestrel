@@ -1051,7 +1051,6 @@ pub(crate) struct FakeStore {
     icons: Mutex<Vec<(String, Vec<u8>)>>,
     pub(super) reject_settings: std::sync::atomic::AtomicBool,
     settings: Mutex<std::collections::HashMap<String, String>>,
-    work_disabled: std::sync::atomic::AtomicBool,
     pending_deletions: Mutex<Vec<PendingProfileDeletion>>,
     pending_load_failures: std::sync::atomic::AtomicUsize,
     authorize_outcomes: Mutex<VecDeque<ProfileDeletionAuthorizeOutcome>>,
@@ -1509,13 +1508,6 @@ impl Store for FakeStore {
         self.visits.lock().unwrap().push(url);
     }
     fn app_setting(&self, key: &str) -> Option<String> {
-        if key == "work.enabled"
-            && self
-                .work_disabled
-                .load(std::sync::atomic::Ordering::Acquire)
-        {
-            return Some("false".into());
-        }
         self.settings.lock().unwrap().get(key).cloned()
     }
     fn set_app_setting(&self, key: String, value: String) -> bool {
@@ -1930,7 +1922,6 @@ type Screen = Arc<Mutex<ItemsState>>;
 
 fn apply_projection(view: &mut ItemsState, p: Projection) {
     match p {
-        Projection::WorkChanged(_) | Projection::WorkEnvironmentChanged(_) => {}
         Projection::Items(s) => *view = s,
         Projection::Tab(t) => {
             if let Some(slot) = view.tabs.iter_mut().find(|x| x.id == t.id) {
@@ -2288,7 +2279,6 @@ mod tabs;
 mod time;
 mod view_lifecycle;
 mod window_layout;
-mod work_pane;
 mod zoom;
 
 mod blocker_sites;

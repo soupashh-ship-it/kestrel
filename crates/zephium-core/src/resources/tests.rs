@@ -78,61 +78,6 @@ fn boxed_mutation_preserves_json_and_specta_contract() {
 }
 
 #[test]
-fn callers_cannot_mint_object_provenance_or_preview_objects() {
-    use crate::work::artifact::*;
-    let object =
-        |provenance: Option<WorkObjectProvenance>, data: WorkArtifactDataV1| ResourceDraft {
-            title: "Object".into(),
-            pinned: false,
-            content: ResourceContent::Object {
-                object: WorkObjectV1 {
-                    version: 1,
-                    data,
-                    evidence: vec![],
-                    provenance,
-                },
-            },
-            related: vec![],
-        };
-    let checklist = WorkArtifactDataV1::Checklist {
-        items: vec![WorkChecklistItem {
-            text: "Do".into(),
-            completed: false,
-        }],
-    };
-    let plain = object(None, checklist.clone());
-    assert!(plain.validate() && plain.caller_owned());
-    let minted = object(
-        Some(WorkObjectProvenance {
-            objective: 1.into(),
-            execution: 2.into(),
-            artifact: 3.into(),
-            basis: WorkObjectBasis::Original,
-            review: crate::work::WorkOutputReview::Mechanical,
-        }),
-        checklist,
-    );
-    assert!(minted.validate() && !minted.caller_owned());
-    let call = ResourceCall::Mutate {
-        command: Box::new(ResourceCommand {
-            version: 1,
-            request_id: "request-0000000000000009".into(),
-            intent: ResourceIntent::Create { draft: minted },
-        }),
-    };
-    assert!(!call.validate());
-    let preview = object(
-        None,
-        WorkArtifactDataV1::BrowserResourcePreview {
-            title: "Page".into(),
-            url: "https://example.com/".into(),
-            summary: "Descriptive".into(),
-        },
-    );
-    assert!(!preview.validate());
-}
-
-#[test]
 fn media_assets_are_shaped_by_kind_origin_and_bounds() {
     let asset = |kind: MediaKind, mime: &str, bytes: u32, origin: MediaOrigin| MediaAssetV1 {
         version: 1,

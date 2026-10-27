@@ -449,7 +449,7 @@ impl Shell {
                     .filter(|_| matches!(scope, SearchScope::All | SearchScope::Commands))
                     .filter(|c| {
                         c.id != "launcher.toggle"
-                            && !matches!(c.group, commands::Group::Work | commands::Group::Keys)
+                            && !matches!(c.group, commands::Group::Keys)
                             && commands::feature_of(c.id).is_none_or(|feature| {
                                 zephium_core::preferences::feature_enabled(
                                     |key| self.store.app_setting(key),

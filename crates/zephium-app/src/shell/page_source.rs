@@ -114,7 +114,7 @@ impl Shell {
 
     /// Opens the system's saved passwords at the field in focus on the page
     /// in front. Private windows too: the passwords are the system's, and
-    /// nothing is kept by Zephium.
+    /// nothing is kept by Kestrel.
     pub(super) fn operation_autofill_password(&mut self) -> OperationDisposition {
         let id = match self.loaded_page_in_front() {
             Ok(id) => id,

@@ -50,23 +50,7 @@ mod navigation_probe;
 ))]
 compile_error!("profile enrollment and authenticated execution are separate application builds");
 
-#[cfg(feature = "macos-work")]
-pub use zephium_work_composition::{
-    MacosWorkComposition, PublicReadWorkAccount, PublicReadWorkInvocation, PublicReadWorkObjective,
-    PublicReadWorkSettings, TrustedWorkRequest,
-};
-#[cfg(feature = "macos-work")]
-mod work;
-#[cfg(feature = "macos-work-public-inspection")]
-mod work_development;
-#[cfg(feature = "macos-work")]
-pub use work::{
-    admit_retained_trusted_work, admit_successor_trusted_work, admit_trusted_work,
-    launch_public_read_work, selected_work_profile, WorkAdmissionFailure,
-};
-
 mod about;
-mod account;
 mod blocker_service;
 mod browser_credentials;
 mod browser_import;
@@ -76,8 +60,6 @@ mod default_browser;
 mod diagnostic_report;
 mod diagnostics;
 mod external_links;
-#[cfg(feature = "work-product")]
-mod favicon_probe;
 mod focus_alerts;
 mod haptics;
 mod help;
@@ -100,7 +82,6 @@ mod memory_pressure;
 mod menu_text;
 mod notes;
 mod overlay;
-mod page_assist;
 mod page_source;
 #[cfg(target_os = "macos")]
 mod panel;
@@ -122,29 +103,9 @@ mod startup_styles;
 mod swipe;
 mod system_time;
 mod updates;
-mod voice;
 mod webext;
 #[cfg(all(target_os = "windows", feature = "webext-qa"))]
 mod webext_qa;
-#[cfg(feature = "work-product")]
-mod work_activity;
-#[cfg(feature = "work-integration-qa")]
-mod work_captures;
-mod work_connections;
-mod work_decision;
-#[cfg(feature = "work-development-traces")]
-mod work_diagnostics;
-mod work_folders;
-mod work_memory;
-mod work_models;
-#[cfg(any(feature = "work-product", test))]
-mod work_operations;
-mod work_personal;
-mod work_product;
-#[cfg(feature = "work-product")]
-mod work_provider;
-mod work_sites;
-mod work_website_data;
 
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, AtomicU8, AtomicUsize, Ordering};
@@ -1193,7 +1154,7 @@ fn request_classified_startup_failure(
     detail: &str,
 ) {
     write_diagnostic(format_args!(
-        "startup: failed to initialize Zephium: {cause}"
+        "startup: failed to initialize Kestrel: {cause}"
     ));
     startup_alert::show_then(app, problem, detail, request_orderly_terminal_failure);
 }
@@ -1298,7 +1259,7 @@ fn request_pre_shell_startup_failure_with_store(
     store: Arc<SqliteStore>,
 ) {
     write_diagnostic(format_args!(
-        "startup: failed to initialize Zephium: {error}"
+        "startup: failed to initialize Kestrel: {error}"
     ));
     let store_owner = app
         .try_state::<StartupStore>()
@@ -1326,7 +1287,7 @@ fn request_pre_shell_startup_failure_with_blocker(
     blocker: Arc<ManagedBlocker>,
 ) {
     write_diagnostic(format_args!(
-        "startup: failed to initialize Zephium: {error}"
+        "startup: failed to initialize Kestrel: {error}"
     ));
     let engine_owner = app
         .try_state::<StartupEngine>()
@@ -1365,20 +1326,6 @@ fn request_unrecoverable_native_failure(app: &tauri::AppHandle, reason: &str) {
     };
     coordinator.request_unrecoverable_native_failure(app.clone());
 }
-
-#[derive(Clone, Debug, Serialize, Deserialize, specta::Type, Event)]
-struct WorkChanged(zephium_ipc::work::WorkChangedV1);
-
-#[derive(Clone, Debug, Serialize, Deserialize, specta::Type, Event)]
-#[tauri_specta(event_name = "zephium:work-human-changed")]
-struct WorkHumanChanged(zephium_ipc::work::WorkHumanChangedV1);
-
-#[derive(Clone, Debug, Serialize, Deserialize, specta::Type, Event)]
-#[tauri_specta(event_name = "zephium:work-decision-preference-changed")]
-struct WorkDecisionPreferenceChanged(zephium_ipc::work::WorkDecisionPreferenceChangedV1);
-
-#[derive(Clone, Debug, Serialize, Deserialize, specta::Type, Event)]
-struct WorkEnvironmentChanged(zephium_ipc::work::WorkEnvironmentChangedV1);
 
 #[derive(Clone, Debug, Serialize, Deserialize, specta::Type, Event)]
 struct NoteOpenRequested {
@@ -1604,118 +1551,8 @@ fn record_and_deliver_operation(
 fn specta_builder() -> tauri_specta::Builder<tauri::Wry> {
     tauri_specta::Builder::<tauri::Wry>::new()
         .commands(collect_commands![
-            work_product::work_call,
-            work_product::work_save_calendar,
-            work_product::work_edit_draft,
-            work_product::work_operation,
-            work_product::work_operation_status,
-            work_product::work_running,
-            work_product::work_context_preview,
             media::media_import,
             media::media_open,
-            media::media_admit_remote,
-            media::link_describe,
-            media::work_admit_folder,
-            media::work_pick_folder,
-            media::work_reveal_path,
-            work_memory::work_release_memory,
-            work_folders::work_choose_folder,
-            work_product::work_activity,
-            work_product::human::work_human_pages,
-            work_product::human::work_human_present,
-            work_product::human::work_human_continue,
-            work_product::human::work_human_release,
-            work_product::human::work_human_extend,
-            work_product::human::work_human_check,
-            work_decision::work_decision_preference,
-            work_decision::work_set_decision_preference,
-            work_decision::work_set_decision_key,
-            work_decision::work_clear_decision_key,
-            work_models::work_models,
-            work_models::work_models_ready,
-            work_models::work_choose_model,
-            work_models::work_set_model_effort,
-            work_models::work_set_provider_key,
-            work_models::work_test_provider_key,
-            work_models::work_clear_provider_key,
-            work_models::work_set_model_endpoint,
-            work_models::work_more_models,
-            work_models::work_local_servers,
-            voice::voice_status,
-            voice::voice_choose_engine,
-            voice::voice_choose_language,
-            voice::voice_start,
-            voice::voice_stop,
-            voice::voice_cancel,
-            voice::voice_open_privacy,
-            page_assist::page_assist_status,
-            page_assist::page_assist_ask,
-            page_assist::page_assist_stop,
-            page_assist::page_assist_cite,
-            page_assist::page_assist_focus,
-            page_assist::page_assist_decide,
-            page_assist::page_assist_resume,
-            page_assist::page_assist_continue,
-            page_assist::page_assist_new,
-            page_assist::page_assist_history,
-            page_assist::page_assist_open,
-            page_assist::page_assist_delete,
-            page_assist::page_assist_pick,
-            page_assist::page_assist_pick_cancel,
-            page_assist::page_assist_detach,
-            page_assist::page_assist_close,
-            page_assist::page_styles,
-            page_assist::page_style_toggle,
-            page_assist::page_style_remove,
-            page_assist::page_styles_all,
-            page_assist::page_style_toggle_for,
-            page_assist::page_style_remove_for,
-            account::account_get,
-            account::account_send_code,
-            account::account_verify,
-            account::account_cancel_code,
-            account::account_sign_out,
-            account::account_refresh,
-            account::account_buy,
-            account::account_manage,
-            account::account_set_daily_limit,
-            account::account_plan_preview,
-            account::account_plan_confirm,
-            account::account_plan_dismiss,
-            account::account_sessions,
-            account::account_revoke_session,
-            account::account_set_server,
-            account::account_deletion_code,
-            account::account_delete,
-            account::account_set_name,
-            account::account_reauth_code,
-            account::account_email_code,
-            account::account_change_email,
-            account::account_sign_out_everywhere,
-            account::account_export,
-            account::account_usage_history,
-            account::account_receipt,
-            account::avatar::account_avatar_pick,
-            account::avatar::account_avatar_save,
-            account::avatar::account_avatar_discard,
-            account::avatar::account_avatar_remove,
-            work_sites::work_sites,
-            work_sites::work_set_site,
-            work_sites::work_screenshot_sites,
-            work_sites::work_set_screenshot_site,
-            work_website_data::work_clear_website_data,
-            work_connections::work_connections,
-            work_connections::work_save_connection,
-            work_connections::work_preview_connection,
-            work_connections::work_remove_connection,
-            work_connections::work_check_connection,
-            work_connections::work_sign_in_connection,
-            work_connections::work_cancel_connection_sign_in,
-            work_personal::work_memories,
-            work_personal::work_change_memory,
-            work_personal::work_skills,
-            work_personal::work_skill_text,
-            work_personal::work_change_skill,
             tabs_bootstrap,
             tabs_open,
             tabs_activate,
@@ -1735,9 +1572,6 @@ fn specta_builder() -> tauri_specta::Builder<tauri::Wry> {
             diagnostic_report::diagnostics_report,
             tabs_back,
             tabs_forward,
-            work_pane_show,
-            work_pane_set_rect,
-            work_pane_hide,
             tabs_split,
             tabs_unsplit,
             tabs_leave_split,
@@ -1868,16 +1702,7 @@ fn specta_builder() -> tauri_specta::Builder<tauri::Wry> {
         .events(collect_events![
             keymap::KeymapChanged,
             browser_import::ImportJobView,
-            WorkEnvironmentChanged,
-            WorkChanged,
-            WorkHumanChanged,
-            WorkDecisionPreferenceChanged,
-            work_models::WorkModelsChanged,
-            voice::VoiceChanged,
-            voice::VoiceLevels,
-            page_assist::PageAssistChanged,
             swipe::SwipeScroll,
-            account::AccountChanged,
             ItemsChanged,
             FaviconsChanged,
             ResourceChanged,
@@ -2915,7 +2740,7 @@ fn tabs_navigate(
     })
 }
 
-/// Shows the folder with Zephium's local log and crash report.
+/// Shows the folder with Kestrel's local log and crash report.
 #[tauri::command]
 #[specta::specta]
 fn diagnostics_show_logs(caller: WebviewWindow) -> bool {
@@ -3065,98 +2890,6 @@ fn tabs_forward(
         return rejected_operation();
     }
     dispatch_with_id(caller.app_handle(), &shell, &id, Command::GoForward)
-}
-
-fn work_pane_rect(rect: zephium_ipc::WorkPaneRect) -> Option<zephium_core::geometry::Rect> {
-    (point_in_bounds(rect.x, rect.y)
-        && rect.width.is_finite()
-        && rect.height.is_finite()
-        && rect.width > 0.0
-        && rect.height > 0.0
-        && rect.width <= MAX_WINDOW_COORDINATE
-        && rect.height <= MAX_WINDOW_COORDINATE)
-        .then(|| zephium_core::geometry::Rect::new(rect.x, rect.y, rect.width, rect.height))
-}
-
-fn trusted_web_url(url: &str) -> bool {
-    url.len() <= 8192
-        && !url.chars().any(char::is_control)
-        && tauri::Url::parse(url).is_ok_and(|parsed| {
-            matches!(parsed.scheme(), "https" | "http")
-                && parsed.host_str().is_some()
-                && parsed.username().is_empty()
-                && parsed.password().is_none()
-        })
-}
-
-/// Shows the transient Work browser pane over a Space tab or a fresh tab at
-/// an explicit trusted URL. The rect is the chrome's measured hole.
-#[tauri::command]
-#[specta::specta]
-fn work_pane_show(
-    caller: WebviewWindow,
-    shell: State<'_, Handle>,
-    target: zephium_ipc::WorkPaneTarget,
-    rect: zephium_ipc::WorkPaneRect,
-) -> zephium_ipc::OperationAdmission {
-    if !authorize(&caller, CallerPolicy::Main, "work_pane_show") {
-        return rejected_operation();
-    }
-    let Some(rect) = work_pane_rect(rect) else {
-        return rejected_operation();
-    };
-    let target = match target {
-        zephium_ipc::WorkPaneTarget::Tab { id } => {
-            if !bounded(&id, MAX_ITEM_ID_BYTES) {
-                return rejected_operation();
-            }
-            match ItemId::parse(&id) {
-                Some(id) => zephium_app::WorkPaneTarget::Tab(id),
-                None => return rejected_operation(),
-            }
-        }
-        zephium_ipc::WorkPaneTarget::Url { url } => {
-            if !trusted_web_url(&url) {
-                return rejected_operation();
-            }
-            zephium_app::WorkPaneTarget::Url(url)
-        }
-    };
-    dispatch_operation(
-        caller.app_handle(),
-        &shell,
-        Command::WorkPaneShow { target, rect },
-    )
-}
-
-#[tauri::command]
-#[specta::specta]
-fn work_pane_set_rect(
-    caller: WebviewWindow,
-    shell: State<'_, Handle>,
-    rect: zephium_ipc::WorkPaneRect,
-    generation: u32,
-) {
-    if !authorize(&caller, CallerPolicy::Main, "work_pane_set_rect") {
-        return;
-    }
-    let Some(rect) = work_pane_rect(rect) else {
-        return;
-    };
-    shell.dispatch(Command::WorkPaneSetRect { rect, generation });
-}
-
-#[tauri::command]
-#[specta::specta]
-fn work_pane_hide(
-    caller: WebviewWindow,
-    shell: State<'_, Handle>,
-) -> zephium_ipc::OperationAdmission {
-    if !authorize(&caller, CallerPolicy::Main, "work_pane_hide") {
-        return rejected_operation();
-    }
-    work_product::release_human_presentations(caller.app_handle());
-    dispatch_operation(caller.app_handle(), &shell, Command::WorkPaneHide)
 }
 
 #[tauri::command]
@@ -3756,7 +3489,7 @@ fn execute_command(app: &tauri::AppHandle, id: &str) -> zephium_ipc::OperationAd
     // authoritative URL of the page it shows.
     if matches!(
         id,
-        "note.new" | "page.copyLink" | "find.show" | "find.next" | "find.previous" | "work.dictate"
+        "note.new" | "page.copyLink" | "find.show" | "find.next" | "find.previous"
     ) {
         return if try_emit_to_privileged(app, MAIN_LABEL, EVENT_UI, &id) {
             accepted_ui_operation()
@@ -3768,7 +3501,6 @@ fn execute_command(app: &tauri::AppHandle, id: &str) -> zephium_ipc::OperationAd
         id,
         "tool.notes"
             | "tool.tasks"
-            | "tool.ai"
             | "tool.time"
             | "tool.history"
             | "tool.downloads"
@@ -3783,7 +3515,6 @@ fn execute_command(app: &tauri::AppHandle, id: &str) -> zephium_ipc::OperationAd
     }
     if let Some(destination) = id.strip_prefix("browser.") {
         let page = match destination {
-            "work" => Some(zephium_app::BrowserPage::Work),
             "settings" => Some(zephium_app::BrowserPage::Settings),
             "extensions" => Some(zephium_app::BrowserPage::Extensions),
             "history" => Some(zephium_app::BrowserPage::History),
@@ -4236,8 +3967,7 @@ fn menu_popup(caller: WebviewWindow, app: tauri::AppHandle, x: f64, y: f64) -> b
         return false;
     };
     let keymap = keymap_overrides(&app);
-    let Ok(menu) = build_menu(&app, &keymap, false).and_then(|menu| offered_only(&app, menu))
-    else {
+    let Ok(menu) = build_menu(&app, &keymap).and_then(|menu| offered_only(&app, menu)) else {
         return false;
     };
     caller.popup_menu_at(&menu, anchor).is_ok()
@@ -4349,7 +4079,6 @@ async fn resource_call(
                     use zephium_core::resources::ResourceKind;
                     match record.draft.kind() {
                         ResourceKind::Task => Some(ResourceChangeKind::Task),
-                        ResourceKind::Object => Some(ResourceChangeKind::Object),
                         ResourceKind::Media => Some(ResourceChangeKind::Media),
                         ResourceKind::Note => None,
                     }
@@ -5513,21 +5242,16 @@ fn build_quit_menu_item(
 ) -> tauri::Result<tauri::menu::MenuItem<tauri::Wry>> {
     // Native terminate: bypasses Tauri's ExitRequested path on macOS.
     // An ordinary menu event reaches the existing draft/store shutdown barrier.
-    tauri::menu::MenuItemBuilder::with_id("browser.quit", menu_text::label("Quit Zephium"))
+    tauri::menu::MenuItemBuilder::with_id("browser.quit", menu_text::label("Quit Kestrel"))
         .accelerator("CmdOrCtrl+Q")
         .build(handle)
 }
-
-/// Page keystrokes never reach privileged chrome, so the Work pane's
-/// dismissal keys are menu items, present in View only while a pane is shown.
-const WORK_PANE_MENU_COMMAND_IDS: [&str; 2] = ["work.pane.close", "work.pane.openInBrowse"];
 
 /// The application menu: the macOS menu bar, and the "more" popup on Windows
 /// and Linux.
 fn build_menu(
     handle: &tauri::AppHandle,
     overrides: &std::collections::HashMap<String, String>,
-    work_pane: bool,
 ) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
     use tauri::menu::{Menu, SubmenuBuilder};
 
@@ -5536,9 +5260,9 @@ fn build_menu(
 
     // About is Settings' About page: the system panel cannot open links in a tab.
     let about =
-        tauri::menu::MenuItemBuilder::with_id(help::ABOUT, menu_text::label("About Zephium"))
+        tauri::menu::MenuItemBuilder::with_id(help::ABOUT, menu_text::label("About Kestrel"))
             .build(handle)?;
-    let app_menu = SubmenuBuilder::new(handle, menu_text::label("Zephium"))
+    let app_menu = SubmenuBuilder::new(handle, menu_text::label("Kestrel"))
         .item(&about)
         .separator()
         .item(&item("browser.settings")?)
@@ -5547,7 +5271,7 @@ fn build_menu(
     let app_menu = app_menu
         .services_with_text(menu_text::label("Services"))
         .separator()
-        .hide_with_text(menu_text::label("Hide Zephium"))
+        .hide_with_text(menu_text::label("Hide Kestrel"))
         .hide_others_with_text(menu_text::label("Hide Others"))
         .show_all_with_text(menu_text::label("Show All"))
         .separator();
@@ -5603,16 +5327,7 @@ fn build_menu(
         .item(&item("url.focus")?)
         .item(&item("page.viewSource")?)
         .item(&item("page.devtools")?);
-    let view = if work_pane {
-        let mut view = view.separator();
-        for id in WORK_PANE_MENU_COMMAND_IDS {
-            view = view.item(&item(id)?);
-        }
-        view
-    } else {
-        view
-    }
-    .build()?;
+    let view = view.build()?;
     let history = SubmenuBuilder::new(handle, menu_text::label("History"))
         .item(&item("nav.back")?)
         .item(&item("nav.forward")?)
@@ -5664,15 +5379,14 @@ fn build_menu(
     )
 }
 
-/// Installs (or reinstalls, after a rebinding or a Work pane showing or
-/// hiding) the macOS menu bar. Main thread only.
+/// Installs (or reinstalls, after a rebinding) the macOS menu bar. Main
+/// thread only.
 #[cfg(target_os = "macos")]
 fn install_menu_bar(
     app: &tauri::AppHandle,
     overrides: &std::collections::HashMap<String, String>,
-    work_pane: bool,
 ) -> tauri::Result<()> {
-    app.set_menu(offered_only(app, build_menu(app, overrides, work_pane)?)?)?;
+    app.set_menu(offered_only(app, build_menu(app, overrides)?)?)?;
     Ok(())
 }
 
@@ -6154,7 +5868,6 @@ fn build_profile_menu(
 
 fn handle_run_event(app: &tauri::AppHandle, event: tauri::RunEvent) {
     #[cfg(feature = "macos-work-public-inspection")]
-    work_development::on_run_event(app, &event);
     #[cfg(all(
         feature = "macos-work-navigation-probe",
         not(feature = "macos-work-profile-enrollment"),
@@ -6269,7 +5982,7 @@ fn install_async_runtime() {
 pub fn run() {
     if cfg!(all(unix, not(target_os = "macos"))) {
         diagnostic!(
-            "Zephium isn't available on Linux yet. We're working on it; follow https://zephium.app for news."
+            "Kestrel isn't available on Linux yet. We're working on it; follow https://zephium.app for news."
         );
         std::process::exit(1);
     }
@@ -6480,8 +6193,6 @@ pub fn run() {
                 }
                 menu_text::set_language(store.app_setting("ui.language").as_deref());
                 updates::schedule_native_checks(app.handle());
-                work_models::install(app.handle());
-                account::install(app.handle());
 
                 #[cfg(target_os = "windows")]
                 let privileged_runtime = prepare_privileged_runtime_directories(&data_dir)?;
@@ -6701,12 +6412,6 @@ pub fn run() {
                     },
                 ),
                 move |event| {
-                    #[cfg(all(feature = "macos-work-retained-controller-probe", target_os = "macos"))]
-                    if zephium_work_composition::retained_qualification::retained_controller_policy_event(&event) { return; }
-                    #[cfg(all(feature = "macos-work-resource-probe", target_os = "macos"))]
-                    if zephium_engine::work_resource_policy_event(&event) { return; }
-                    #[cfg(all(feature = "macos-work-rendering-probe", target_os = "macos"))]
-                    if zephium_engine::foreground_rendering_policy_event(&event) { return; }
                     if let zephium_core::ports::engine::EngineEvent::ShortcutPressed {
                         command,
                         ..
@@ -6757,7 +6462,7 @@ pub fn run() {
             // Windows and Linux get the same menu as a popup from the sidebar
             // "more" button instead of a persistent bar.
             #[cfg(target_os = "macos")]
-            install_menu_bar(&handle, &keymap, false)?;
+            install_menu_bar(&handle, &keymap)?;
             app.on_menu_event(|app, event| {
                 let _ = execute_command(app, event.id().0.as_str());
             });
@@ -6835,23 +6540,12 @@ pub fn run() {
             let emit_handle = handle.clone();
             let disposition_ledger = operation_ledger.clone();
             let emit: EmitFn = Box::new(move |projection| match projection {
-                Projection::WorkEnvironmentChanged(change) => emit_to_privileged(
-                    &emit_handle, MAIN_LABEL, "zephium:work-environment-changed", &change,
-                ),
-                Projection::WorkChanged(change) => emit_to_privileged(
-                    &emit_handle,
-                    MAIN_LABEL,
-                    "zephium:work-changed",
-                    &change,
-                ),
                 Projection::PanelOwner(owner) => overlay::update_context(&emit_handle, &owner),
                 Projection::Items(state) => {
                     spaces::follow(&emit_handle, &state);
-                    page_assist::observe_items(&state);
                     emit_to_privileged(&emit_handle, MAIN_LABEL, EVENT_ITEMS, &state)
                 }
                 Projection::Tab(tab) => {
-                    page_assist::observe_tab(&tab);
                     emit_to_privileged(&emit_handle, MAIN_LABEL, EVENT_TAB, &tab)
                 }
                 Projection::Favicons(favicons) => emit_to_privileged(
@@ -6914,7 +6608,6 @@ pub fn run() {
                         apply_native_material(&emit_handle, value);
                     }
                     if let Some((key, value)) = id.strip_prefix("preference.").and_then(|rest| rest.split_once('=')) {
-                        page_assist::preference_changed(key, value);
                         if material::theme_changed(key, value) {
                             reinstall_native_materials(&emit_handle);
                         }
@@ -6932,9 +6625,6 @@ pub fn run() {
                     emit_to_privileged(&emit_handle, if results.context.as_ref().is_some_and(|context| context.session_id.starts_with("newtab:")) { MAIN_LABEL } else { overlay::PANEL_LABEL }, EVENT_SEARCH, &results)
                 }
                 Projection::Layout(layout) => {
-                    if let Some(keymap) = emit_handle.try_state::<keymap::Keymap>() {
-                        keymap.set_work_pane_shown(&emit_handle, layout.work_pane.is_some());
-                    }
                     emit_to_privileged(&emit_handle, MAIN_LABEL, EVENT_LAYOUT, &layout)
                 }
                 Projection::HostFullscreen(active) => content_fullscreen::follow(&emit_handle, active),
@@ -6953,7 +6643,6 @@ pub fn run() {
                 Projection::OperationProcessed(disposition) => {
                     let panel_result=disposition.clone();
                     if record_and_deliver_operation(&disposition_ledger,disposition,|disposition| {
-                        work_product::preference_processed(&emit_handle, disposition);
                         try_emit_to_privileged(&emit_handle,MAIN_LABEL,EVENT_OPERATION_PROCESSED,disposition)
                     }) {
                         if let Some(panel)=emit_handle.try_state::<overlay::Overlay>() {panel.operation(panel_result);}
@@ -7087,12 +6776,8 @@ pub fn run() {
                 );
                 return Err(error.into());
             }
-            #[cfg(feature = "work-product")]
-            page_assist::install(app.handle(), engine.clone(), store.clone());
             notes::install(app.handle(), &data_dir, store.clone(), &shell);
             external_links::adopt(app.handle());
-            #[cfg(feature = "work-product")]
-            favicon_probe::install(&shell);
             let web_extensions = webext::WebExtensions::new(&data_dir);
             web_extensions.restore(&shell);
             app.manage(web_extensions);
@@ -7116,7 +6801,6 @@ pub fn run() {
             ))]
             navigation_probe::install(app.handle())?;
             #[cfg(feature = "macos-work-public-inspection")]
-            work_development::install(app.handle())?;
             if !startup_engine.transfer_to(&engine) {
                 return Err(std::io::Error::other(
                     "startup engine ownership did not transfer to the shell",
@@ -7285,7 +6969,6 @@ pub fn run() {
                     // an OS-minimized window hides all content views.
                     tauri::WindowEvent::Focused(false) => {
                         resize_shell.dispatch(Command::SetWindowFocused(false));
-                        voice::window_blurred(resize_window.app_handle());
                         if resize_window.is_minimized().unwrap_or(false) {
                             resize_shell.dispatch(Command::SetWindowVisible(false));
                         }
@@ -7321,7 +7004,7 @@ pub fn run() {
                         .map_err(|error| std::io::Error::other(error.to_string()))?,
                 ),
             )
-            .title("Zephium")
+            .title("Kestrel")
             .incognito(true)
             .devtools(cfg!(debug_assertions))
             .general_autofill_enabled(false)
@@ -7528,7 +7211,7 @@ pub fn run() {
         })
         .build(context)
         .unwrap_or_else(|error| {
-            diagnostic!("startup: failed to build Zephium: {error}");
+            diagnostic!("startup: failed to build Kestrel: {error}");
             #[cfg(not(target_os = "linux"))]
             {
                 let error = error.to_string();
@@ -7622,35 +7305,6 @@ mod tests {
     }
 
     #[test]
-    fn menu_bar_hosts_pane_keys_in_view_and_lists_each_panel_once() {
-        let source = include_str!("lib.rs");
-        let menu = source
-            .split("fn build_menu(")
-            .nth(1)
-            .and_then(|rest| rest.split("fn install_menu_bar").next())
-            .expect("menu builder");
-        assert!(!menu.contains("\"Work\""), "the menu bar has no Work menu");
-        assert!(menu.contains("for id in WORK_PANE_MENU_COMMAND_IDS"));
-        let pane: Vec<_> = zephium_core::commands::REGISTRY
-            .iter()
-            .filter(|command| command.group == zephium_core::commands::Group::Work)
-            .map(|command| command.id)
-            .collect();
-        assert_eq!(pane, super::WORK_PANE_MENU_COMMAND_IDS);
-        for id in [
-            "tool.notes",
-            "tool.tasks",
-            "tool.time",
-            "tool.history",
-            "tool.downloads",
-            "browser.notes",
-            "browser.tasks",
-        ] {
-            assert_eq!(menu.matches(&format!("item(\"{id}\")")).count(), 1, "{id}");
-        }
-    }
-
-    #[test]
     fn about_and_help_go_through_the_command_router() {
         let source = include_str!("lib.rs").split("#[cfg(test)]").next().unwrap();
         assert!(!source.contains("about_with_text"));
@@ -7679,13 +7333,6 @@ mod tests {
             .join("\n")
             + "\n";
         std::fs::write(path, normalized).expect("normalize generated bindings");
-        std::fs::write(
-            "../frame/src/shared/ipc/work-constants.ts",
-            format!(
-                "// Generated by export_typescript_bindings. Do not edit.\nexport const WORK_PLACEMENT_PIN = {} as const;\n",
-                zephium_core::work::environment::WORK_PLACEMENT_PIN
-            ),
-        ).expect("export Work constants");
         std::fs::write(
             "../frame/src/shared/ipc/theme-presets.json",
             zephium_core::theme::presets_json(),
@@ -8618,7 +8265,7 @@ mod tests {
             config
                 .get("productName")
                 .and_then(serde_json::Value::as_str),
-            Some("app.zephium")
+            Some("app.kestrel")
         );
         for pointer in [
             "/bundle/linux/deb/desktopTemplate",
@@ -8626,13 +8273,13 @@ mod tests {
         ] {
             assert_eq!(
                 config.pointer(pointer).and_then(serde_json::Value::as_str),
-                Some("linux/zephium.desktop.hbs")
+                Some("linux/kestrel.desktop.hbs")
             );
         }
-        let template = include_str!("../linux/zephium.desktop.hbs");
+        let template = include_str!("../linux/kestrel.desktop.hbs");
         for exact in [
-            "Name=Zephium",
-            "StartupWMClass=app.zephium",
+            "Name=Kestrel",
+            "StartupWMClass=app.kestrel",
             "Exec={{exec}} %U",
             "Icon={{icon}}",
         ] {
@@ -9243,13 +8890,11 @@ mod tests {
         assert!(plist.contains("<key>NSCameraUsageDescription</key>"));
         assert!(plist.contains("<key>NSMicrophoneUsageDescription</key>"));
         assert!(
-            plist.contains("Zephium uses the camera only when you allow a website to access it.")
+            plist.contains("Kestrel uses the camera only when you allow a website to access it.")
         );
-        assert!(plist.contains(
-            "Zephium uses the microphone while you dictate in Work, and for a website only when you allow it."
-        ));
-        assert!(plist.contains("<key>NSSpeechRecognitionUsageDescription</key>"));
-        assert!(plist.contains("Zephium turns what you dictate in Work into text on this Mac."));
+        assert!(plist
+            .contains("Kestrel uses the microphone only when you allow a website to access it."));
+        assert!(!plist.contains("<key>NSSpeechRecognitionUsageDescription</key>"));
         for key in [
             "NSLocationUsageDescription",
             "NSLocationWhenInUseUsageDescription",
@@ -9493,39 +9138,6 @@ mod tests {
             super::MIN_SIDEBAR_WIDTH - 1.0
         ));
         assert!(!super::sidebar_width_in_bounds(f64::NAN));
-    }
-
-    #[test]
-    fn work_pane_inputs_are_finite_positive_and_trusted() {
-        let rect = |x, y, width, height| {
-            super::work_pane_rect(zephium_ipc::WorkPaneRect {
-                x,
-                y,
-                width,
-                height,
-            })
-        };
-        assert_eq!(
-            rect(10.0, 20.0, 640.0, 480.0),
-            Some(zephium_core::geometry::Rect::new(10.0, 20.0, 640.0, 480.0))
-        );
-        assert_eq!(rect(-5.0, 20.0, 640.0, 480.0).map(|r| r.x), Some(-5.0));
-        assert!(rect(10.0, 20.0, 0.0, 480.0).is_none());
-        assert!(rect(10.0, 20.0, 640.0, -1.0).is_none());
-        assert!(rect(f64::NAN, 20.0, 640.0, 480.0).is_none());
-        assert!(rect(10.0, 20.0, f64::INFINITY, 480.0).is_none());
-        assert!(rect(10.0, 20.0, super::MAX_WINDOW_COORDINATE + 1.0, 480.0).is_none());
-
-        assert!(super::trusted_web_url("https://example.com/path?q=1"));
-        assert!(super::trusted_web_url("http://example.com"));
-        assert!(!super::trusted_web_url("javascript:alert(1)"));
-        assert!(!super::trusted_web_url("https://user:pw@example.com"));
-        assert!(!super::trusted_web_url("file:///etc/hosts"));
-        assert!(!super::trusted_web_url("https://example.com/\u{7}"));
-        assert!(!super::trusted_web_url(&format!(
-            "https://example.com/{}",
-            "a".repeat(8192)
-        )));
     }
 
     #[test]

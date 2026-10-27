@@ -646,8 +646,8 @@ fn runtime_security_advisory_view(
             }
         },
         update_target: match advisory.update_target() {
-            zephium_core::runtime_security::RuntimeSecurityUpdateTarget::Zephium => {
-                RuntimeSecurityUpdateTarget::Zephium
+            zephium_core::runtime_security::RuntimeSecurityUpdateTarget::Kestrel => {
+                RuntimeSecurityUpdateTarget::Kestrel
             }
             zephium_core::runtime_security::RuntimeSecurityUpdateTarget::OperatingSystem => {
                 RuntimeSecurityUpdateTarget::OperatingSystem

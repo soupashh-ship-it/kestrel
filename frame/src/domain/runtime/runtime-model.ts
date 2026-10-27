@@ -4,7 +4,7 @@ export type RuntimeNotification = {
   id:
     | "restart_required"
     | "review_overdue"
-    | "update_zephium"
+    | "update_kestrel"
     | "update_operating_system"
     | "update_browser_runtime"
     | "unreviewed_runtime"
@@ -31,12 +31,12 @@ function updateRecommendation(target: RuntimeSecurityUpdateTarget): RuntimeNotif
         detail: "Install the latest stable browser runtime before continuing sensitive browsing.",
         tone: "warning",
       };
-    case "zephium":
+    case "kestrel":
       return {
-        id: "update_zephium",
-        title: "Zephium update recommended",
+        id: "update_kestrel",
+        title: "Kestrel update recommended",
         detail:
-          "Install the latest Zephium release to refresh its reviewed browser-runtime policy.",
+          "Install the latest Kestrel release to refresh its reviewed browser-runtime policy.",
         tone: "warning",
       };
   }
@@ -54,8 +54,8 @@ export function runtimeNotifications(status: RuntimeStatus): RuntimeNotification
   if (status.restart_required) {
     push({
       id: "restart_required",
-      title: "Restart Zephium",
-      detail: "A newer browser runtime is ready. Restart Zephium to use it.",
+      title: "Restart Kestrel",
+      detail: "A newer browser runtime is ready. Restart Kestrel to use it.",
       tone: "info",
     });
   }
@@ -67,8 +67,8 @@ export function runtimeNotifications(status: RuntimeStatus): RuntimeNotification
       title: "Some add-on changes weren't applied",
       detail:
         count === 1
-          ? "An extension or userscript change couldn't be applied. Zephium kept the previous verified version when available."
-          : "Some extension or userscript changes couldn't be applied. Zephium kept previous verified versions when available.",
+          ? "An extension or userscript change couldn't be applied. Kestrel kept the previous verified version when available."
+          : "Some extension or userscript changes couldn't be applied. Kestrel kept previous verified versions when available.",
       tone: "warning",
     });
   }
@@ -85,7 +85,7 @@ export function runtimeNotifications(status: RuntimeStatus): RuntimeNotification
           id: "review_overdue",
           title: "Security review is overdue",
           detail:
-            "This build uses its last reviewed hard floor. Check for a newer Zephium release before sensitive browsing.",
+            "This build uses its last reviewed hard floor. Check for a newer Kestrel release before sensitive browsing.",
           tone: "warning",
         });
         break;
@@ -94,7 +94,7 @@ export function runtimeNotifications(status: RuntimeStatus): RuntimeNotification
           id: "unreviewed_runtime",
           title: "New browser runtime detected",
           detail:
-            "The stable runtime passed mandatory checks, but this Zephium build has not reviewed its release line yet. Check for a newer Zephium release.",
+            "The stable runtime passed mandatory checks, but this Kestrel build has not reviewed its release line yet. Check for a newer Kestrel release.",
           tone: "warning",
         });
         break;

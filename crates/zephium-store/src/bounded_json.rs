@@ -30,16 +30,6 @@ pub(crate) fn preflight(input: &str) -> Result<PreflightedJson<'_>, &'static str
     preflight_with_string_limit(input, MAX_RAW_STRING_BYTES)
 }
 
-/// Work execution rows are independently capped at 512 KiB before this pass.
-/// Their semantic artifact text permits 32 KiB, with at most 2x JSON escaping
-/// from the canonical writer. Session ingress keeps its existing smaller bound.
-pub(crate) fn preflight_work_execution(input: &str) -> Result<PreflightedJson<'_>, &'static str> {
-    preflight_with_string_limit(
-        input,
-        2 * zephium_core::work::artifact::MAX_ARTIFACT_TEXT_BYTES,
-    )
-}
-
 fn preflight_with_string_limit(
     input: &str,
     max_string_bytes: usize,
@@ -159,7 +149,7 @@ impl PreflightedJson<'_> {
 /// Deserializes only after the allocation-free lexical limits have passed.
 /// Serde JSON's built-in recursion limit is disabled because the recursive
 /// fields below have stricter schema-aware depth counters of their own. This
-/// lets a snapshot at Zephium's documented split-depth limit round-trip while
+/// lets a snapshot at Kestrel's documented split-depth limit round-trip while
 /// keeping arbitrary JSON nesting bounded by `preflight`.
 pub(crate) fn from_str<T>(input: &str) -> Result<T, &'static str>
 where
@@ -415,16 +405,6 @@ mod tests {
             a: Box::new(pane_with_leaves(first, next)),
             b: Box::new(pane_with_leaves(leaves - first, next)),
         }
-    }
-
-    #[test]
-    fn work_text_ingress_does_not_expand_session_string_admission() {
-        let text = "\t".repeat(zephium_core::work::artifact::MAX_ARTIFACT_TEXT_BYTES);
-        let body = serde_json::to_string(&text).unwrap();
-        assert!(preflight_work_execution(&body).is_ok());
-        assert!(preflight(&body).is_err());
-        let oversized = serde_json::to_string(&(text + "\t")).unwrap();
-        assert!(preflight_work_execution(&oversized).is_err());
     }
 
     #[test]

@@ -519,42 +519,6 @@ export const fields = {
     description: m.pref_performance_exceptions_help,
     initial: "",
   },
-  "voice.engine": {
-    section: "ai",
-    label: m.voice_engine_title,
-    description: m.voice_group_note,
-    initial: "",
-  },
-  "voice.language": {
-    section: "ai",
-    label: m.voice_language_title,
-    description: m.voice_language_desc,
-    initial: "",
-  },
-  "work.decisions": {
-    section: "ai",
-    label: m.settings_decisions,
-    description: m.settings_decisions_desc,
-    initial: "recommended",
-  },
-  "work.decisions.key": {
-    section: "ai",
-    label: m.ai_jev_key_title,
-    description: m.ai_jev_key_desc,
-    initial: "",
-  },
-  "ai.enabled": {
-    section: "features",
-    label: m.feature_ai_title,
-    description: m.feature_ai_on,
-    initial: true,
-  },
-  "work.enabled": {
-    section: "features",
-    label: m.feature_work_title,
-    description: m.feature_work_on,
-    initial: true,
-  },
   "notes.enabled": {
     section: "features",
     label: m.feature_notes_title,

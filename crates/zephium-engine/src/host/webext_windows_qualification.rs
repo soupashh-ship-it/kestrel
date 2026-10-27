@@ -35,7 +35,7 @@ impl Host {
             let class = WNDCLASSW {
                 lpfnWndProc: Some(window_proc),
                 hInstance: module.into(),
-                lpszClassName: windows_core::w!("ZephiumRuntimeQualification"),
+                lpszClassName: windows_core::w!("KestrelRuntimeQualification"),
                 ..Default::default()
             };
             RegisterClassW(&class);
@@ -43,7 +43,7 @@ impl Host {
                 CreateWindowExW(
                     WS_EX_TOOLWINDOW,
                     class.lpszClassName,
-                    windows_core::w!("Zephium Protection Qualification"),
+                    windows_core::w!("Kestrel Protection Qualification"),
                     WS_OVERLAPPEDWINDOW,
                     0,
                     0,

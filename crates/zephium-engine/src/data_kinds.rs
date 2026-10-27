@@ -3,7 +3,7 @@
 
 use zephium_core::browsing_data::{EngineDataKinds, EngineSite, MAX_ENGINE_SITES};
 
-/// The WebKit website data types Zephium removes, named after the
+/// The WebKit website data types Kestrel removes, named after the
 /// `WKWebsiteDataType` constants.
 #[cfg(any(target_os = "macos", test))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -55,7 +55,7 @@ pub(crate) enum WebKitStep {
 }
 
 /// The removals that clear `kinds` back to `since`. WebKit has no visited
-/// link store to clear, so history is Zephium's own and adds no step.
+/// link store to clear, so history is Kestrel's own and adds no step.
 #[cfg(any(target_os = "macos", test))]
 pub(crate) fn webkit_plan(kinds: EngineDataKinds, since: Option<i64>) -> Vec<WebKitStep> {
     let mut types = Vec::new();
@@ -90,7 +90,7 @@ pub(crate) fn webkit_plan(kinds: EngineDataKinds, since: Option<i64>) -> Vec<Web
     }
 }
 
-/// The `COREWEBVIEW2_BROWSING_DATA_KINDS` bits Zephium removes.
+/// The `COREWEBVIEW2_BROWSING_DATA_KINDS` bits Kestrel removes.
 #[cfg(any(target_os = "windows", test))]
 pub(crate) mod webview2 {
     pub(crate) const FILE_SYSTEMS: i32 = 1;

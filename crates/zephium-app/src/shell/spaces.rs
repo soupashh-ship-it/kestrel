@@ -270,7 +270,6 @@ impl Shell {
     /// follows the space, and any other browser page steps back to browsing first.
     fn switch_space(&mut self, space: SpaceId) -> OperationDisposition {
         match self.active_browser_page() {
-            Some(crate::BrowserPage::Work) => {}
             Some(_) if !self.browser_return_ready => {
                 self.browser_after_return = Some(Box::new(Command::Space(Box::new(
                     SpaceCommand::Switch(space),
@@ -312,9 +311,6 @@ impl Shell {
         else {
             return (Vec::new(), None);
         };
-        if self.work_pane.is_some() {
-            let _ = self.operation_work_pane_hide();
-        }
         self.remember_space_left();
         // A new tab left untouched is not worth keeping in the space left.
         let blank = active.filter(|id| {
@@ -386,9 +382,6 @@ impl Shell {
         }
         let mut native = NativeWork::default();
         if id == current {
-            if matches!(self.active_browser_page(), Some(crate::BrowserPage::Work)) {
-                return rejected(OperationReason::InvalidScope);
-            }
             let at = order.iter().position(|space| *space == id).unwrap_or(0);
             let neighbour = order
                 .get(at + 1)
@@ -452,9 +445,6 @@ impl Shell {
             if was_active {
                 window.active = None;
             }
-        }
-        if self.work_pane.as_ref().is_some_and(|pane| pane.tab == tab) {
-            self.clear_work_pane();
         }
         let mut effects = Vec::new();
         if was_active {

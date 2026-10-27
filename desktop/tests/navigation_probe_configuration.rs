@@ -9,9 +9,9 @@ fn navigation_qualification_requires_exact_bundled_isolation() {
         serde_json::from_str(include_str!("../tauri.work-navigation-probe.conf.json")).unwrap();
     configuration::validate(&config).unwrap();
     for (pointer, replacement) in [
-        ("/identifier", serde_json::json!("app.zephium")),
-        ("/productName", serde_json::json!("Zephium")),
-        ("/app/windows/0/title", serde_json::json!("Zephium")),
+        ("/identifier", serde_json::json!("app.kestrel")),
+        ("/productName", serde_json::json!("Kestrel")),
+        ("/app/windows/0/title", serde_json::json!("Kestrel")),
         ("/build/devUrl", serde_json::json!("http://localhost:5173")),
     ] {
         let mut changed = config.clone();

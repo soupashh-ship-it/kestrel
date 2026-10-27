@@ -17,7 +17,7 @@ fn root(locations: &Locations) -> PathBuf {
 
 /// Safari ships with every Mac. Its files are opened only once the person
 /// imports from it: touching them while listing sources makes macOS warn that
-/// Zephium tried to read another app's data. Missing access surfaces then, as
+/// Kestrel tried to read another app's data. Missing access surfaces then, as
 /// `ImportError::Permission`.
 pub(crate) fn source(_locations: &Locations) -> Option<Source> {
     if !cfg!(target_os = "macos") {

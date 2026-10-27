@@ -55,7 +55,7 @@ const fn seeds(bg: u32, fg: u32, accent: u32) -> Seeds {
 pub const PRESETS: &[Preset] = &[
     Preset {
         id: "zephium",
-        name: "Zephium",
+        name: "Kestrel",
         light: seeds(0xf1f1f3, 0x1c1c1f, 0x222226),
         dark: seeds(0x1a1a1d, 0xf4f4f6, 0xededf0),
     },
@@ -427,7 +427,7 @@ mod tests {
         assert!(!is_default("zephium", None, D, true));
         assert!(!is_default("zephium", None, 70, false));
         assert!(!is_default("custom", Some(NORD), D, false));
-        // Derived from Zephium's own seeds it lands where graphite is.
+        // Derived from Kestrel's own seeds it lands where graphite is.
         let derived = chrome("zephium", None, D, true, false);
         assert!(derived[0].abs_diff(31) <= 5, "{derived:?}");
     }

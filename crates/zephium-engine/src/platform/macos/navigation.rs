@@ -55,7 +55,7 @@ impl NavigationObservationKind {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumNavigationObserver"]
+    #[name = "KestrelNavigationObserver"]
     #[ivars = NavigationObserverIvars]
     pub struct NavigationObserver;
 

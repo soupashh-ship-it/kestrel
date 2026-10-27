@@ -1,6 +1,6 @@
 //! macOS page-permission completion ownership.
 //!
-//! WebKit owns the capability decision; Zephium owns only a bounded,
+//! WebKit owns the capability decision; Kestrel owns only a bounded,
 //! origin-labelled prompt transaction. The retained native block never leaves
 //! Wry's main-thread delegate. This module binds its opaque identity to the
 //! exact profile, logical item, physical-view permit, and committed navigation

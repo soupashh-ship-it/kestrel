@@ -263,9 +263,6 @@ impl Shell {
         let Some(space) = self.remembered_space(profile) else {
             return operation_result(OperationOutcome::Rejected, OperationReason::InvalidScope);
         };
-        if self.work_pane.is_some() {
-            let _ = self.operation_work_pane_hide();
-        }
         if let Some(active) = active {
             self.roster.left_at.insert(leaving, active);
         }

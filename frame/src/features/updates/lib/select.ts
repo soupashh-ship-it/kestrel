@@ -32,8 +32,8 @@ function pillFor(status: UpdateStatus, relaunching: boolean): UpdatePill | null 
   return relaunching ? { kind: "installing" } : { kind: "ready", version: status.version };
 }
 
-/** Dismissed at an older Zephium, or never: a system still behind is
- *  mentioned again once per Zephium version. */
+/** Dismissed at an older Kestrel, or never: a system still behind is
+ *  mentioned again once per Kestrel version. */
 function securityDue(dismissed: string, version: string) {
   if (dismissed === "") return true;
   const order = compareVersions(dismissed, version);

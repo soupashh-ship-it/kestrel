@@ -482,7 +482,6 @@ pub(crate) fn install(
             #[cfg(all(target_os = "macos", feature = "agentic-browser"))]
             work_data_stores: HashMap::new(),
             #[cfg(any(target_os = "macos", target_os = "windows"))]
-            work_site_loads: HashMap::new(),
             #[cfg(target_os = "macos")]
             webext: Default::default(),
             #[cfg(target_os = "windows")]

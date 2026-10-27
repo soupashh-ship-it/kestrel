@@ -83,40 +83,6 @@ export default defineConfig({
               ),
               "utf8",
             ),
-            formActionRuntime: readFileSync(
-              new URL(
-                "../crates/zephium-engine/src/platform/macos/agentic_form_diagnostic_probe.js",
-                import.meta.url,
-              ),
-              "utf8",
-            ),
-            formOracleRuntime: readFileSync(
-              new URL("../crates/zephium-engine/src/host/work_form_oracle.js", import.meta.url),
-              "utf8",
-            ),
-            pixelPrivacyRuntime: readFileSync(
-              new URL(
-                "../crates/zephium-agentic/assets/semantic-pixel-privacy-v1.js",
-                import.meta.url,
-              ),
-              "utf8",
-            ),
-            semanticMediaRuntime:
-              readFileSync(
-                new URL(
-                  "../crates/zephium-agentic/assets/semantic-record-media-v1.js",
-                  import.meta.url,
-                ),
-                "utf8",
-              ) +
-              readFileSync(
-                new URL("../crates/zephium-agentic/assets/semantic-runtime-v1.js", import.meta.url),
-                "utf8",
-              ),
-            humanWallSurvey: readFileSync(
-              new URL("../crates/zephium-agentic/assets/work-human-wall-v1.js", import.meta.url),
-              "utf8",
-            ),
             contentStyleSource: readFileSync(
               new URL("../crates/zephium-engine/src/host/content_style.js", import.meta.url),
               "utf8",

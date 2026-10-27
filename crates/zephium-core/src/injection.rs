@@ -21,7 +21,7 @@ pub const MAX_MATCH_PATTERNS_PER_SET: usize = 128;
 pub const MAX_MATCH_PATTERN_WILDCARDS: usize = 64;
 /// Maximum URL path-and-query length examined by direct URL matching.
 ///
-/// Zephium's top-level navigation boundary is tighter (8 KiB). This larger
+/// Kestrel's top-level navigation boundary is tighter (8 KiB). This larger
 /// bound leaves headroom for engine-reported child-frame URLs while ensuring a
 /// hostile URL cannot make every registered matcher scan an unbounded string.
 pub const MAX_MATCH_URL_BYTES: usize = 32 * 1024;

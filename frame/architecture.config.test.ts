@@ -8,20 +8,26 @@ async function violations(filePath: string, code: string) {
 }
 
 describe("frontend architecture enforcement", () => {
-  it("rejects upward imports and cross-feature dependencies through aliases", async () => {
-    expect(
-      await violations(
-        "src/shared/ui/Probe.svelte",
-        '<script>import Sidebar from "$features/sidebar/components/Sidebar.svelte";</script><Sidebar />',
-      ),
-    ).toContain("boundaries/dependencies");
-    expect(
-      await violations(
-        "src/features/newtab/probe.ts",
-        'export { default } from "$features/sidebar/components/Sidebar.svelte";',
-      ),
-    ).toContain("boundaries/dependencies");
-  });
+  // The lint engine cold-starts for this file and reads the whole project; on
+  // a loaded machine it needs longer than the default five seconds.
+  it(
+    "rejects upward imports and cross-feature dependencies through aliases",
+    { timeout: 30_000 },
+    async () => {
+      expect(
+        await violations(
+          "src/shared/ui/Probe.svelte",
+          '<script>import Sidebar from "$features/sidebar/components/Sidebar.svelte";</script><Sidebar />',
+        ),
+      ).toContain("boundaries/dependencies");
+      expect(
+        await violations(
+          "src/features/newtab/probe.ts",
+          'export { default } from "$features/sidebar/components/Sidebar.svelte";',
+        ),
+      ).toContain("boundaries/dependencies");
+    },
+  );
   it("rejects native bindings inside visual primitives", async () => {
     expect(
       await violations(

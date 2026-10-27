@@ -11,7 +11,7 @@
   import SettingsGroup from "$shared/ui/SettingsGroup";
   import SettingsRow from "$shared/ui/SettingsRow";
   import Button from "$shared/ui/Button";
-  import ZephiumTile from "$shared/ui/ZephiumTile";
+  import KestrelTile from "$shared/ui/KestrelTile";
   import AboutLinks from "../about/AboutLinks.svelte";
   import { WEBSITE } from "../../lib/links";
   import PreferenceSwitch from "../PreferenceSwitch.svelte";
@@ -138,9 +138,9 @@
 </script>
 
 <header class="settings-about hero">
-  <ZephiumTile size={88} />
+  <KestrelTile size={88} />
   <div class="identity">
-    <span class="zephium-wordmark" role="img" aria-label="Zephium"></span>
+    <span class="kestrel-wordmark" role="img" aria-label="Kestrel"></span>
     <p class="meta">
       <span class="version">{about ? m.about_version({ version: about.version }) : ""}</span>
       {#if updatable && about}<Button
@@ -296,7 +296,7 @@
     gap: 6px;
   }
 
-  .zephium-wordmark {
+  .kestrel-wordmark {
     inline-size: 150px;
     block-size: 22px;
   }

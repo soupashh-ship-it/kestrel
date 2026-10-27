@@ -234,7 +234,6 @@ pub struct FocusedContentPolicyStatusRequest {
 #[derive(Default)]
 pub(super) struct WorkerThreads {
     state: Mutex<WorkerThreadState>,
-    work_pending: crate::work_authoring::Pending,
 }
 
 #[derive(Default)]
@@ -590,20 +589,6 @@ pub struct CallbackHandle {
 }
 
 impl CallbackHandle {
-    /// Sticky retained state is polled after every Shell command. A full queue
-    /// already owns that progress; a sealed queue owns the shutdown barrier,
-    /// which waits on the original resource notification epoch instead. Only
-    /// a permanently closed actor has lost the application wake route.
-    #[cfg(feature = "work-execution")]
-    pub(crate) fn wake_retained_work(&self) -> bool {
-        let Some(inner) = self.queue.upgrade() else {
-            return false;
-        };
-        !matches!(
-            (CommandQueue { inner }).try_push(Command::WorkWake),
-            Err(TryPushError::Closed(_))
-        )
-    }
     pub fn dispatch(&self, command: Command) -> bool {
         let Some(inner) = self.queue.upgrade() else {
             return false;
@@ -636,126 +621,6 @@ impl Drop for Handle {
 }
 
 impl Handle {
-    pub fn work_call(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        call: zephium_ipc::work::WorkCallV1,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(call.into_request()?, Some(profile))
-    }
-
-    pub fn work_authoring_command(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        command: zephium_ipc::work::WorkAuthoringCommandV1,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(command.into_request()?, Some(profile))
-    }
-
-    pub fn work_query(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        query: zephium_ipc::work::WorkQueryV1,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(query.into_request()?, Some(profile))
-    }
-
-    /// Revision-checked runtime user intent, bound to the displayed profile.
-    /// Store reconciliation never returns a live worker capability.
-    pub fn work_command(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        command: zephium_ipc::work::WorkCommandV1,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(command.into_request()?, Some(profile))
-    }
-
-    pub fn work_projection(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        id: zephium_core::work::WorkId,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(
-            zephium_core::work::port::WorkRequest::RuntimeRead { id },
-            Some(profile),
-        )
-    }
-
-    pub fn work_evidence(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        id: zephium_core::work::WorkId,
-        link: zephium_core::work::artifact::WorkEvidenceLink,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(
-            zephium_core::work::port::WorkRequest::ReadEvidence { id, link },
-            Some(profile),
-        )
-    }
-
-    /// Author a persistent Work under the actor-selected regular profile. This
-    /// is a typed Rust intent seam, not a raw manifest or execution endpoint.
-    pub fn work_document(
-        &self,
-        intent: crate::WorkIntent,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        self.submit_work_document(intent.into_request()?, None)
-    }
-
-    /// Privileged chrome may read only this exact profile-bound immutable image.
-    /// The reference grants no fetch, execution, or additional profile access.
-    pub fn read_work_record_media(
-        &self,
-        media: zephium_core::work::media::WorkRecordMediaRefV1,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        let profile = media.profile;
-        media.validate()?;
-        self.submit_work_document(
-            zephium_core::work::port::WorkRequest::ReadRecordMedia { media },
-            Some(profile),
-        )
-    }
-    pub(crate) fn submit_work_document(
-        &self,
-        request: zephium_core::work::port::WorkRequest,
-        owner: Option<zephium_core::ids::ProfileId>,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        let (submission, receiver) = crate::work_authoring::WorkDocumentSubmission::prepare_bound(
-            &self.workers.work_pending,
-            request,
-            owner,
-        )?;
-        self.queue_work_document(submission, receiver)
-    }
-
-    #[cfg(feature = "work-runtime")]
-    pub(crate) fn submit_owned_work_runtime(
-        &self,
-        request: zephium_core::work::port::WorkRequest,
-        owner: zephium_core::ids::ProfileId,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        let (submission, receiver) = crate::work_authoring::WorkDocumentSubmission::prepare_pinned(
-            &self.workers.work_pending,
-            request,
-            owner,
-        )?;
-        self.queue_work_document(submission, receiver)
-    }
-
-    fn queue_work_document(
-        &self,
-        submission: crate::WorkDocumentSubmission,
-        receiver: crate::WorkDocumentRequest,
-    ) -> Result<crate::WorkDocumentRequest, zephium_core::work::WorkError> {
-        match self.queue.try_push(Command::WorkDocument(submission)) {
-            Ok(()) => Ok(receiver),
-            Err(TryPushError::Full(_)) => Err(zephium_core::work::WorkError::Capacity),
-            Err(TryPushError::Sealed(_) | TryPushError::Closed(_)) => {
-                Err(zephium_core::work::WorkError::Shutdown)
-            }
-        }
-    }
-
     pub fn web_extension_target(
         &self,
         tab: Option<zephium_core::ids::ItemId>,
@@ -993,24 +858,6 @@ impl Handle {
         FocusedContentPolicyStatusRequest { receiver }
     }
 
-    /// Selects the current browser profile on the actor, never from UI/model IDs.
-    #[cfg(feature = "work-execution")]
-    pub fn work_profile_binding(&self) -> crate::AgentWorkProfileRequest {
-        let (reply, receiver) = sync_channel(1);
-        let command = Command::WorkProfileBinding { reply };
-        match self.queue.try_push(command) {
-            Ok(()) => {}
-            Err(
-                TryPushError::Full(command)
-                | TryPushError::Sealed(command)
-                | TryPushError::Closed(command),
-            ) => {
-                finish_unprocessed_command(command, ShutdownOutcome::Unclean);
-            }
-        }
-        crate::AgentWorkProfileRequest(receiver)
-    }
-
     /// The focused window's open tabs of `profile`, for consented context;
     /// an unprocessed request disconnects the receiver.
     pub fn window_tabs(
@@ -1188,7 +1035,7 @@ impl Handle {
 
     /// Requests ordered shutdown under a caller-started absolute deadline.
     ///
-    /// Deadlines beyond Zephium's fixed process budget are clamped; callers
+    /// Deadlines beyond Kestrel's fixed process budget are clamped; callers
     /// cannot extend teardown by supplying a later instant.
     pub fn shutdown_with_deadline(&self, deadline: std::time::Instant) -> ShutdownRequest {
         let (ack, done) = sync_channel(1);
@@ -1257,16 +1104,10 @@ fn finish_unprocessed_command(command: Command, outcome: ShutdownOutcome) {
 }
 
 fn tracked_operation_command(command: &Command) -> bool {
-    #[cfg(feature = "work-planning")]
-    if matches!(command, Command::SetWorkScreenshots(_)) {
-        return true;
-    }
     matches!(
         command,
         Command::Open
             | Command::ShowBrowserPage(_)
-            | Command::WorkPaneShow { .. }
-            | Command::WorkPaneHide
             | Command::SetTabEssential { .. }
             | Command::KeepSite(_)
             | Command::ReleaseSite(_)

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount, untrack, type Snippet } from "svelte";
-  import { accountFoot, accountSession } from "$domain/account";
   import {
     CheckListIcon,
     Clock01Icon,
@@ -24,12 +23,10 @@
   import { WORDMARK } from "$shared/lib/wordmark";
   import { reducedMotion } from "$shared/lib/motion";
   import { decode, placeSky, SCENES, scene as skyScene, seen, type Scene } from "$shared/sky";
-  import NewTabAccount from "./NewTabAccount.svelte";
 
   let {
     search,
     oncustomize,
-    onaccount,
     ontasks,
     ontime,
   }: {
@@ -37,8 +34,6 @@
     search: Snippet;
     /** Opens this page's settings. */
     oncustomize?: () => void;
-    /** Opens the account in Settings, or straight onto buying credits. */
-    onaccount?: (intent: "account" | "credits") => void;
     /** Opens Tasks. */
     ontasks?: () => void;
     /** Opens Time. */
@@ -53,11 +48,6 @@
   let focusedBefore = $state(0);
 
   let incognito = $derived(tabs.profile()?.kind === "incognito");
-  const account = accountFoot({ private: () => incognito });
-  // The account is in its own pane beside the page's settings, and the
-  // settings keep the corner, so nothing moves when the account is known.
-  let showAccount = $derived(!!onaccount && account.available);
-  let signInWidth = $state(0);
   let profile = $derived(tabs.profile()?.id ?? null);
   let showGreeting = $derived(preferences.value("ui.newtab-greeting") === "true");
   let showClock = $derived(preferences.value("ui.newtab-clock") === "true");
@@ -146,10 +136,7 @@
       live = false;
     };
   });
-  let controls = $derived([
-    ...(showAccount ? [account.signedIn ? 32 : Math.max(32, signInWidth)] : []),
-    ...(oncustomize ? [32] : []),
-  ]);
+  let controls = $derived([...(oncustomize ? [32] : [])]);
   let page = $derived(layout(width, height, { controls, clock: showClock }));
   const at = ({ x, y, w, h }: Box) => `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
 
@@ -222,11 +209,6 @@
   });
 
   onMount(() => {
-    void accountSession.retain();
-    return () => accountSession.release();
-  });
-
-  onMount(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     // One redraw per minute, on the turn, and none while the page is hidden.
     function update() {
@@ -250,7 +232,7 @@
 
 <!--
   Drawn by the chrome, so a new tab costs no WebView and shows no paint flash.
-  The page is a window onto the Zephium sky: solid above, dissolving through
+  The page is a window onto the Kestrel sky: solid above, dissolving through
   a halftone screen into the page below the horizon. The window's own glass
   reaches down into it through the notch the field hangs in. The dots are
   baked into the picture, so the page only shows it.
@@ -286,7 +268,7 @@
   </svg>
 
   <!-- The name, drawn only as large as itself. -->
-  <svg class="mark" role="img" aria-label="Zephium" style={at(page.mark)}>
+  <svg class="mark" role="img" aria-label="Kestrel" style={at(page.mark)}>
     <defs>
       <path id={`${id}-letters`} d={WORDMARK.d} transform={letters} />
       {#if glint}<linearGradient
@@ -341,11 +323,6 @@
   {/if}
 
   <!-- Each control a disc of light on the sky, level with the field. -->
-  {#if showAccount && onaccount && page.controls[0]}
-    <div class="control" style={at(page.controls[0])}>
-      <NewTabAccount {account} {onaccount} bind:signInWidth />
-    </div>
-  {/if}
   {#if oncustomize && page.controls.at(-1)}
     <div class="control" style={at(page.controls.at(-1)!)}>
       <IconButton
@@ -566,9 +543,8 @@
     color: var(--sky-ink);
   }
 
-  /* White on the sky for the buttons alone: the account's panel opens from
-     inside the disc and keeps the theme's own ink. */
-  .control :global(:is(.ntp-account, .sign-in, .icon-button)) {
+  /* White on the sky for the buttons alone: they keep the theme's own ink. */
+  .control :global(.icon-button) {
     --color-text: var(--sky-ink);
     --color-muted: var(--sky-ink);
     --color-label-secondary: var(--sky-ink);

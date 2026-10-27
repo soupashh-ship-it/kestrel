@@ -5,7 +5,7 @@ use windows_sys::Win32::Security::Credentials::*;
 use zeroize::{Zeroize, Zeroizing};
 
 fn wide(target: &str, filter: bool) -> Result<Vec<u16>, VaultError> {
-    if !target.starts_with("app.zephium.") || target.contains('\0') || target.contains('*') {
+    if !target.starts_with("app.kestrel.") || target.contains('\0') || target.contains('*') {
         return Err(VaultError::Invalid);
     }
     let mut value: Vec<u16> = target.encode_utf16().collect();
@@ -160,7 +160,7 @@ pub fn delete(target: &str) -> Result<(), VaultError> {
     }
 }
 
-/// Enumerates only a Zephium namespace, returning target names, never secret copies.
+/// Enumerates only a Kestrel namespace, returning target names, never secret copies.
 pub fn list(prefix: &str) -> Result<Vec<String>, VaultError> {
     let filter = wide(prefix, true)?;
     let mut count = 0;
@@ -238,7 +238,7 @@ mod tests {
                 .as_nanos(),
             NEXT_FIXTURE.fetch_add(1, Ordering::Relaxed)
         );
-        let target = format!("app.zephium.test.{generated_id}");
+        let target = format!("app.kestrel.test.{generated_id}");
         let _turn = crate::turn();
         assert!(
             !present(&target).expect("exact fixture absence"),
@@ -267,9 +267,9 @@ mod tests {
 
     #[test]
     fn target_validation_prevents_wildcards_nuls_and_external_namespaces() {
-        for name in ["other.application", "app.zephium.a*", "app.zephium.a\0b"] {
+        for name in ["other.application", "app.kestrel.a*", "app.kestrel.a\0b"] {
             assert_eq!(wide(name, false), Err(VaultError::Invalid));
         }
-        assert_eq!(wide("app.zephium.test", true).unwrap().last(), Some(&0));
+        assert_eq!(wide("app.kestrel.test", true).unwrap().last(), Some(&0));
     }
 }

@@ -3,7 +3,7 @@
 //! Native engines may overlap navigations and preserve one native identity
 //! across any number of HTTP redirects. URLs are policy inputs and observed
 //! state, never navigation identities. This state machine binds a Wry-native
-//! identity to one non-wrapping Zephium epoch and makes `Committed` the only
+//! identity to one non-wrapping Kestrel epoch and makes `Committed` the only
 //! transition that can authorize rendered content/chrome attribution.
 
 use std::sync::atomic::{AtomicU64, Ordering};

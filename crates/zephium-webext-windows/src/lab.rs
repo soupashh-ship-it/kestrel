@@ -58,7 +58,7 @@ impl Fixture {
                     let body = if request[..size].starts_with(b"GET /performance") {
                         include_str!("../fixtures/performance.html")
                     } else {
-                        "<!doctype html><title>Zephium lab fixture</title><body><h1>Extension probe</h1><textarea aria-label='Editor'>This are a sentence.</textarea><a href='/second'>Second page</a></body>"
+                        "<!doctype html><title>Kestrel lab fixture</title><body><h1>Extension probe</h1><textarea aria-label='Editor'>This are a sentence.</textarea><a href='/second'>Second page</a></body>"
                     };
                     let response = format!("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
                     let _ = stream.write_all(response.as_bytes());
@@ -101,14 +101,14 @@ impl Host {
             let class = WNDCLASSW {
                 lpfnWndProc: Some(window_proc),
                 hInstance: module.into(),
-                lpszClassName: w!("ZephiumWebextLab"),
+                lpszClassName: w!("KestrelWebextLab"),
                 ..Default::default()
             };
             RegisterClassW(&class);
             Ok(Self(CreateWindowExW(
                 WS_EX_TOOLWINDOW,
                 class.lpszClassName,
-                w!("Zephium extension lab"),
+                w!("Kestrel extension lab"),
                 WS_OVERLAPPEDWINDOW,
                 0,
                 0,

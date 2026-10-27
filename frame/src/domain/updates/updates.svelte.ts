@@ -1,5 +1,5 @@
 /**
- * Zephium's own updates, as native reports them. A check downloads a newer
+ * Kestrel's own updates, as native reports them. A check downloads a newer
  * release in the background; nothing installs until the person relaunches.
  * Development builds report `unavailable` and are never checked.
  */

@@ -285,50 +285,6 @@ fn schema28_widens_resource_kinds_and_keeps_receipts_joined() {
     assert_eq!(joined, 1);
     let replay = applied(mutate(&mut conn, ProfileId::from(1), create).unwrap());
     assert_eq!(replay.id, first.id);
-    let object = ResourceDraft {
-        title: "Shortlist".into(),
-        pinned: false,
-        content: ResourceContent::Object {
-            object: WorkObjectV1 {
-                version: 1,
-                data: zephium_core::work::artifact::WorkArtifactDataV1::Checklist {
-                    items: vec![zephium_core::work::artifact::WorkChecklistItem {
-                        text: "Compare pricing".into(),
-                        completed: false,
-                    }],
-                },
-                evidence: vec![],
-                provenance: None,
-            },
-        },
-        related: vec![],
-    };
-    let created = applied(
-        mutate(
-            &mut conn,
-            ProfileId::from(1),
-            command("object", ResourceIntent::Create { draft: object }),
-        )
-        .unwrap(),
-    );
-    assert_eq!(created.draft.kind(), ResourceKind::Object);
-    let page = list(
-        &conn,
-        ResourceQuery {
-            completed: None,
-            kind: ResourceKind::Object,
-            search: "pricing".into(),
-            trashed: false,
-            after: None,
-            limit: 10,
-        },
-    )
-    .unwrap();
-    let ResourceResponse::Page { items, .. } = page else {
-        panic!("expected page");
-    };
-    assert_eq!(items.len(), 1);
-    assert_eq!(items[0].title, "Shortlist");
 }
 
 #[test]
@@ -626,7 +582,7 @@ fn task_lists_preserve_tasks_and_replay_creation_exactly() {
     let create = command(
         "list-create",
         ResourceIntent::CreateTaskList {
-            title: "Zephium".into(),
+            title: "Kestrel".into(),
         },
     );
     let ResourceResponse::TaskListApplied { list, .. } =

@@ -352,31 +352,6 @@ mod tests {
             .read(profile, &asset.digest, 1 << 20)
             .is_some());
         assert_eq!(record.draft.title, "Keyboard.png");
-        use zephium_core::work::{
-            port::{WorkReply, WorkRequest},
-            WorkError,
-        };
-        let request = WorkRequest::ReadMediaContext {
-            resource: record.id.clone(),
-            revision: record.revision.clone(),
-        };
-        let WorkReply::MediaContext(context) = hub.work_document(profile, request.clone()).unwrap()
-        else {
-            panic!()
-        };
-        assert_eq!(context.0, bytes);
-        assert!(!format!("{context:?}").contains("PNG"));
-        assert!(hub.work_document(ProfileId::from(42), request).is_err());
-        assert!(matches!(
-            hub.work_document(
-                profile,
-                WorkRequest::ReadMediaContext {
-                    resource: record.id.clone(),
-                    revision: "stale".into(),
-                }
-            ),
-            Err(WorkError::Conflict)
-        ));
         let forged = ResourceCall::Mutate {
             command: Box::new(ResourceCommand {
                 version: 1,

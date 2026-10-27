@@ -1,12 +1,12 @@
-# Zephium security model
+# Kestrel security model
 
-Zephium renders hostile, attacker-controlled code by design. This document describes
+Kestrel renders hostile, attacker-controlled code by design. This document describes
 the guarantees implemented in the current tree, not planned product features. Clearly
 labelled product-disabled contracts define additional gates that must hold before their
 feature can be enabled; they are not current guarantees. If code and this document
 disagree, the code is the evidence and the mismatch is a release blocker.
 
-Zephium is a browser shell over OS WebViews. The application can harden its own
+Kestrel is a browser shell over OS WebViews. The application can harden its own
 boundaries, data lifecycle, and native API surface, but it cannot turn WKWebView,
 WebView2, or WebKitGTK into the same engine or promise controls that an engine does not
 expose. In particular, a multi-process WebView is not automatically equivalent to
@@ -24,7 +24,7 @@ Chromium's full site-isolation model.
    between launches. An XSS in either view is still a security event; CSP and ephemeral
    storage are defense in depth, not reasons to trust its input.
 3. **Tab WebViews (untrusted).** Raw Wry child WebViews render arbitrary web content.
-   They receive no Tauri command bridge, no Wry IPC handler, and no Zephium custom
+   They receive no Tauri command bridge, no Wry IPC handler, and no Kestrel custom
    protocol handler. The application injects fixed cosmetic CSS plus protected
    page-world bootstraps for discard-safety observation, bounded HTML extraction, and
    scripted-print denial. Those scripts expose no native bridge or application
@@ -120,7 +120,7 @@ Chromium's full site-isolation model.
    full submenu tree has identity, depth, count, and title-byte ceilings.
    Malformed or stale native inventory returns the unchanged default menu and
    poisons extension-controller integrity rather than presenting partial items.
-   The opt-in long-duration alarm classifier uses only a Zephium-owned fixture
+   The opt-in long-duration alarm classifier uses only a Kestrel-owned fixture
    and extension-local storage. It proves live `alarms.onAlarm` delivery, then
    verifies that current WebKit discards the next alarm when the exact context
    unloads/reloads before its deadline; this limitation is disclosed rather
@@ -175,7 +175,7 @@ currently no application-level encryption at rest.
 Any change that breaks one of these invariants must fail review and release:
 
 1. A raw tab WebView is built without privileged IPC or a content-reachable custom
-   protocol. Page script cannot invoke Zephium commands.
+   protocol. Page script cannot invoke Kestrel commands.
 2. `main` and `panel` are constructed at exact `about:blank`, receive all mandatory
    native hardening, and only then navigate to the bundled application origin. Debug
    builds additionally allow the exact local Vite origin. Other navigation is rejected.
@@ -247,7 +247,7 @@ Any change that breaks one of these invariants must fail review and release:
    canonical 32-by-32 RGBA raster for the current navigation epoch and origin; chrome
    paints that fixed raster without parsing a page-controlled image container.
 10. Linux is not a supported platform at launch: `run()` in `desktop/src/lib.rs` prints
-    that Zephium isn't available on Linux yet and exits with status 1 before any
+    that Kestrel isn't available on Linux yet and exits with status 1 before any
     runtime is touched. The Linux engine code stays in the tree and keeps the
     admission described here, but none of it is exercised by a shipped build. On
     Linux, browsing requires WebKitGTK 2.54.0 or newer. Older builds,
@@ -335,8 +335,8 @@ background or hidden request, is never saved, and private tabs save nothing. A s
 answer then applies without the event being raised, as in Edge, so it also covers that
 origin's background tabs. Agent and Work views use their own named WebView2 profiles
 (`agent-…`, `work-…`), so they never inherit a human tab's saved answers. Notifications
-a site is allowed to show use WebView2's default notification UI; Zephium does not yet
-handle `NotificationReceived`. On macOS, Zephium replaces Wry's
+a site is allowed to show use WebView2's default notification UI; Kestrel does not yet
+handle `NotificationReceived`. On macOS, Kestrel replaces Wry's
 permission callback with a browser-owned broker that is on by default (the
 `macos-page-permission-prompts` desktop feature). It uses WebKit's structured
 security origin for camera and microphone and, for geolocation, WKUIDelegate's
@@ -344,7 +344,7 @@ geolocation callback (public on macOS 27, the underscored spelling of the same
 selector before it; WebKit calls either only when the delegate responds to it). Agent,
 extension and privileged views do not install the broker and deny geolocation. The
 bundle declares location usage and the hardened-runtime location entitlement;
-CoreLocation still asks the person once for Zephium itself. The broker retains the
+CoreLocation still asks the person once for Kestrel itself. The broker retains the
 native completion on the main thread, and binds it to the
 exact profile, item, physical view generation and committed navigation. It admits only
 the focused resident tab, loads no catalog at startup, serializes one browser-owned
@@ -385,7 +385,7 @@ downloads remain denied (Linux code also denies them, but Linux does not start).
 are implemented but await native Windows qualification. Linux also cancels privileged file-picker requests. Stable WebView2 exposes no supported file-chooser interception event, so a
 raw Windows file input remains an engine-owned, user-selected native upload surface and
 privileged Windows views have no equivalent native denial hook. This is an explicit
-platform limitation, not a broker Zephium has implemented. Raw Windows views disable
+platform limitation, not a broker Kestrel has implemented. Raw Windows views disable
 browser accelerator keys and initially disable default context menus. Human views
 re-enable native menus only after installing a bounded command allowlist and a
 mandatory SaveAsUIShowing handler that cancels every Save As except the one the
@@ -394,7 +394,7 @@ flight, present only on views a person reads); privileged/agent views retain
 menu denial and cancel every Save As. Native edit/copy, link opening and download save actions remain;
 print, document Save As, sharing and unknown commands are removed. Built-in PDF
 Save, Save As, and Print controls remain hidden before the first load. WebView2 likewise exposes no event that can cancel page-initiated scripted
-printing. Zephium locks the page and `Window`-prototype print functions and wraps and
+printing. Kestrel locks the page and `Window`-prototype print functions and wraps and
 locks both `Document.prototype.execCommand` and the document's own `execCommand` before
 any page-owned script. The wrapper coerces a command exactly once, rejects
 normalized `print`, and delegates other commands using that same primitive. A trusted
@@ -405,9 +405,9 @@ future native broker remain stable-release gates.
 
 `HiddenPdfToolbarItems(PRINT)` hides WebView2's built-in PDF toolbar control; it does
 not document a denial of embedded PDF actions. A PDF `/Named /Print` or clickable print
-action can bypass the DOM guard through the PDF viewer. Until Zephium can disable or
+action can bypass the DOM guard through the PDF viewer. Until Kestrel can disable or
 broker the built-in viewer with a supported native API, packaged malicious-PDF testing
-and an explicit risk decision are separate Windows stable-release gates. Zephium does
+and an explicit risk decision are separate Windows stable-release gates. Kestrel does
 not claim that the current source tree denies this path.
 
 **Human native new tabs.** On macOS and Windows, native user-initiated links,
@@ -448,7 +448,7 @@ read. The engine retains one process-main-thread NSOpenPanel reservation, labels
 it with the canonical HTTP(S) origin supplied by WebKit for the initiating
 frame, and requires a live, presented, visible view in the key window before
 opening it. WebKit owns input user activation and the original input/frame
-association; Zephium does not infer authority from a recent generic click.
+association; Kestrel does not infer authority from a recent generic click.
 Single/multiple/directory modes come from native parameters. Selected NSURLs
 stay native and are returned only to the original WebKit completion, with at
 most 1024 selected entries and no filesystem paths in frontend IPC or storage.
@@ -619,7 +619,7 @@ failure. Failure leaves the shell uninitialized and unable to overwrite the reco
 state. Authoritative JSON first passes an allocation-free lexical preflight that bounds
 individual strings, scalar tokens, nesting, and total structural tokens. Schema-aware
 visitors then bound profile, space, item, and split-tree allocation while rejecting
-unknown fields. The decoded value must already equal its exact canonical form; Zephium
+unknown fields. The decoded value must already equal its exact canonical form; Kestrel
 never uses canonicalization to silently drop damaged rows. A malformed, oversized,
 noncanonical, or registry-mismatched snapshot preserves the source row, records a sticky
 recovery marker (and the exact corrupt bytes when they fit the outer snapshot bound),
@@ -627,7 +627,7 @@ and leaves the store read-only until an explicit recovery flow exists. Profile-f
 reconciliation or deletion is authorized only after an exact snapshot and its complete,
 canonical, non-duplicate profile registry agree.
 
-Incognito means no intentionally durable Zephium session, history, favicon record, or
+Incognito means no intentionally durable Kestrel session, history, favicon record, or
 privileged-UI website data. Each privileged WKWebView receives a newly created
 non-persistent store, and each privileged WebKitGTK view receives a newly created
 ephemeral context. Raw private tabs in the same profile share one retained
@@ -638,7 +638,7 @@ WebView uses the exact profile-owned store. The vendored Wry patch rejects a dur
 supplied context when incognito mode is requested.
 
 WebView2 requires a user-data directory even for an InPrivate controller. Each run uses
-a fresh, non-guessable generation below Zephium's dedicated
+a fresh, non-guessable generation below Kestrel's dedicated
 `web-content/private-runtime` root. Privileged `main` and `panel` controllers use
 separate UDFs in a fresh generation below `privileged-runtime`, so the less-capable
 panel does not share the main view's cookies, storage profile, or WebView2 session. For
@@ -655,20 +655,20 @@ below a volatile HKCU registry key. [Windows discards volatile registry data whe
 system shuts down](https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regcreatekeyexw),
 so a correctly marked generation whose volatile key is absent has crossed a reboot
 boundary and may be reclaimed without inferring process death from filesystem access.
-Pre-provenance Zephium directories are first bounded, marked, and classified as
+Pre-provenance Kestrel directories are first bounded, marked, and classified as
 same-boot; they cannot be reclaimed until a later reboot. Malformed or unowned objects
 are never adopted or deleted. Startup is bounded to 32 same-boot generations, 128 total
 including the new allocation, 2 GiB of quarantined logical file bytes, and 250,000
 inspected entries. Saturation fails with an explicit full-Windows-restart remediation;
 opaque data that remains after reboot requires the runtime directory to be moved aside
-manually while Zephium is closed. Successful exact cleanup removes its volatile subkey,
+manually while Kestrel is closed. Successful exact cleanup removes its volatile subkey,
 so clean relaunches do not grow HKCU for the rest of the boot.
 
 Separate UDFs cost an additional WebView2 browser session/process set and must remain in
 resource benchmarks. Consequently, "incognito never writes a byte to disk" is **not** a
 guarantee on Windows. Crash, power loss, swap, filesystem snapshots, and engine defects
 remain relevant to private data on every OS. Windows does not provide the Unix directory
-fsync durability used by Zephium's deletion journal. The cross-restart completed
+fsync durability used by Kestrel's deletion journal. The cross-restart completed
 tombstone prevents the application from forgetting cleanup authorization after a single
 acknowledged unlink, but packaged NTFS power-cut erasure testing remains a release gate
 rather than an asserted guarantee.
@@ -1163,7 +1163,7 @@ enable/disable and exact-generation retry controls; refresh is exposed only for 
 provenance. The DTO contains aggregate coverage and bounded public package
 revision/SHA-256 identities, never profile IDs, URLs, request decisions, filter text, or
 native/parser strings. Raw pages have no blocker command surface. Before claiming stable,
-continuously maintained blocker protection, Zephium still needs production TUF trust
+continuously maintained blocker protection, Kestrel still needs production TUF trust
 material, packaged hostile enforcement tests on every supported OS, legal approval,
 external review, and recorded resource/endurance budgets. Full capability and failure
 details are in `docs/adblock.md`.
@@ -1199,17 +1199,17 @@ safe.
 
 Same-Origin Policy, CORS, CSP enforcement, cookie semantics, certificate validation,
 HSTS, mixed-content behavior, renderer sandboxing, and process allocation are supplied
-by the installed native engine. Zephium does not reimplement them and must not disable
+by the installed native engine. Kestrel does not reimplement them and must not disable
 them. Its only certificate bypass is the per-profile exception for hosts on the person's
 own network described under Certificate errors.
 
 These inherited properties must not be overstated:
 
-- Zephium does **not** guarantee a renderer process per origin or Chromium-equivalent
+- Kestrel does **not** guarantee a renderer process per origin or Chromium-equivalent
   full site isolation. WebView2, WKWebView, and WebKitGTK have different process models,
   and their behavior can change with the installed runtime. Profile data partitioning
   is not proof of renderer/site isolation.
-- TLS errors fail with the engine's default evaluation. Zephium's error page names
+- TLS errors fail with the engine's default evaluation. Kestrel's error page names
   the problem where the engine can tell, and offers a way past only for a host on the
   person's own network. There is no HTTPS-only mode, certificate pinning, or
   independently tested TLS policy yet.
@@ -1220,10 +1220,10 @@ These inherited properties must not be overstated:
   journal-authorized profile database. Cookie inspection/editing and origin-selective
   clearing are not implemented, and the full-profile coordinator still requires the
   packaged native data-type/crash matrix described in the release gates.
-- "Zero telemetry" currently means no first-party Zephium telemetry client is wired
+- "Zero telemetry" currently means no first-party Kestrel telemetry client is wired
   into this tree. It does not mean pages make no requests or that OS WebViews and
   services make no vendor requests. For example, WebView2 content protection remains
-  enabled and may follow Microsoft/OS policy. Zephium configures custom crash
+  enabled and may follow Microsoft/OS policy. Kestrel configures custom crash
   reporting to prevent WebView2's automatic crash upload; this does not disable
   separately governed required diagnostics or SmartScreen. A production privacy claim needs a
   platform-by-platform traffic audit.
@@ -1244,9 +1244,9 @@ These inherited properties must not be overstated:
   and every release remain fail-closed on an overdue review.
 - Runtime assessment is local and bounded. Startup reads only the native
   versions/provenance/capabilities it already needs and performs no vendor or
-  Zephium network request, timer, or background task. Vendor HTML and release
+  Kestrel network request, timer, or background task. Vendor HTML and release
   pages are human/build-review evidence, never client policy inputs. A future
-  remotely refreshed policy must arrive through Zephium-signed,
+  remotely refreshed policy must arrive through Kestrel-signed,
   rollback-resistant update metadata and may update advisories
   asynchronously; it must not delay first paint or weaken the embedded hard
   floor.
@@ -1295,7 +1295,7 @@ These inherited properties must not be overstated:
   changed environment/profile identity blocks new content views and prevents a
   clean shutdown claim.
 - WebView2 fixes extension enablement at environment creation. If a profile
-  already owns an extension-disabled browser-process generation, Zephium does
+  already owns an extension-disabled browser-process generation, Kestrel does
   not attempt to change it in place or enable all profiles preemptively. The
   current Windows adapter returns a retryable native pre-entry
   `RestartRequired` refusal. That reason is projected through typed management
@@ -1327,7 +1327,7 @@ These inherited properties must not be overstated:
   and default context menus and requires Settings7 to hide PDF Save, Save As, and Print.
   Privileged downloads remain denied; raw human views use the native download adapter. Both view classes replace Wry's
   broader default browser arguments with only the `msWebOOUI`/`msPdfOOUI` suppressions,
-  so Zephium does not deliberately disable SmartScreen.
+  so Kestrel does not deliberately disable SmartScreen.
 - Every view also requires CoreWebView2_18. Raw and privileged subframe navigations are
   checked by native handlers, and OS-registered external URI schemes are always
   cancelled. Client-certificate selection is also cancelled before WebView2 can fall
@@ -1379,7 +1379,7 @@ These inherited properties must not be overstated:
   exploited in the wild in Stable `152.0.4191.62` on September 2, then published
   Stable security updates through `156.0.4314.42` on October 22.
   Microsoft publishes no WebView2-specific per-CVE applicability matrix;
-  Zephium therefore treats the shared runtime release as a conservative floor
+  Kestrel therefore treats the shared runtime release as a conservative floor
   rather than claiming each listed CVE applies to WebView2. The October 2 review
   independently confirmed matching x86, x64, and ARM64 WebView2 packages in the
   Microsoft Update Catalog and raised both the floor and recommendation; the
@@ -1404,7 +1404,7 @@ These inherited properties must not be overstated:
 - A warm spare is admitted only while its profile still owns a real live
   controller. Closing the profile's final real view synchronously closes a
   matching spare as well, including typed cleanup-debt capture. WebView2 then
-  performs normal process-group shutdown; Zephium retains the Environment5
+  performs normal process-group shutdown; Kestrel retains the Environment5
   observer and exact process HANDLE until `BrowserProcessExited` and the
   signalled HANDLE agree on the same PID/generation, at which point the idle
   environment stops counting toward the eight-group ceiling. A new profile is
@@ -1453,7 +1453,7 @@ These inherited properties must not be overstated:
   rejection prove the absence of policy-injected browser arguments such as
   `--no-sandbox`: a native hostile-startup test must inspect the actual spawned
   browser/renderer command lines, tokens, job membership, and process mitigations before
-  Zephium claims sandbox attestation. The current stable WebView2 COM
+  Kestrel claims sandbox attestation. The current stable WebView2 COM
   surface has no supported file-chooser interception/cancellation event; do not replace
   this gate with DOM monkey-patching or experimental DevTools-protocol interception.
 
@@ -1473,7 +1473,7 @@ These inherited properties must not be overstated:
   after October 31, while runtime
   keeps starting and reports review age to privileged chrome.
 - Overlay configuration keeps Tao's allocated `TaoWindow` class and instance layout
-  intact. Zephium does not use `object_setClass` to turn that live object into an
+  intact. Kestrel does not use `object_setClass` to turn that live object into an
   unrelated `NSPanel`; true non-activating panel behavior remains deferred until an
   allocation-time Tao/Tauri constructor seam exists.
 - Privileged chrome layout no longer stores an unretained global native pointer. The
@@ -1483,7 +1483,7 @@ These inherited properties must not be overstated:
   releasing the retain. Chrome-coordinate state carries the same generation, so an old
   adapter cannot publish geometry for a replacement view.
 - Raw content has the pinned Wry native permission denial. For each privileged view,
-  Zephium verifies that the native website data store is non-persistent and immediately
+  Kestrel verifies that the native website data store is non-persistent and immediately
   replaces Wry's permissive delegate with a retained native UIDelegate that denies media
   capture, device motion, and file selection. Optional dialog/popup delegate methods are
   omitted to retain WebKit's cancel/no-dialog default. `Permissions-Policy` remains an
@@ -1497,7 +1497,7 @@ These inherited properties must not be overstated:
   delegate is attached; application navigation occurs afterwards. Attachment is still
   not atomic with native construction.
 - WKWebView does not expose Safari's complete browser UI or Safari-only Safe Browsing
-  behavior to Zephium.
+  behavior to Kestrel.
 - Arbitrary relying-party passkey registration and assertion require Apple's
   managed `com.apple.developer.web-browser.public-key-credential` entitlement.
   The credential boundary reads the current task's exact signed Boolean before
@@ -1537,7 +1537,7 @@ These inherited properties must not be overstated:
   file-chooser denial handlers must install successfully, and the native context is
   checked to be ephemeral, or startup aborts. The vendored Wry adapter separately
   cancels file-chooser requests from raw tabs as well; file upload remains disabled
-  until Zephium has an origin-labelled broker.
+  until Kestrel has an origin-labelled broker.
 - Persistent profiles have separate on-disk contexts. Private tabs in one profile share
   a single verified in-memory context, so their cookies/storage form one process-lifetime
   incognito session without sharing across profiles.
@@ -1622,12 +1622,12 @@ page does expose the restricted external-messaging
 raw page and a separate extension address the exact known extension context
 through message and port APIs, then has a delayed isolated content script read
 the target worker's delivery counter. Only exact zero passes; no timeout is
-interpreted as refusal. Zephium preserves any `externally_connectable`
+interpreted as refusal. Kestrel preserves any `externally_connectable`
 declaration as unmodeled authority and cannot classify it runnable.
 Extension execution must still settle through its isolated world without
 touching either forgery. This is real product-path boundary evidence, not a
 claim against a native WebKit sandbox escape.
-The production History API signal may originate only from Zephium's native
+The production History API signal may originate only from Kestrel's native
 committed-URL observer. The macOS host emits the constant, payload-free event
 only after the exact current main-frame epoch accepts a changed same-origin
 URL, and does so independently of extension presence. It evaluates the event
@@ -1679,7 +1679,7 @@ unavailable rather than being approximated.
 
 The macOS native extension compatibility broker is a narrow zone-1 service,
 not native-messaging authority for installed extensions. It accepts only the
-fixed internal identifier `app.zephium.extension-broker.v1`, a canonical
+fixed internal identifier `app.kestrel.extension-broker.v1`, a canonical
 versioned string request, and a loaded context belonging to the exact retained
 controller. Product authority must have admitted the distinct brokered
 compatibility profile, and the published runtime must consume an operation-
@@ -1807,7 +1807,7 @@ The following are roadmap items or disabled backends, not current security guara
   WebKit's C notification-provider SPI or its built-in notifications, which are an
   internal feature that is off by default and depend on Safari's push daemon and
   private entitlement; neither is a stable path, so `Notification` stays denied;
-- on Windows, Zephium-branded notifications that focus their tab when clicked;
+- on Windows, Kestrel-branded notifications that focus their tab when clicked;
 - Linux as a supported platform: the code stays in the tree, but the app refuses to
   start there;
 - native Windows release qualification of downloads/protection,
@@ -1835,7 +1835,7 @@ tests exist. Documentation and marketing must not present these items as impleme
 
 ## Production release gates
 
-Before describing Zephium as a production-hardened privacy browser, all of the following
+Before describing Kestrel as a production-hardened privacy browser, all of the following
 need an explicit implementation, native integration tests, or a documented accepted
 risk. The recurring engine-floor, advisory, and fork-review procedure is defined in
 `docs/security-maintenance.md`:

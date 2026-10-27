@@ -1,6 +1,6 @@
 //! A manual proxy for a view's website data store. WebKit takes it as an
 //! array of Network framework proxy configurations on the store (macOS 14,
-//! the least Zephium runs on). The store keeps it for every view that shares
+//! the least Kestrel runs on). The store keeps it for every view that shares
 //! it, so a view built later with the system's proxy has to clear it.
 
 use std::ffi::{c_char, CString};

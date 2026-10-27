@@ -44,13 +44,24 @@ fn translated(tag: &str) -> Option<&'static str> {
         })
 }
 
+/// The desktop's own language preferences, in precedence order, normalized to
+/// the frame's tag shape. Empty when the platform exposes none.
+fn system_languages() -> Vec<String> {
+    ["LC_ALL", "LC_MESSAGES", "LANG"]
+        .iter()
+        .filter_map(|key| std::env::var(key).ok())
+        .filter(|value| !value.trim().is_empty())
+        .map(|value| value.split('.').next().unwrap_or(&value).replace('_', "-"))
+        .collect()
+}
+
 /// Follows `ui.language`, resolving "system" the way the frame does: the
-/// first of the system's languages Zephium is translated into. Returns
+/// first of the system's languages Kestrel is translated into. Returns
 /// whether the language shown changed, so the menus can be rebuilt.
 pub(crate) fn set_language(preference: Option<&str>) -> bool {
     let wanted = match preference {
         Some(tag) if tag != "system" => translated(tag),
-        _ => zephium_voice::preferred_languages()
+        _ => system_languages()
             .iter()
             .find_map(|tag| {
                 translated(tag)

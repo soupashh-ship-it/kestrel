@@ -10,17 +10,17 @@ explicit changes and migrations.
 ## Product
 
 Users visit the actual Chrome Web Store, request installation through an Add to
-Zephium action, review permissions, and install directly into their local
+Kestrel action, review permissions, and install directly into their local
 browser profile. Packages and updates come directly from Google's service to
-the device. Zephium does not mirror or redistribute packages through its backend.
+the device. Kestrel does not mirror or redistribute packages through its backend.
 
-A small manually maintained Tested with Zephium list is informational. It may
+A small manually maintained Tested with Kestrel list is informational. It may
 start as a static page with store links and specific tested workflows/platforms.
 Absence from the list does not itself prohibit installation. Tested describes
 completed testing, not a permanent compatibility or safety guarantee.
 
 The first scope covers Chrome Web Store installation. Other stores, a built-in
-discovery marketplace, Zephium-hosted builds, Mods, and per-version approval
+discovery marketplace, Kestrel-hosted builds, Mods, and per-version approval
 infrastructure are later work. Broad compatibility is a continuing program;
 this release's infrastructure must behave reliably for both supported and
 unsupported extensions.
@@ -34,7 +34,7 @@ and native activation. Page text/JavaScript never establishes permissions,
 package identity or trusted status. Requests must be bound to the current
 profile and real user invocation, including navigation/cancellation races.
 
-Keep the Add to Zephium behavior, but avoid making the installer depend on
+Keep the Add to Kestrel behavior, but avoid making the installer depend on
 Google's DOM structure. A browser-owned action for the current canonical listing
 is a possible fallback if page integration breaks; both use one installer.
 This is a UI implementation recommendation, not a second acquisition system.
@@ -72,7 +72,7 @@ pretend an unsupported API or permission has been implemented.
   installation usable. Preserve data and recover atomically from interrupted
   updates; do not automatically run a known-revoked package as a fallback.
 - Use bounded request frequency, retry backoff, jitter and conditional requests
-  where supported. No package traffic through Zephium's backend, stable client
+  where supported. No package traffic through Kestrel's backend, stable client
   identifier or server-side per-user extension inventory.
 - Bound extraction, installed/orphaned storage and runtime resources. Reclaim
   temporary/obsolete objects only after durable ownership proves they are unused.

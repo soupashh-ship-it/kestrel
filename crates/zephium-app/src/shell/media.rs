@@ -138,11 +138,7 @@ impl Shell {
         else {
             return operation_result(OperationOutcome::Rejected, OperationReason::InvalidScope);
         };
-        if self
-            .active_browser_page()
-            .is_some_and(|page| page != crate::BrowserPage::Work)
-            && !self.browser_return_ready
-        {
+        if self.active_browser_page().is_some() && !self.browser_return_ready {
             self.browser_after_return = Some(Box::new(Command::MediaPlayer {
                 id,
                 action: MediaPlayerAction::Show,

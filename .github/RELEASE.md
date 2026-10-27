@@ -1,4 +1,4 @@
-# Releasing Zephium
+# Releasing Kestrel
 
 Pushing a `v*` tag runs [`release.yml`](workflows/release.yml). It builds and
 verifies macOS (Apple Silicon) and Windows (x64), then creates a **draft**
@@ -83,7 +83,7 @@ existing install on its current version.
 5. **Tag and push** the merged commit:
 
    ```sh
-   git tag -a v1.0.0-beta.1 -m "Zephium 1.0.0-beta.1"
+   git tag -a v1.0.0-beta.1 -m "Kestrel 1.0.0-beta.1"
    git push origin v1.0.0-beta.1
    ```
 
@@ -105,9 +105,9 @@ contract:
 
 | Asset | Purpose |
 | --- | --- |
-| `Zephium-macOS-arm64.dmg` | macOS download |
-| `Zephium-macOS-arm64.app.tar.gz` + `.sig` | macOS updater payload |
-| `Zephium-Windows-x64-setup.exe` + `.sig` | Windows download and updater payload |
+| `Kestrel-macOS-arm64.dmg` | macOS download |
+| `Kestrel-macOS-arm64.app.tar.gz` + `.sig` | macOS updater payload |
+| `Kestrel-Windows-x64-setup.exe` + `.sig` | Windows download and updater payload |
 | `latest.json` | Updater manifest (`darwin-aarch64[-app]`, `windows-x86_64[-nsis]`) |
 | `SHA256SUMS` | Digests of every other asset |
 
@@ -141,11 +141,11 @@ changes the installer's bytes, so sign it first, then replace Tauri's `.sig`
 by running `pnpm tauri signer sign` over the signed file.
 
 Until then, SmartScreen judges each installer by its own download reputation.
-After publishing, submit `Zephium-Windows-x64-setup.exe` at
+After publishing, submit `Kestrel-Windows-x64-setup.exe` at
 <https://www.microsoft.com/wdsi/filesubmission> as a software developer
 ("Incorrectly detected as malware/malicious" when it is flagged). Keep the
 asset name and download URL unchanged between releases, and keep the bundle's
-`publisher` at `Zephium`: Windows keys the per-user install by it.
+`publisher` at `Kestrel`: Windows keys the per-user install by it.
 
 ## Recovery
 

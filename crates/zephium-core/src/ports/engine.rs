@@ -210,7 +210,7 @@ impl NativeDispatch {
 /// `Verified` is deliberately narrow: the engine has released every native
 /// view/context it knows for the profile and proved its engine-owned data
 /// store absent (or empty for an ephemeral native store). It does not include
-/// Zephium's SQLite/session data; callers must coordinate that separate store
+/// Kestrel's SQLite/session data; callers must coordinate that separate store
 /// transaction before removing a profile from the registry.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProfileDataErasureOutcome {

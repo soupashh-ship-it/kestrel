@@ -159,7 +159,7 @@ pub fn enforce_runtime_security_floor(
     )
     .map_err(|error| {
         format!(
-            "Zephium needs macOS Sonoma 14 or later with Safari 26 or later. This Mac has macOS {operating_system} with Safari {safari_version}.\n\nOpen System Settings > General > Software Update, install the available updates, then open Zephium again.\n\nDetails: {error}"
+            "Kestrel needs macOS Sonoma 14 or later with Safari 26 or later. This Mac has macOS {operating_system} with Safari {safari_version}.\n\nOpen System Settings > General > Software Update, install the available updates, then open Kestrel again.\n\nDetails: {error}"
         )
     })
 }
@@ -210,7 +210,7 @@ fn bundle_string(bundle: &NSBundle, key: &NSString) -> Result<String, String> {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumPrivilegedUIDelegate"]
+    #[name = "KestrelPrivilegedUIDelegate"]
     #[ivars = ()]
     struct PrivilegedUIDelegate;
 

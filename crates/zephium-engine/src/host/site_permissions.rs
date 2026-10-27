@@ -98,7 +98,7 @@ fn decision(state: COREWEBVIEW2_PERMISSION_STATE) -> Option<RememberedPagePermis
 }
 
 /// WebView2 reports origins with a trailing slash; only a canonical tuple
-/// origin Zephium itself could have prompted for is listed.
+/// origin Kestrel itself could have prompted for is listed.
 #[cfg(target_os = "windows")]
 fn listed(
     origin: &str,

@@ -68,7 +68,6 @@ enum CoalescedKey {
     SidebarWidth,
     SidebarGuide,
     SidebarGuideEnd,
-    WorkPaneRect,
     DragOver,
     DividerDrag,
     Search,
@@ -1274,8 +1273,6 @@ fn command_is_observational_query(command: &Command) -> bool {
 
 fn command_coalesced_key(command: &Command) -> Option<CoalescedKey> {
     match command {
-        #[cfg(feature = "work-execution")]
-        Command::WorkWake => Some(CoalescedKey::Work),
         Command::Bootstrap => Some(CoalescedKey::Bootstrap),
         Command::Engine(event) => CoalescedKey::of(event),
         Command::SetWindowSize(_) => Some(CoalescedKey::WindowSize),
@@ -1284,7 +1281,6 @@ fn command_coalesced_key(command: &Command) -> Option<CoalescedKey> {
         Command::SetSidebarWidth(..) => Some(CoalescedKey::SidebarWidth),
         Command::SidebarResizeGuide(Some(_)) => Some(CoalescedKey::SidebarGuide),
         Command::SidebarResizeGuide(None) => Some(CoalescedKey::SidebarGuideEnd),
-        Command::WorkPaneSetRect { .. } => Some(CoalescedKey::WorkPaneRect),
         Command::DragOver { .. } => Some(CoalescedKey::DragOver),
         Command::DividerDrag { .. } => Some(CoalescedKey::DividerDrag),
         Command::Search(_) | Command::SearchScoped { .. } => Some(CoalescedKey::Search),

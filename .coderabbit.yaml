@@ -68,9 +68,6 @@ reviews:
     - path: "vendor/**"
       instructions: |
         Vendored security forks. Every change must be a minimal, explained patch with the fork's FORK.toml or provenance record updated to match; flag unrelated upstream drift, version bumps without a review record, and any weakening of the hardening the fork exists for.
-    - path: "{crates/zephium-agent*,crates/zephium-work*,crates/zephium-mcp,crates/zephium-app/src/work*}/**"
-      instructions: |
-        Work and agent code acts on the user's behalf. Page and tool output is untrusted input (prompt injection): it must not widen what the agent may do. Side effects need the documented approval path. User data must stay within its scope, and secrets and full URLs must not reach logs. Resource use stays bounded per run.
     - path: "frame/**/*.{svelte,ts}"
       instructions: |
         Prettier, ESLint, svelte-check and Knip already run in CI; never comment on formatting or style.
@@ -173,8 +170,6 @@ reviews:
       instructions: Changes only documentation.
     - label: "area: browse"
       instructions: Browser chrome in frame/ or desktop/ (tabs, sidebar, address field, settings, windows).
-    - label: "area: work"
-      instructions: Work mode and agent code.
     - label: "area: engine"
       instructions: crates/zephium-engine or the native WebView adapters.
     - label: "area: blocker"
@@ -249,7 +244,6 @@ knowledge_base:
       - docs/architecture.md
       - docs/security-model.md
       - docs/frontend.md
-      - docs/product-system.md
 
 issue_enrichment:
   auto_enrich:
@@ -271,8 +265,6 @@ issue_enrichment:
         instructions: Asks how something works rather than reporting a problem.
       - label: "area: browse"
         instructions: Browser chrome (tabs, sidebar, address field, settings, windows).
-      - label: "area: work"
-        instructions: Work mode and the agent.
       - label: "area: engine"
         instructions: Page rendering, the native WebView, loading or crashes of pages.
       - label: "area: blocker"

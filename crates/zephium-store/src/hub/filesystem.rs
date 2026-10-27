@@ -266,7 +266,7 @@ pub(super) fn profile_artifacts_absent(dir: &Path, profile: ProfileId) -> rusqli
 pub(super) fn configure(conn: &Connection) -> rusqlite::Result<()> {
     use rusqlite::config::DbConfig;
 
-    // Treat an on-disk schema as untrusted input. Zephium never needs the
+    // Treat an on-disk schema as untrusted input. Kestrel never needs the
     // legacy double-quoted-string compatibility mode or SQLite operations
     // that can deliberately corrupt a database file. Apply these flags before
     // migrations or any schema-owned trigger can execute.

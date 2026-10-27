@@ -57,7 +57,6 @@ fn time_batch_digest(
 fn place_key(place: &Place) -> &str {
     match place {
         Place::Site(site) => site,
-        Place::Work => "",
     }
 }
 
@@ -501,7 +500,6 @@ mod tests {
             &[
                 tally(day - 3, site("x.com"), 120_000, 1),
                 tally(day + 9, site("github.com"), 600_000, 2),
-                tally(day + 9, Place::Work, 300_000, 0),
                 tally(day + 10, site("github.com"), 60_000, 0),
                 tally(day + 10, site("x.com"), 30_000, 1),
             ],
@@ -522,7 +520,6 @@ mod tests {
             )
             .unwrap();
         assert_eq!(report.buckets[9].browse_ms, 601_000);
-        assert_eq!(report.buckets[9].work_ms, 300_000);
         assert_eq!(report.buckets[10].browse_ms, 90_000);
         assert_eq!(report.previous.browse_ms, 120_000);
         let ranked: Vec<_> = report

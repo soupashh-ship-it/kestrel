@@ -6,10 +6,6 @@ use std::sync::{Mutex, OnceLock};
 
 use rusqlite::{Connection, Transaction};
 
-// Keep META v16's fixed audit payload and append ceiling tied to the adapter.
-const _: [(); 128] = [(); zephium_agentic::AGENT_AUDIT_RECORD_V1_BYTES];
-const _: [(); 16] = [(); zephium_agentic::MAX_AGENT_AUDIT_DELIVERY_EVENTS];
-const _: [(); 262_144] = [(); crate::hub::MAX_DURABLE_AGENT_AUDIT_EVENTS];
 const _: [(); 128] = [(); crate::hub::MAX_TIME_BATCH_RECEIPTS];
 
 pub struct Migration {
@@ -4620,123 +4616,6 @@ mod tests {
             conn.query_row("PRAGMA user_version", [], |row| row.get::<_, i64>(0))
                 .unwrap(),
             15
-        );
-    }
-
-    #[test]
-    fn meta_v16_agent_audit_schema_is_bounded_immutable_and_counted() {
-        let mut conn = Connection::open_in_memory().unwrap();
-        apply(&mut conn, &META[..15]).unwrap();
-        apply(&mut conn, &META[..16]).unwrap();
-        assert_eq!(
-            conn.query_row(
-                "SELECT delivery_count, event_count FROM agent_audit_state WHERE id = 1",
-                [],
-                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
-            )
-            .unwrap(),
-            (0, 0)
-        );
-
-        let manifest = vec![1_u8; 16];
-        let supervisor = 1_u64.to_be_bytes();
-        let delivery = 1_u64.to_be_bytes();
-        let event = 1_u64.to_be_bytes();
-        let recorded_at = 100_u64.to_be_bytes();
-        let mut record = vec![0_u8; zephium_agentic::AGENT_AUDIT_RECORD_V1_BYTES];
-        record[0] = 1;
-        conn.execute(
-            "INSERT INTO agent_audit_deliveries(
-                 manifest_id, supervisor_id, delivery_id,
-                 first_event_id, last_event_id, event_count
-             ) VALUES (?1, ?2, ?3, ?4, ?4, 1)",
-            rusqlite::params![&manifest, &supervisor, &delivery, &event,],
-        )
-        .unwrap();
-        conn.execute(
-            "INSERT INTO agent_audit_events(
-                 manifest_id, supervisor_id, event_id, delivery_id,
-                 batch_index, recorded_at, record_version, record
-             ) VALUES (?1, ?2, ?3, ?4, 0, ?5, 1, ?6)",
-            rusqlite::params![
-                &manifest,
-                &supervisor,
-                &event,
-                &delivery,
-                &recorded_at,
-                &record,
-            ],
-        )
-        .unwrap();
-        assert_eq!(
-            conn.query_row(
-                "SELECT delivery_count, event_count FROM agent_audit_state WHERE id = 1",
-                [],
-                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
-            )
-            .unwrap(),
-            (1, 1)
-        );
-        assert!(conn
-            .execute(
-                "UPDATE agent_audit_state SET event_count = event_count + 2",
-                [],
-            )
-            .is_err());
-        assert!(conn
-            .execute(
-                "UPDATE agent_audit_events SET recorded_at = ?1",
-                [101_u64.to_be_bytes()],
-            )
-            .is_err());
-        assert!(conn.execute("DELETE FROM agent_audit_events", []).is_err());
-        assert!(conn
-            .execute("DELETE FROM agent_audit_deliveries", [])
-            .is_err());
-
-        let tx = conn.transaction().unwrap();
-        let second_delivery = 2_u64.to_be_bytes();
-        let second_event = 2_u64.to_be_bytes();
-        tx.execute(
-            "INSERT INTO agent_audit_deliveries(
-                 manifest_id, supervisor_id, delivery_id,
-                 first_event_id, last_event_id, event_count
-             ) VALUES (?1, ?2, ?3, ?4, ?4, 1)",
-            rusqlite::params![&manifest, &supervisor, &second_delivery, &second_event,],
-        )
-        .unwrap();
-        let mut invalid_record = record.clone();
-        invalid_record[0] = 2;
-        assert!(tx
-            .execute(
-                "INSERT INTO agent_audit_events(
-                     manifest_id, supervisor_id, event_id, delivery_id,
-                     batch_index, recorded_at, record_version, record
-                 ) VALUES (?1, ?2, ?3, ?4, 0, ?5, 1, ?6)",
-                rusqlite::params![
-                    &manifest,
-                    &supervisor,
-                    &second_event,
-                    &second_delivery,
-                    &recorded_at,
-                    &invalid_record,
-                ],
-            )
-            .is_err());
-        tx.rollback().unwrap();
-        assert_eq!(
-            conn.query_row(
-                "SELECT delivery_count, event_count FROM agent_audit_state WHERE id = 1",
-                [],
-                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
-            )
-            .unwrap(),
-            (1, 1)
-        );
-        assert_eq!(
-            conn.query_row("PRAGMA user_version", [], |row| row.get::<_, i64>(0))
-                .unwrap(),
-            16
         );
     }
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Cargo's runner on macOS. An ad-hoc signed debug build is a new app to the
 # Keychain after every rebuild, so each one asks for the login password again.
-# Zephium's own dev executables are re-signed with one identifier and the
+# Kestrel's own dev executables are re-signed with one identifier and the
 # developer's certificate, which the Keychain keeps trusting across rebuilds
 # after one "Always Allow". Without a certificate they run unchanged.
 set -eu
@@ -14,7 +14,7 @@ case $(basename -- "$bin") in
     *) exec "$bin" "$@" ;;
 esac
 
-identifier=app.zephium.dev
+identifier=app.kestrel.dev
 if ! /usr/bin/codesign -dv "$bin" 2>&1 | grep -qx "Identifier=$identifier"; then
     identity=${APPLE_SIGNING_IDENTITY:-}
     if [ -z "$identity" ]; then

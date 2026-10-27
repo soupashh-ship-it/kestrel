@@ -224,7 +224,7 @@ fn layout_and_zoom_report_rejection_and_roll_back_unapplied_zoom() {
 
 #[test]
 fn browser_page_hides_native_content_and_restores_exact_tab() {
-    let page = crate::BrowserPage::Work;
+    let page = crate::BrowserPage::Settings;
     let (mut shell, engine, screen) = setup();
     shell.handle(Command::Bootstrap);
     let id = active_id(&screen);
@@ -733,47 +733,21 @@ fn new_web_tab_from_settings_waits_for_chrome_restore_barrier() {
 }
 
 #[test]
-fn disabled_work_rejects_native_entry_without_changing_browse() {
+fn a_feature_that_is_off_never_reopens_its_page() {
     let store = Arc::new(FakeStore::default());
-    let (mut shell, engine, screen) = setup_with(store.clone());
+    let (mut shell, _engine, screen) = setup_with(store.clone());
     shell.handle(Command::Bootstrap);
     let tab = active_id(&screen);
-    navigate_and_commit(&mut shell, tab, "work-disabled.example");
-    store
-        .work_disabled
-        .store(true, std::sync::atomic::Ordering::Release);
-    let before = engine.calls();
-    let refused = shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
+    navigate_and_commit(&mut shell, tab, "feature-off.example");
+    shell.operation_set_app_setting("notes.enabled".into(), "false".into());
+    let refused = shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Notes)));
     assert_eq!(refused.outcome, OperationOutcome::Rejected);
     assert_eq!(refused.reason, OperationReason::FeatureDisabled);
     assert_eq!(shell.active_browser_page(), None);
     assert_eq!(active_id(&screen), tab);
-    assert_eq!(engine.calls(), before);
     let settings =
         shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Settings)));
     assert_eq!(settings.outcome, OperationOutcome::Deferred);
-}
-
-#[test]
-fn switching_work_off_refuses_work_and_returns_its_window_to_browse() {
-    let (mut shell, _engine, screen) = setup();
-    shell.handle(Command::Bootstrap);
-    let tab = active_id(&screen);
-    navigate_and_commit(&mut shell, tab, "switch-off.example");
-    shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
-    shell.operation_set_app_setting("ai.enabled".into(), "false".into());
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
-    let off = shell.operation_set_app_setting("work.enabled".into(), "false".into());
-    assert_eq!(off.reason, OperationReason::StoreWorkPending);
-    assert_eq!(shell.active_browser_page(), None);
-    assert_eq!(active_id(&screen), tab);
-    let refused = shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
-    assert_eq!(refused.reason, OperationReason::FeatureDisabled);
-    shell.operation_set_app_setting("work.enabled".into(), "true".into());
-    let back = shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
-    assert_eq!(back.outcome, OperationOutcome::Deferred);
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
 }
 
 #[test]
@@ -865,7 +839,7 @@ fn work_citation_navigation_restores_browse_and_preserves_existing_tab() {
         shell.handle(Command::Bootstrap);
         let original = active_id(&screen);
         navigate_and_commit(&mut shell, original, "original.example");
-        shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
+        shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Settings)));
         let before = shell.items_snapshot().unwrap().tabs.len();
         engine
             .reject_native_dispatch
@@ -886,7 +860,10 @@ fn work_citation_navigation_restores_browse_and_preserves_existing_tab() {
             Some("https://original.example/")
         );
         if reject {
-            assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
+            assert_eq!(
+                shell.active_browser_page(),
+                Some(crate::BrowserPage::Settings)
+            );
             assert_eq!(shell.items_snapshot().unwrap().tabs.len(), before);
             assert_eq!(active_id(&screen), original);
         } else {
@@ -1709,8 +1686,11 @@ fn a_new_tab_opened_from_work_fills_the_window_with_the_new_tab() {
         url: "https://example.com/".into(),
     }));
     present_committed(&mut shell, page, "https://example.com/");
-    shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Work)));
-    assert_eq!(shell.active_browser_page(), Some(crate::BrowserPage::Work));
+    shell.handle_operation(Command::ShowBrowserPage(Some(crate::BrowserPage::Settings)));
+    assert_eq!(
+        shell.active_browser_page(),
+        Some(crate::BrowserPage::Settings)
+    );
     assert!(chrome.last_frame().unwrap().fill_width);
 
     assert_eq!(

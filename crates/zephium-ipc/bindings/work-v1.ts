@@ -148,13 +148,13 @@ export type WorkAccountEffectV1_Serialize = ({ kind: "read" }) & { update?: neve
 
 /**
  *  One origin read with the profile's signed-in session for one request.
- *  The person's approval attests the account; Zephium never infers it.
+ *  The person's approval attests the account; Kestrel never infers it.
  */
 export type WorkAccountGrantV1 = WorkAccountGrantV1_Serialize | WorkAccountGrantV1_Deserialize;
 
 /**
  *  One origin read with the profile's signed-in session for one request.
- *  The person's approval attests the account; Zephium never infers it.
+ *  The person's approval attests the account; Kestrel never infers it.
  */
 export type WorkAccountGrantV1_Deserialize = {
 	/**  Exact HTTPS origin. */
@@ -169,7 +169,7 @@ export type WorkAccountGrantV1_Deserialize = {
 
 /**
  *  One origin read with the profile's signed-in session for one request.
- *  The person's approval attests the account; Zephium never infers it.
+ *  The person's approval attests the account; Kestrel never infers it.
  */
 export type WorkAccountGrantV1_Serialize = {
 	/**  Exact HTTPS origin. */
@@ -689,7 +689,7 @@ export type WorkCapability_Deserialize =
 ({ kind: "synthesize" }) & { grant?: never; max_hops?: never; model?: never; provider?: never; scope?: never; update?: never } |
 /**
  *  Read one exact page with the profile's own signed-in session. The
- *  approving user attests the account; Zephium cannot verify it.
+ *  approving user attests the account; Kestrel cannot verify it.
  */
 ({ kind: "account_read"; scope: WorkAccountScope }) & { grant?: never; max_hops?: never; model?: never; provider?: never; update?: never } |
 /**
@@ -726,7 +726,7 @@ export type WorkCapability_Serialize =
 ({ kind: "synthesize" }) & { grant?: never; max_hops?: never; model?: never; provider?: never; scope?: never; update?: never } |
 /**
  *  Read one exact page with the profile's own signed-in session. The
- *  approving user attests the account; Zephium cannot verify it.
+ *  approving user attests the account; Kestrel cannot verify it.
  */
 ({ kind: "account_read"; scope: WorkAccountScope }) & { grant?: never; max_hops?: never; model?: never; provider?: never; update?: never } |
 /**
@@ -1819,7 +1819,7 @@ export type WorkInterventionKindV1 =
 "challenge" |
 /**  A permission or operating-system boundary needs a person. */
 "permission" |
-/**  The page needs an interaction Zephium cannot automate safely. */
+/**  The page needs an interaction Kestrel cannot automate safely. */
 "unsupported_interaction" |
 /**  The effect or its verification needs the user's review. */
 "review" |
@@ -1960,27 +1960,27 @@ export type WorkModelFaultV1 =
 "provider_credit" |
 /**  The provider plan's per-minute limit is smaller than one request. */
 "plan_limit" |
-/**  The account's included Zephium AI usage, and any extra, is spent. */
+/**  The account's included Kestrel AI usage, and any extra, is spent. */
 "hosted_usage" |
-/**  The chosen Zephium AI model needs another plan. */
+/**  The chosen Kestrel AI model needs another plan. */
 "plan_required" |
-/**  The Zephium account is under billing review. */
+/**  The Kestrel account is under billing review. */
 "billing_review" |
-/**  The account's daily Zephium AI limit is reached. */
+/**  The account's daily Kestrel AI limit is reached. */
 "daily_limit" |
-/**  Free Zephium AI usage is paused for now; credits and keys still work. */
+/**  Free Kestrel AI usage is paused for now; credits and keys still work. */
 "free_usage_paused" |
-/**  Earlier Zephium AI requests are still being confirmed. */
+/**  Earlier Kestrel AI requests are still being confirmed. */
 "hosted_busy" |
-/**  Zephium AI is paused as a spending protection. */
+/**  Kestrel AI is paused as a spending protection. */
 "hosted_paused" |
-/**  The Zephium account's session ended. */
+/**  The Kestrel account's session ended. */
 "signed_out" | "rate_limited" | "provider_down" | "unreachable" | "too_large";
 
 export type WorkModelProvider = "open_ai" | "anthropic" | "google" | "deep_seek" | "open_router" | "xai" | "mistral" | "groq" | "cerebras" |
 /**  Any OpenAI-compatible chat endpoint the person configured. */
 "compatible" |
-/**  Zephium Cloud: the upstream's native body, our base URL and bearer. */
+/**  Kestrel Cloud: the upstream's native body, our base URL and bearer. */
 "cloud";
 
 export type WorkModelRef = {

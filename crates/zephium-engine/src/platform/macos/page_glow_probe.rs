@@ -427,7 +427,7 @@ fn staged(mtm: MainThreadMarker, fixture: &Fixture, look: &std::path::Path) -> R
     check(
         attached.iter().any(|line| {
             line.starts_with("page_glow attached")
-                && line.contains("host=ZephiumContentStage")
+                && line.contains("host=KestrelContentStage")
                 && line.contains("window=true hidden=false visible=true")
         }),
         "the log says it attached, on the stage's page, shown",

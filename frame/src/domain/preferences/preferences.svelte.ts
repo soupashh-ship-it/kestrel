@@ -18,9 +18,6 @@ const defaults = {
   "ui.newtab-clock-format": "system",
   "ui.newtab-tasks": "true",
   "ui.tab-layout": "vertical",
-  "ai.enabled": "true",
-  "work.enabled": "true",
-  "work.screenshots": "true",
   "ui.language": "system",
   "ui.density": "comfortable",
   "ui.contrast": "false",
@@ -58,7 +55,6 @@ const defaults = {
   "notes.enabled": "true",
   "tasks.enabled": "true",
   "time.enabled": "true",
-  "work.favourite-models": "",
   "zoom.default": "100",
 } as const;
 export type PreferenceKey = keyof typeof defaults;
@@ -74,16 +70,11 @@ const versions: Partial<Record<PreferenceKey, number>> = {};
 export const value = (key: PreferenceKey) => values[key];
 export const saving = () => pending !== null;
 export const saveFailed = () => failed;
-/** AI: models, agents and dictation. Off, no AI surface is shown. */
-export const aiEnabled = () => values["ai.enabled"] !== "false";
-export type Feature = "work" | "notes" | "tasks" | "time";
+export type Feature = "notes" | "tasks" | "time";
 /** A feature switch: off, the feature leaves the app; its data stays. */
 export const enabled = (feature: Feature) => values[`${feature}.enabled`] !== "false";
 /** The feature a command belongs to. Mirrors `zephium_core::commands::feature_of`. */
-function featureOf(command: string): Feature | "ai" | null {
-  if (["work.dictate", "tool.ai", "mode.choose"].includes(command)) return "ai";
-  if (command === "browser.work" || command === "mode.work" || command.startsWith("work."))
-    return "work";
+function featureOf(command: string): Feature | null {
   if (["tool.notes", "browser.notes", "note.new"].includes(command)) return "notes";
   if (command === "tool.tasks" || command === "browser.tasks") return "tasks";
   if (
@@ -96,7 +87,7 @@ function featureOf(command: string): Feature | "ai" | null {
 /** Whether a command's feature is on, so it is offered at all. */
 export function commandOffered(command: string) {
   const feature = featureOf(command);
-  return feature === null || (feature === "ai" ? aiEnabled() : enabled(feature));
+  return feature === null || enabled(feature);
 }
 function apply(key: PreferenceKey, next: string) {
   values[key] = next;
@@ -212,7 +203,7 @@ export async function set(key: PreferenceKey, next: string) {
   }
 }
 
-/** Every preference back to how Zephium ships, one validated write at a
+/** Every preference back to how Kestrel ships, one validated write at a
  *  time. False when any of them did not land. */
 export async function resetAll(): Promise<boolean> {
   for (const key of Object.keys(defaults) as PreferenceKey[]) {

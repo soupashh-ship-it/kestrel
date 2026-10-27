@@ -135,7 +135,7 @@ export const MARKS: Readonly<Partial<Record<string, VectorMark>>> = {
       },
     ],
   },
-  // Zephium's own mark, as on the app icon: two stepped bars around a diamond.
+  // Kestrel's own mark, as on the app icon: two stepped bars around a diamond.
   cloud: {
     scale: 1,
     layers: [

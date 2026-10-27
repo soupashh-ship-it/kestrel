@@ -6,20 +6,13 @@ import {
   PaintBoardIcon,
   Add01Icon,
   Layers01Icon,
-  UserCircleIcon,
   Search01Icon,
   Shield01Icon,
   KeyboardIcon,
-  Globe02Icon,
-  ChipIcon,
-  Briefcase02Icon,
   Clock01Icon,
   DashboardSpeed01Icon,
   InformationCircleIcon,
   UserMultiple02Icon,
-  Mortarboard02Icon,
-  Brain01Icon,
-  Plug01Icon,
   DashboardSquare02Icon,
 } from "@hugeicons/core-free-icons";
 /** Navigation order: groups in `groups` order, sections within a group as
@@ -89,48 +82,6 @@ const allSections = [
     icon: UserMultiple02Icon,
   },
   {
-    id: "work",
-    group: "work",
-    title: m.section_work,
-    description: m.ai_switch_section_description,
-    icon: Briefcase02Icon,
-  },
-  {
-    id: "ai",
-    group: "work",
-    title: m.section_ai,
-    description: m.section_ai_description,
-    icon: ChipIcon,
-  },
-  {
-    id: "skills",
-    group: "work",
-    title: m.section_skills,
-    description: m.section_skills_description,
-    icon: Mortarboard02Icon,
-  },
-  {
-    id: "memory",
-    group: "work",
-    title: m.section_memory,
-    description: m.section_memory_description,
-    icon: Brain01Icon,
-  },
-  {
-    id: "sites",
-    group: "work",
-    title: m.section_sites,
-    description: m.section_sites_description,
-    icon: Globe02Icon,
-  },
-  {
-    id: "mcp",
-    group: "work",
-    title: m.section_mcp,
-    description: m.section_mcp_description,
-    icon: Plug01Icon,
-  },
-  {
     id: "features",
     group: "app",
     title: m.section_features,
@@ -151,14 +102,6 @@ const allSections = [
     description: m.section_about_description,
     icon: InformationCircleIcon,
   },
-  // Reached through the identity card above the groups, and through search.
-  {
-    id: "account",
-    group: "identity",
-    title: m.section_account,
-    description: m.section_account_description,
-    icon: UserCircleIcon,
-  },
 ] as const;
 export type SettingsSection = (typeof allSections)[number]["id"];
 /** Placeholder settings, made to review a design before it works, appear
@@ -171,19 +114,12 @@ export const sections = allSections.filter(
 );
 /** Pages that leave with their feature's switch. */
 const featureSections: Partial<Record<SettingsSection, () => boolean>> = {
-  work: () => preferences.enabled("work"),
   focus: () => preferences.enabled("time"),
-  ai: preferences.aiEnabled,
-  skills: preferences.aiEnabled,
-  memory: preferences.aiEnabled,
-  sites: preferences.aiEnabled,
-  mcp: preferences.aiEnabled,
 };
 export const shownSections = () =>
   sections.filter((section) => featureSections[section.id]?.() ?? true);
 export const groups = [
   { id: "browser", label: m.settings_browser },
-  { id: "work", label: m.section_work },
   { id: "app", label: m.settings_application },
 ] as const;
 export function searchSettings(query: string) {

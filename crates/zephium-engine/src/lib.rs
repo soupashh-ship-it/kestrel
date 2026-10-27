@@ -1,6 +1,4 @@
 #[cfg(feature = "agentic-browser")]
-mod agent_context_port;
-#[cfg(feature = "agentic-browser")]
 pub use agent_context_port::{
     last_action_timeout_stage, AgentBrowserLifetimeFactory, MAX_AGENT_BROWSER_LIFETIMES,
 };
@@ -25,18 +23,12 @@ mod layout_queue;
 mod motion_curve;
 mod navigation_epoch;
 mod network;
-#[cfg(feature = "agentic-browser")]
-pub mod page_reader;
 mod pane_geometry;
 mod platform;
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+pub use haptics::{haptic, Haptic};
 #[cfg(target_os = "windows")]
 pub use platform::windows::{forget_window_caption_offset, set_window_caption_offset};
-#[cfg(all(feature = "agentic-browser", any(target_os = "windows", test)))]
-mod work_site_session;
-#[cfg(any(target_os = "macos", target_os = "windows"))]
-mod work_website_data;
-
-pub use haptics::{haptic, Haptic};
 
 #[cfg(all(target_os = "windows", feature = "agentic-browser"))]
 pub use platform::windows::{install_work_rendering_backing, remove_work_rendering_backing};
@@ -1998,22 +1990,6 @@ impl WebviewEngine {
         let _ = (tab, pick);
     }
 
-    /// For each host, whether the profile's own website data holds cookies
-    /// for its site: closed facts, never a cookie or an account. The receiver
-    /// yields all false, or disconnects, when the answer is not available.
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
-    pub fn work_sessions_present(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        hosts: Vec<String>,
-    ) -> std::sync::mpsc::Receiver<Vec<bool>> {
-        let (reply, answer) = std::sync::mpsc::channel();
-        self.run(move || {
-            host::try_with(move |engine| engine.work_sessions_present(profile, hosts, reply));
-        });
-        answer
-    }
-
     /// For each host, whether Work's own store for the profile holds cookies
     /// for its site: closed facts, as for the profile's own store.
     #[cfg(all(feature = "agentic-browser", target_os = "macos"))]
@@ -2074,23 +2050,6 @@ impl WebviewEngine {
         self.run(move || {
             platform::macos::profile_seed_probe::finish();
             let _ = reply.send(());
-        });
-        answer
-    }
-
-    /// Finished page loads in the profile's ordinary tabs on a site: a count
-    /// that grows when the person loads a page there, such as after signing in.
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
-    pub fn work_site_loads(
-        &self,
-        profile: zephium_core::ids::ProfileId,
-        site: String,
-    ) -> std::sync::mpsc::Receiver<u64> {
-        let (reply, answer) = std::sync::mpsc::channel();
-        self.run(move || {
-            host::try_with(move |engine| {
-                let _ = reply.send(engine.work_site_loads(profile, &site));
-            });
         });
         answer
     }

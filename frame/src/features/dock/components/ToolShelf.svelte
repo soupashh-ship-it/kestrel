@@ -5,14 +5,13 @@
   import { commands } from "$shared/ipc/bindings";
   import * as tools from "$session/tools.svelte";
   import type { ToolKind } from "$session/tools.svelte";
-  import { accountFoot } from "$domain/account";
   import { preferences } from "$domain/preferences";
   import { tabs } from "$domain/tabs";
   import { drawn, profiles } from "$domain/profiles";
   import Disclosure from "$shared/ui/Disclosure";
   import Icon from "$shared/ui/Icon";
   import ProfileAvatar from "$shared/ui/ProfileAvatar";
-  import { ASK_TOOL, RECORD_TOOLS, SHELF_TOOLS, toolPresentation } from "../lib/dock-tools";
+  import { RECORD_TOOLS, SHELF_TOOLS, toolPresentation } from "../lib/dock-tools";
   import NoticePip from "./NoticePip.svelte";
   import { keymap } from "$domain/keymap";
   import { acceleratorKeys } from "$shared/lib/accelerator";
@@ -30,12 +29,13 @@
   const aside = $derived(profiles.privateAside());
   const privateLabel = $derived(aside ? m.private_return() : m.browse_incognito_window());
   /** The avatar the profile chose; a private window shows none. */
-  const foot = accountFoot({ private: () => privately });
+  const face = $derived.by(() => {
+    if (privately) return null;
+    const current = profiles.current();
+    return current && current.avatar.revision > 0 ? drawn(current) : null;
+  });
   // A tool whose feature is off is not offered here either.
-  const shelf = $derived<ToolKind[]>([
-    ...(preferences.aiEnabled() && !privately ? [ASK_TOOL] : []),
-    ...SHELF_TOOLS.filter((kind) => preferences.enabled(kind)),
-  ]);
+  const shelf = $derived<ToolKind[]>(SHELF_TOOLS.filter((kind) => preferences.enabled(kind)));
   const groups = $derived([shelf, RECORD_TOOLS].filter((group) => group.length > 0));
   // Rows settle in nearest the case first, so each counts from the bottom:
   // Settings, the tools, then who you are.
@@ -84,7 +84,7 @@
   </button>
 {/snippet}
 
-{#snippet me(size: number)}{#if foot.face}<ProfileAvatar view={foot.face} {size} />{:else}<span
+{#snippet me(size: number)}{#if face}<ProfileAvatar view={face} {size} />{:else}<span
       class="avatar"
       style:--size={`${size}px`}
       aria-hidden="true"
@@ -113,10 +113,7 @@
     triggerClass={["case", tools.activeTool() !== null && "case-lit"].filter(Boolean).join(" ")}
     panelClass="shelf-stack sidebar-softens"
   >
-    {#snippet trigger()}{#if foot.face}<ProfileAvatar
-          view={foot.face}
-          size={compact ? 36 : 40}
-        />{:else}<Icon
+    {#snippet trigger()}{#if face}<ProfileAvatar view={face} size={compact ? 36 : 40} />{:else}<Icon
           icon={UserIcon}
           size={compact ? 16 : 17}
           strokeWidth={1.7}

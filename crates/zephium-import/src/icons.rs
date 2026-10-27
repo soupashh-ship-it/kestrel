@@ -1,5 +1,5 @@
 //! Site icons another browser already holds, so imported bookmarks and history
-//! wear their real marks without Zephium asking any site for them. The bytes
+//! wear their real marks without Kestrel asking any site for them. The bytes
 //! come back as the source stored them; decoding stays with the caller's
 //! bounded decoder.
 
@@ -9,7 +9,7 @@ use std::path::Path;
 use crate::{snapshot, ImportError};
 
 /// Icons read from one source. The profile's favicon store keeps 1024, so an
-/// import never crowds out the icons Zephium fetched itself.
+/// import never crowds out the icons Kestrel fetched itself.
 pub const MAX_ICONS: usize = 512;
 /// Larger stored images are skipped rather than decoded.
 pub const MAX_ICON_SOURCE_BYTES: usize = 256 * 1024;

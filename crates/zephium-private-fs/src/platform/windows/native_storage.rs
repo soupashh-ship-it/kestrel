@@ -29,7 +29,7 @@ pub use work_fixture::NativeWorkStorageTestSession;
 /// Closed application identities; callers cannot select an arbitrary directory.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum NativeApplication {
-    /// The ordinary Zephium installation.
+    /// The ordinary Kestrel installation.
     Product,
     /// `pnpm dev` builds, kept apart from the installed product's profile.
     Development,
@@ -54,16 +54,16 @@ pub enum NativeApplication {
 impl NativeApplication {
     fn component(self) -> &'static str {
         match self {
-            Self::Product => "app.zephium",
-            Self::Development => "app.zephium.dev",
-            Self::ReviewQa => "app.zephium.review-qa",
-            Self::ExtensionQa => "app.zephium.webext-qa",
-            Self::FilesIntegrationQa => "app.zephium.files-integration-qa",
-            Self::Performance => "app.zephium.performance",
-            Self::ProtectionQa => "app.zephium.protection-qa",
-            Self::WorkIntegration => "app.zephium.work-integration",
-            Self::WorkNavigationProbe => "app.zephium.work-navigation-probe",
-            Self::WorkRenderingProbe => "app.zephium.work-rendering-probe",
+            Self::Product => "app.kestrel",
+            Self::Development => "app.kestrel.dev",
+            Self::ReviewQa => "app.kestrel.review-qa",
+            Self::ExtensionQa => "app.kestrel.webext-qa",
+            Self::FilesIntegrationQa => "app.kestrel.files-integration-qa",
+            Self::Performance => "app.kestrel.performance",
+            Self::ProtectionQa => "app.kestrel.protection-qa",
+            Self::WorkIntegration => "app.kestrel.work-integration",
+            Self::WorkNavigationProbe => "app.kestrel.work-navigation-probe",
+            Self::WorkRenderingProbe => "app.kestrel.work-rendering-probe",
         }
     }
 }

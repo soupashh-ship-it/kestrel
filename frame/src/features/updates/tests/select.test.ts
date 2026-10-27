@@ -61,16 +61,16 @@ describe("update notices", () => {
       selectNotices(
         facts({
           advisories: [
-            { kind: "review_overdue", update_target: "zephium" },
+            { kind: "review_overdue", update_target: "kestrel" },
             { kind: "unreviewed_runtime", update_target: "operating_system" },
-            { kind: "update_recommended", update_target: "zephium" },
+            { kind: "update_recommended", update_target: "kestrel" },
           ],
         }),
       ).card,
     ).toBeNull();
   });
 
-  it("brings a dismissed security notice back only with a newer Zephium", () => {
+  it("brings a dismissed security notice back only with a newer Kestrel", () => {
     const at = (securityDismissed: string | null) =>
       selectNotices(facts({ advisories: behind, securityDismissed })).card?.kind ?? null;
     expect(at("1.0.1")).toBeNull();

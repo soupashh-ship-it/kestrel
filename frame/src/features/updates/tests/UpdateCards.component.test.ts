@@ -76,7 +76,7 @@ test("a first run only marks the version it started at", async () => {
 test("after an update, the card links its release notes and goes once read", async () => {
   await start({ state: "upToDate" }, { "notice.seen-version": "1.0.0" });
   const screen = await render(UpdateCards);
-  await expect.element(screen.getByText("Zephium updated to 1.0.1")).toBeVisible();
+  await expect.element(screen.getByText("Kestrel updated to 1.0.1")).toBeVisible();
 
   await screen.getByRole("button", { name: "See what's new" }).click();
   expect(native.openUrl).toHaveBeenCalledWith("https://zephium.app/changelog#v1-0-1", true);
@@ -87,7 +87,7 @@ test("after an update, the card links its release notes and goes once read", asy
 test("the cards sit flush with the column's edges, which the window already insets", async () => {
   await start({ state: "upToDate" }, { "notice.seen-version": "1.0.0" });
   const screen = await render(UpdateCards);
-  await expect.element(screen.getByText("Zephium updated to 1.0.1")).toBeVisible();
+  await expect.element(screen.getByText("Kestrel updated to 1.0.1")).toBeVisible();
   const stack = screen.container.querySelector(".update-stack")!.getBoundingClientRect();
   const column = screen.container.getBoundingClientRect();
   expect(stack.left).toBe(column.left);
@@ -103,16 +103,16 @@ test("the close button acknowledges the new version without opening anything", a
   expect(native.openUrl).not.toHaveBeenCalled();
 });
 
-test("a platform security update comes first and returns only with a newer Zephium", async () => {
+test("a platform security update comes first and returns only with a newer Kestrel", async () => {
   await start({ state: "upToDate" }, { "notice.seen-version": "1.0.0" }, [
-    { kind: "review_overdue", update_target: "zephium" },
+    { kind: "review_overdue", update_target: "kestrel" },
     { kind: "update_recommended", update_target: "operating_system" },
   ]);
   const screen = await render(UpdateCards);
   const title = IS_MAC ? "macOS has security updates" : "Your system has security updates";
   await expect.element(screen.getByText(title)).toBeVisible();
   await expect.element(screen.getByText("Install them to keep browsing safely.")).toBeVisible();
-  expect(screen.container.textContent).not.toContain("Zephium updated");
+  expect(screen.container.textContent).not.toContain("Kestrel updated");
   expect(screen.container.textContent).not.toContain("review");
 
   if (IS_MAC) {
@@ -125,10 +125,10 @@ test("a platform security update comes first and returns only with a newer Zephi
   await expect
     .poll(() => native.settingSet.mock.calls)
     .toContainEqual(["notice.security-dismissed", "1.0.1"]);
-  await expect.element(screen.getByText("Zephium updated to 1.0.1")).toBeVisible();
+  await expect.element(screen.getByText("Kestrel updated to 1.0.1")).toBeVisible();
 });
 
-test("WebView2 is named, with no action Zephium cannot take", async () => {
+test("WebView2 is named, with no action Kestrel cannot take", async () => {
   await start({ state: "upToDate" }, { "notice.seen-version": "1.0.1" }, [
     { kind: "update_recommended", update_target: "browser_runtime" },
   ]);
@@ -149,8 +149,8 @@ test("a dismissed security notice stays away at the same version", async () => {
 
 test("internal review notices never reach the sidebar", async () => {
   await start({ state: "upToDate" }, { "notice.seen-version": "1.0.1" }, [
-    { kind: "review_overdue", update_target: "zephium" },
-    { kind: "unreviewed_runtime", update_target: "zephium" },
+    { kind: "review_overdue", update_target: "kestrel" },
+    { kind: "unreviewed_runtime", update_target: "kestrel" },
   ]);
   const screen = await render(UpdateCards);
   expect(screen.container.querySelector(".update-stack")).toBeNull();
@@ -185,8 +185,8 @@ test("the rail's one glyph relaunches an update, or hands a notice to About", as
   await start({ state: "upToDate" }, { "notice.seen-version": "1.0.0" });
   const onabout = vi.fn();
   const screen = await render(UpdateGlyph, { props: { onabout } });
-  const plate = screen.getByRole("button", { name: "Zephium updated to 1.0.1" });
-  await expect.element(plate).toHaveAttribute("title", "Zephium updated to 1.0.1");
+  const plate = screen.getByRole("button", { name: "Kestrel updated to 1.0.1" });
+  await expect.element(plate).toHaveAttribute("title", "Kestrel updated to 1.0.1");
   await plate.click();
   expect(onabout).toHaveBeenCalledOnce();
   expect(native.settingSet).toHaveBeenCalledWith("notice.seen-version", "1.0.1");

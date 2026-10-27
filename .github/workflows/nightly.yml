@@ -128,67 +128,18 @@ jobs:
             cargo test --manifest-path "${manifest}" --locked --all-targets ${features:+--features "${features}"}
           done
 
-      - name: Agentic probe harness
-        if: runner.os == 'macOS'
-        run: |
-          cargo test --locked -p zephium-agentic --features probe-harness
-          cargo clippy --locked -p zephium-agentic --all-targets --features probe-harness -- -D warnings
-
       - name: macOS native probe graphs
         if: runner.os == 'macOS'
         timeout-minutes: 15
         run: |
           cargo clippy --locked -p zephium-engine --features native-isolation-probes \
             --bin macos-principal-isolation-probe -- -D warnings
-          cargo clippy --locked -p zephium-engine --features native-agentic-input-probe \
-            --bin macos-agentic-input-probe -- -D warnings
-          cargo run --locked -p zephium-engine --features native-agentic-input-probe \
-            --bin macos-agentic-input-probe -- --ci-hidden-fixed-dom
 
       - name: Windows feature graphs
         if: runner.os == 'Windows'
         run: |
           cargo clippy --locked -p zephium-engine --lib --features windows-cdp-spike -- -D warnings
           cargo clippy --locked -p zephium-private-fs --all-targets --features windows-namespace-validation -- -D warnings
-          cargo nextest run --locked -p zephium-app --features work-runtime,work-execution
-          cargo nextest run --locked -p zephium-agentic --features provider-transport,probe-harness
-          cargo nextest run --locked -p zephium-work-composition --features durable-runtime
-          cargo clippy --locked -p zephium-terra-macos-probe --features durable-runtime --bin windows-work-probe -- -D warnings
-          cargo build --locked -p zephium-terra-macos-probe --features durable-runtime --bin windows-work-probe
-
-      # `cargo xtask check-agentic-probe-boundary` requires these two steps.
-      - name: Parse the Windows agentic qualification workflow
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $tokens = $null
-          $parseErrors = $null
-          $scriptPath = Join-Path $env:GITHUB_WORKSPACE "scripts\qualification\windows-agentic.ps1"
-          [void][System.Management.Automation.Language.Parser]::ParseFile(
-            $scriptPath,
-            [ref]$tokens,
-            [ref]$parseErrors
-          )
-          if ($parseErrors.Count -ne 0) {
-            throw "physical Windows agentic orchestrator did not parse"
-          }
-
-      - name: Audit and build the Windows agentic qualification runners
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          cargo clippy --locked -p zephium-engine \
-            --features native-agentic-input-probe \
-            --bin windows-agentic-input-probe
-          cargo build --locked -p zephium-engine \
-            --features native-agentic-input-probe \
-            --bin windows-agentic-input-probe
-          cargo clippy --locked -p zephium-engine \
-            --features native-agentic-semantic-probe \
-            --bin windows-agentic-semantic-probe
-          cargo build --locked -p zephium-engine \
-            --features native-agentic-semantic-probe \
-            --bin windows-agentic-semantic-probe
 
   coverage:
     name: Coverage

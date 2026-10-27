@@ -5,9 +5,7 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-pub mod page_assist;
 mod time;
-pub mod work;
 mod zoom;
 
 pub use time::*;
@@ -387,7 +385,7 @@ pub struct PagePermissionPromptEntryView {
     /// the page still on screen. Otherwise a window-modal sheet, with the
     /// page taken off screen until it is answered.
     pub in_sidebar: bool,
-    /// The operating system refuses Zephium this capability; chrome says
+    /// The operating system refuses Kestrel this capability; chrome says
     /// where to turn it on.
     pub blocked_by_system: bool,
 }
@@ -619,7 +617,6 @@ pub enum SearchAction {
 pub enum ToolKind {
     Notes,
     Tasks,
-    Ai,
     History,
     Downloads,
     Bookmarks,
@@ -1131,35 +1128,6 @@ pub struct DividerView {
     pub vertical: bool,
 }
 
-/// The Work browser pane's applied native hole in window logical coordinates.
-/// `presented` is false while the pane's tab has no live view (crash, discard,
-/// or a modal prompt that removes content from the stage).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
-pub struct WorkPaneLayout {
-    pub tab: String,
-    pub x: f64,
-    pub y: f64,
-    pub width: f64,
-    pub height: f64,
-    pub presented: bool,
-    pub generation: u32,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize, Type)]
-pub struct WorkPaneRect {
-    pub x: f64,
-    pub y: f64,
-    pub width: f64,
-    pub height: f64,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-pub enum WorkPaneTarget {
-    Tab { id: String },
-    Url { url: String },
-}
-
 /// Outcome of a native file import into the profile's media store.
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(tag = "kind", rename_all = "snake_case")]
@@ -1173,34 +1141,9 @@ pub enum MediaImportV1 {
     },
 }
 
-/// Outcome of admitting one public image for a subject on the canvas.
-#[derive(Clone, Debug, Serialize, Deserialize, Type)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-pub enum MediaAdmitV1 {
-    /// The media element now on the canvas, related to the subject.
-    Admitted {
-        element: zephium_core::work::WorkElementId,
-    },
-    Refused {
-        error: zephium_core::resources::ResourceError,
-    },
-}
-
-/// Outcome of admitting one folder the person dropped or named for a canvas.
-#[derive(Clone, Debug, Serialize, Deserialize, Type)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-pub enum WorkFolderAdmitV1 {
-    /// The canonical path and display name to place as a Folder element.
-    Admitted { path: String, name: String },
-    /// Outside the home folder, protected, or missing (`not_a_folder` false),
-    /// or an existing path that is not a folder.
-    Refused { not_a_folder: bool },
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
 pub struct LayoutState {
     pub dividers: Vec<DividerView>,
-    pub work_pane: Option<WorkPaneLayout>,
 }
 
 /// Immediate result returned by a privileged IPC command. `accepted` with an
@@ -1328,7 +1271,7 @@ pub enum RuntimeSecurityAdvisoryKind {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "snake_case")]
 pub enum RuntimeSecurityUpdateTarget {
-    Zephium,
+    Kestrel,
     OperatingSystem,
     BrowserRuntime,
 }
@@ -1653,8 +1596,6 @@ pub struct PanelOwner {
 /// Snapshots for structural changes, single-row deltas for per-tab churn.
 #[derive(Clone, Debug)]
 pub enum Projection {
-    WorkEnvironmentChanged(work::WorkEnvironmentChangedV1),
-    WorkChanged(work::WorkChangedV1),
     PanelOwner(PanelOwner),
     Items(ItemsState),
     Tab(TabView),

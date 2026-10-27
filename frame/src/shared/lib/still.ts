@@ -74,13 +74,3 @@ export function watchStill(element: Element, notify: (still: boolean) => void): 
     unlisten();
   };
 }
-
-/**
- * Marks the element `data-still` while it should not move, so its CSS can
- * pause what it animates: an indicator off screen or in a hidden window then
- * costs no frames.
- */
-export function stillWhenUnseen(element: Element) {
-  const stop = watchStill(element, (still) => element.toggleAttribute("data-still", still));
-  return { destroy: stop };
-}

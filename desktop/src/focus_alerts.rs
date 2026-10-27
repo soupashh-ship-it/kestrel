@@ -75,7 +75,7 @@ pub(crate) fn notify(identifier: &str, title: &str, body: &str) {
     let _ = (identifier, title, body);
 }
 
-/// One of Zephium's windows is in front, so chrome's own notice is enough.
+/// One of Kestrel's windows is in front, so chrome's own notice is enough.
 pub(crate) fn in_front(app: &tauri::AppHandle) -> bool {
     use tauri::Manager;
     [crate::MAIN_LABEL, crate::overlay::PANEL_LABEL]
@@ -103,5 +103,5 @@ pub fn phase_ended(app: &tauri::AppHandle, alert: &str) {
         "focus" => ("Back to focus", "A new round has started."),
         _ => return,
     };
-    notify("app.zephium.focus", title, body);
+    notify("app.kestrel.focus", title, body);
 }

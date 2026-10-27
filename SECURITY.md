@@ -1,6 +1,6 @@
 # Security Policy
 
-Zephium treats security as the top priority. A browser is a hostile environment by nature, and we'd rather hear about a problem privately than read about it publicly.
+Kestrel treats security as the top priority. A browser is a hostile environment by nature, and we'd rather hear about a problem privately than read about it publicly.
 
 ## Supported versions
 

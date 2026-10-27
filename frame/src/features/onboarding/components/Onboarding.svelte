@@ -4,8 +4,7 @@
   import * as m from "$shared/i18n/messages";
   import { browserImport } from "$domain/browser-import";
   import { tabs } from "$domain/tabs";
-  import { preferences } from "$domain/preferences";
-  import { commands, type WorkLocalServerV1 } from "$shared/ipc/bindings";
+  import { commands } from "$shared/ipc/bindings";
   import Button from "$shared/ui/Button";
   import Icon from "$shared/ui/Icon";
   import KeyHint from "$shared/ui/KeyHint";
@@ -19,12 +18,10 @@
   import { neighbour, position, stepsFor, type Step } from "../lib/flow";
   import { formName, type Box } from "../lib/formation";
   import { keptSites } from "../lib/kept";
-  import type { Mind } from "../lib/minds";
   import Window from "./Window.svelte";
   import Import from "./steps/Import.svelte";
   import Essentials from "./steps/Essentials.svelte";
   import Launcher from "./steps/Launcher.svelte";
-  import Models from "./steps/Models.svelte";
 
   let {
     onfinish,
@@ -61,9 +58,6 @@
   let windowElement = $state<HTMLElement>();
   let flights = $state<HTMLElement>();
 
-  let mind = $state<Mind | null>(null);
-  let server = $state.raw<WorkLocalServerV1 | null>(null);
-
   let kept = $derived(keptSites(tabs.sidebarNodes(), tabs.tabs(), SITE_URLS));
   let sites = $derived([...kept.keys()].flatMap((id) => SITES.filter((site) => site.id === id)));
   let imported = $derived.by(() => {
@@ -85,12 +79,8 @@
   });
   // The fade is masked one scene past the last shot that fades, by then fully
   // open, so taking the mask away never shows as a jump.
-  let masked = $derived(
-    step === "welcome" || step === "import" || step === "ai" || step === "ready",
-  );
-  // Work and its models are offered only while Work and AI are on.
-  let ai = $derived(preferences.aiEnabled());
-  let place = $derived(position(step, ai));
+  let masked = $derived(step === "welcome" || step === "import" || step === "ready");
+  let place = $derived(position(step));
 
   // The name forms once the window is actually on screen and its sky in
   // place, never into a window native has not revealed yet.
@@ -139,13 +129,9 @@
   async function finish() {
     if (leaving) return;
     leaving = true;
-    const profile = tabs.profile()?.id;
     // The scene ends on the new tab, so the browser opens on one: a tab left
     // on a page from before is set aside for a new one.
     if (tabs.activeTab()?.url) tabs.open();
-    // A server already running here is connected now, so Work opens ready.
-    if (mind === "local" && server && profile)
-      await commands.workSetModelEndpoint(profile, server.base).catch(() => null);
     // The words go, and the camera goes back into the new tab until its sky
     // is all there is; the browser then arrives on that sky, with its own
     // launch.
@@ -157,11 +143,10 @@
 
   const primary = $derived.by((): string => {
     if (step === "import") return imported ? m.onb_continue() : m.onb_skip_step();
-    if (step === "ai") return mind ? m.onb_continue() : m.onb_not_now();
     if (step === "ready") return m.onb_start();
     return m.onb_continue();
   });
-  const advance = () => (step === "ready" ? void finish() : go(neighbour(step, 1, ai)));
+  const advance = () => (step === "ready" ? void finish() : go(neighbour(step, 1)));
 
   function keydown(event: KeyboardEvent) {
     if (event.key !== "Enter" || event.repeat || event.isComposing) return;
@@ -175,8 +160,6 @@
     import: { title: m.onb_import_title, body: m.onb_import_body },
     essentials: { title: m.onb_essentials_title, body: m.onb_essentials_body },
     launcher: { title: m.onb_launcher_title, body: m.onb_launcher_body },
-    work: { title: m.onb_work_title, body: m.onb_work_body },
-    ai: { title: m.onb_ai_title, body: m.onb_ai_body },
     ready: { title: m.onb_ready_title },
   };
 
@@ -234,11 +217,8 @@
       data-placed={placed}
     >
       <Window
-        mode={step === "work" || step === "ai" ? "work" : "browse"}
         {sites}
         {imported}
-        playing={step === "work"}
-        modes={ai}
         scene={sky}
         space={tabs.activeSpace()?.name ?? ""}
         named={!leaving && (step !== "welcome" || phase === "formed" || phase === "still")}
@@ -278,25 +258,23 @@
           <Essentials {kept} {landing} flights={() => flights} onfailed={failed} />
         {:else if step === "launcher"}
           <Launcher />
-        {:else if step === "ai"}
-          <Models bind:mind bind:server onsubmit={advance} />
         {/if}
       </div>
     {/key}
 
     <nav class="bar" aria-label={m.onb_label()} data-glass-text>
       <span class="side">
-        {#if neighbour(step, -1, ai)}<Button
+        {#if neighbour(step, -1)}<Button
             variant="ghost"
             size="large"
             shape="capsule"
-            onclick={() => go(neighbour(step, -1, ai))}>{m.onb_back()}</Button
+            onclick={() => go(neighbour(step, -1))}>{m.onb_back()}</Button
           >{/if}
       </span>
       <span class="middle">
         {#if notice}<span class="notice" role="status">{notice}</span>{:else}
           <ol aria-label={m.onb_progress({ current: place.at, total: place.of })}>
-            {#each stepsFor(ai).slice(1) as candidate, index (candidate)}
+            {#each stepsFor().slice(1) as candidate, index (candidate)}
               <li
                 data-state={index + 1 < place.at ? "done" : index + 1 === place.at ? "now" : ""}
               ></li>
@@ -538,10 +516,6 @@
 
   .scene[data-scene="launcher"] {
     inset-block-start: 226px;
-  }
-
-  .scene[data-scene="ai"] {
-    inset-block-start: 236px;
   }
 
   /* One quiet row for the whole journey, at the foot of the stage: nothing

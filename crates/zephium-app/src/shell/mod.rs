@@ -42,7 +42,6 @@ mod view_lifecycle;
 mod webext;
 pub use webext::{WebExtensionStatus, WebExtensionTarget};
 mod window_layout;
-mod work_authoring;
 mod zoom;
 
 use effects::{mutation_result, operation_result, NativeWork};
@@ -179,7 +178,6 @@ impl AgentLifecycleOwner {
 mod browser_pages;
 mod kept_sites;
 mod spaces;
-mod work_pane;
 
 /// Pages a run may queue for a seat in its page group at once.
 #[cfg(feature = "work-execution")]
@@ -277,8 +275,6 @@ pub struct Shell {
     /// Set while the window lays out for a return that a queued command is about to change.
     browser_return_hidden: bool,
     browser_return: Option<browser_pages::PendingBrowserReturn>,
-    work_pane: Option<work_pane::WorkPane>,
-    work_pane_generation: u32,
     runtime_restart_required: bool,
     /// The saved session could not be restored this launch and was set aside.
     session_set_aside: bool,
@@ -516,8 +512,6 @@ impl Shell {
             browser_return_ready: false,
             browser_return_hidden: false,
             browser_return: None,
-            work_pane: None,
-            work_pane_generation: 0,
             runtime_restart_required: false,
             session_set_aside: false,
             user_content_status: user_content_status::UserContentStatus::default(),
@@ -600,23 +594,6 @@ impl Shell {
             return;
         }
         match cmd {
-            Command::WorkDocument(submission) => self.work_document(submission),
-            Command::WorkEnvironmentChanged(change) => {
-                if self.windows.focused().is_some_and(|window| {
-                    window.profile.to_string() == change.profile
-                        && !self.profile_deletion_quarantines(window.profile)
-                }) {
-                    (self.emit)(Projection::WorkEnvironmentChanged(change));
-                }
-            }
-            Command::WorkChanged(change) => {
-                if self.windows.focused().is_some_and(|window| {
-                    window.profile.to_string() == change.profile
-                        && !self.profile_deletion_quarantines(window.profile)
-                }) {
-                    (self.emit)(Projection::WorkChanged(change));
-                }
-            }
             #[cfg(feature = "work-execution")]
             Command::AttachRetainedWork(attachment) => {
                 if let Some(work) = crate::work_resources::product::ProductWork::take(&attachment) {
@@ -1075,15 +1052,6 @@ impl Shell {
                         },
                     }),
                 }
-            }
-            Command::WorkPaneSetRect { rect, generation } => {
-                self.work_pane_set_rect(rect, generation);
-            }
-            Command::WorkPaneShow { target, rect } => {
-                let _ = self.operation_work_pane_show(target, rect);
-            }
-            Command::WorkPaneHide => {
-                let _ = self.operation_work_pane_hide();
             }
             Command::ResourceCall {
                 expected_profile,
@@ -2192,22 +2160,3 @@ impl Shell {
 
 #[cfg(test)]
 pub(crate) mod tests;
-
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_address_tests;
-#[cfg(all(test, feature = "work-planning"))]
-mod work_context_tests;
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_coordination_tests;
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_lead_tests;
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_personal_tests;
-#[cfg(all(test, feature = "work-planning"))]
-mod work_planning_tests;
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_product_tests;
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_runtime_tests;
-#[cfg(all(test, feature = "work-runtime"))]
-mod work_stop_tests;

@@ -27,7 +27,7 @@ const entry = (id: string, accelerator: string | null, group = "file"): KeymapEn
   group: group as KeymapEntry["group"],
   accelerator,
   default_accelerator: accelerator,
-  customizable: group !== "work" && group !== "global",
+  customizable: group !== "global",
   customized: false,
 });
 
@@ -45,7 +45,7 @@ beforeEach(() => {
   native.entries.mockResolvedValue([
     entry("tab.new", "Ctrl+T"),
     entry("tab.select.1", "Ctrl+1", "keys"),
-    entry("work.pane.close", "Escape", "work"),
+    entry("tool.notes", "Ctrl+Shift+E", "window"),
     entry("launcher.toggle", "Ctrl+Shift+Space", "global"),
   ]);
 });

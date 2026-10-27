@@ -494,9 +494,8 @@ impl Shell {
         // the hidden generation after the shell marks it failed.
         let _ = self.engine.close(id);
         let shown = self.windows.focused().and_then(|window| window.active) == Some(id)
-            || self.work_pane_shows(id)
             || self
-                .visible_tree()
+                .pane_tree()
                 .is_some_and(|tree| tree.tabs().contains(&id));
         if shown {
             self.on_view_creation_failed(id);

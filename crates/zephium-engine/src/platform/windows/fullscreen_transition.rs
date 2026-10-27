@@ -350,7 +350,7 @@ fn sample_matches(reply: &str, bounds: RECT, entering: bool) -> bool {
 fn cover_class() -> PCWSTR {
     static NAME: OnceLock<Vec<u16>> = OnceLock::new();
     let name = NAME.get_or_init(|| {
-        let name = "ZephiumFullscreenCover"
+        let name = "KestrelFullscreenCover"
             .encode_utf16()
             .chain(std::iter::once(0))
             .collect::<Vec<_>>();

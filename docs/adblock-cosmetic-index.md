@@ -70,7 +70,7 @@ catches up on changes made while hidden.
 
 ## Qualification — 2026-10-04
 
-macOS 26.6.2, optimized release shell, isolated `app.zephium.cosmetics-qa`
+macOS 26.6.2, optimized release shell, isolated `app.kestrel.cosmetics-qa`
 identity launched with `open -n`; the user's normal profile was not used.
 Raw measurements, app hashes, source snapshots and the temporary native load
 logger are under `target/cosmetic-index-evidence/` in the qualification checkout.

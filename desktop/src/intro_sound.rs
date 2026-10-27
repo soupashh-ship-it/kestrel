@@ -1,4 +1,4 @@
-//! The one sound Zephium makes: the intro, as the name forms on first run.
+//! The one sound Kestrel makes: the intro, as the name forms on first run.
 //!
 //! Played natively so the privileged chrome keeps `autoplay=()` in its
 //! permissions policy. The asset is bundled and fixed; chrome can only ask

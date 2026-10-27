@@ -117,7 +117,7 @@ pub enum ProfileDeletionFinalizeOutcome {
     Failed,
 }
 
-/// `SessionLoad::RecoveryRequired` for a session saved by a newer Zephium: it
+/// `SessionLoad::RecoveryRequired` for a session saved by a newer Kestrel: it
 /// opens again once that version is back, so it is never set aside.
 pub const NEWER_SESSION_REASON: &str = "authoritative session is newer than supported";
 
@@ -303,17 +303,6 @@ pub enum AppSettingReadback {
 }
 
 pub trait Store {
-    /// Dormant product Work authoring lane. The application selects the profile;
-    /// Store independently rejects unregistered/private/deleting profiles.
-    fn work_document(
-        &self,
-        _profile: ProfileId,
-        _request: crate::work::port::WorkRequest,
-        _completion: crate::work::port::WorkCompletion,
-    ) -> Result<(), crate::work::WorkError> {
-        Err(crate::work::WorkError::Unavailable)
-    }
-
     /// Admits bytes the desktop read on the user's behalf into the profile's
     /// media store and mints the Media resource that describes them.
     fn import_media(

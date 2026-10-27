@@ -690,7 +690,6 @@ fn destination(tool: ToolKind) -> &'static str {
         ToolKind::Downloads => "browser.downloads",
         // Bookmarks have no full page; the browser opens its panel.
         ToolKind::Bookmarks => "tool.bookmarks",
-        ToolKind::Ai => "tool.ai",
         ToolKind::Time => "browser.time",
     }
 }

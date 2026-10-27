@@ -1,6 +1,6 @@
 //! On-demand access to macOS browser credential capabilities.
 //!
-//! WKWebView owns password AutoFill and WebAuthn presentation. Zephium only
+//! WKWebView owns password AutoFill and WebAuthn presentation. Kestrel only
 //! queries the browser-level passkey authorization state so privileged chrome
 //! can explain whether platform credentials are available before offering a
 //! user-initiated authorization request. This path allocates no manager and

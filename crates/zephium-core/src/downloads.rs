@@ -757,7 +757,7 @@ mod tests {
             "setup.exe",
             "Setup.EXE",
             "installer.msi",
-            "Zephium.dmg",
+            "Kestrel.dmg",
             "tool.pkg",
             "run.bat",
             "run.cmd",

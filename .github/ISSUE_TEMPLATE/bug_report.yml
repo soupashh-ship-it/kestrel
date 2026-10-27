@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in Zephium is broken or behaves unexpectedly
+description: Something in Kestrel is broken or behaves unexpectedly
 labels: ["bug"]
 body:
   - type: markdown
@@ -12,7 +12,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Zephium version
+      label: Kestrel version
       description: Shown in Settings, About.
       placeholder: "1.0.3"
     validations:
@@ -76,11 +76,11 @@ body:
     attributes:
       label: Diagnostics
       description: |
-        In Zephium, open Settings (Cmd+, on macOS, Ctrl+, on Windows), choose About, and click **Copy Diagnostics**. Then paste it here, with no code fence of your own.
+        In Kestrel, open Settings (Cmd+, on macOS, Ctrl+, on Windows), choose About, and click **Copy Diagnostics**. Then paste it here, with no code fence of your own.
 
         It holds your version, your system and the recent log. Web addresses, searches, page titles, accounts, keys and file locations are removed before it is copied, and **Show What Is Copied** lets you read all of it first. Nothing is sent anywhere, so skim it before you post.
 
-        If Zephium will not start, attach `zephium.log` instead: on Windows from the **Show log folder** button in the startup error (or `%APPDATA%\app.zephium`), on macOS from `~/Library/Logs/app.zephium`. Those files are the raw log and are not redacted, so read them before you attach.
+        If Kestrel will not start, attach `zephium.log` instead: on Windows from the **Show log folder** button in the startup error (or `%APPDATA%\app.kestrel`), on macOS from `~/Library/Logs/app.kestrel`. Those files are the raw log and are not redacted, so read them before you attach.
       render: text
 
   - type: checkboxes

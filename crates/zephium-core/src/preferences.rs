@@ -15,9 +15,6 @@ pub const KEYS: &[&str] = &[
     "ui.newtab-tasks",
     "ui.tab-layout",
     "onboarding",
-    "ai.enabled",
-    "work.enabled",
-    "work.screenshots",
     "ui.language",
     "ui.density",
     "ui.text-size",
@@ -58,7 +55,6 @@ pub const KEYS: &[&str] = &[
     "notes.enabled",
     "tasks.enabled",
     "time.enabled",
-    "work.favourite-models",
     "zoom.default",
 ];
 
@@ -153,17 +149,9 @@ fn retired_accent(id: &str) -> Option<(crate::theme::Rgb, crate::theme::Rgb)> {
     })
 }
 
-/// AI: models, agents and dictation. Off, nothing model-backed runs and
-/// no AI surface is shown; keys and data stay.
-pub fn ai_enabled(stored: impl Fn(&str) -> Option<String>) -> bool {
-    stored("ai.enabled").as_deref() != Some("false")
-}
-
-/// Whether a feature switch (`work`, `notes`, `tasks`, `time`) is on.
+/// Whether a feature switch (`notes`, `tasks`, `time`) is on.
 pub fn feature_enabled(stored: impl Fn(&str) -> Option<String>, feature: &str) -> bool {
     match feature {
-        "ai" => ai_enabled(stored),
-        "work" => stored("work.enabled").as_deref() != Some("false"),
         "notes" => stored("notes.enabled").as_deref() != Some("false"),
         "tasks" => stored("tasks.enabled").as_deref() != Some("false"),
         "time" => stored("time.enabled").as_deref() != Some("false"),
@@ -250,23 +238,11 @@ pub fn value_allowed(key: &str, value: &str) -> bool {
                         && !sites[..index].contains(site)
                 })
         }
-        // The models the person starred in Work's picker, one id per line.
-        "work.favourite-models" => {
-            let ids: Vec<&str> = value.lines().collect();
-            ids.len() <= 64
-                && !value.ends_with('\n')
-                && ids.iter().enumerate().all(|(index, id)| {
-                    !id.is_empty()
-                        && id.len() <= 160
-                        && id.bytes().all(|byte| byte.is_ascii_graphic())
-                        && !ids[..index].contains(id)
-                })
-        }
         // The page zoom a site shows at until it has a level of its own.
         "zoom.default" => value.parse::<u16>().is_ok_and(|percent| {
             value == percent.to_string() && crate::zoom::DEFAULTS.contains(&percent)
         }),
-        // The Zephium version a notice was last acknowledged at.
+        // The Kestrel version a notice was last acknowledged at.
         "notice.seen-version" | "notice.security-dismissed" => {
             !value.is_empty()
                 && value.len() <= 64
@@ -280,12 +256,9 @@ pub fn value_allowed(key: &str, value: &str) -> bool {
         | "ui.newtab-name"
         | "ui.newtab-clock"
         | "ui.newtab-tasks"
-        | "ai.enabled"
-        | "work.enabled"
         | "notes.enabled"
         | "tasks.enabled"
         | "time.enabled"
-        | "work.screenshots"
         | "ui.contrast"
         | "search.history"
         | "tabs.switch-to-open"
@@ -406,7 +379,7 @@ mod tests {
         assert!(value_allowed("ui.text-size", "large"));
         assert!(value_allowed("ui.tab-layout", "horizontal"));
         assert!(value_allowed("onboarding", "done"));
-        for key in ["ai.enabled", "work.enabled", "work.screenshots"] {
+        for key in ["notes.enabled", "tasks.enabled", "time.enabled"] {
             assert!(KEYS.contains(&key));
             assert!(value_allowed(key, "true"));
             assert!(value_allowed(key, "false"));
@@ -434,25 +407,11 @@ mod tests {
     }
 
     #[test]
-    fn favourite_models_are_one_bounded_id_per_line() {
-        let key = "work.favourite-models";
-        assert!(KEYS.contains(&key));
-        for value in ["", "anthropic/claude-opus-5-5", "a/b\nc/d:e.f"] {
-            assert!(value_allowed(key, value), "{value:?}");
+    fn retired_model_preferences_are_rejected() {
+        for key in ["work.favourite-models", "ai.enabled", "work.enabled"] {
+            assert!(!KEYS.contains(&key));
+            assert!(!value_allowed(key, "true"));
         }
-        let many = (0..65).map(|n| format!("m/{n}")).collect::<Vec<_>>();
-        for value in [
-            "a\n",
-            "a\n\nb",
-            "a b",
-            "a\na",
-            "é",
-            &"x".repeat(161),
-            &many.join("\n"),
-        ] {
-            assert!(!value_allowed(key, value), "{value:?}");
-        }
-        assert!(value_allowed(key, &many[..64].join("\n")));
     }
 
     #[test]
@@ -585,24 +544,20 @@ mod tests {
 
     #[test]
     fn every_feature_switch_defaults_on_and_stands_alone() {
-        for feature in ["ai", "work", "notes", "tasks", "time"] {
+        for feature in ["notes", "tasks", "time"] {
             let key: &'static str = Box::leak(format!("{feature}.enabled").into_boxed_str());
             assert!(KEYS.contains(&key) && value_allowed(key, "false"));
             assert!(feature_enabled(stored(&[]), feature));
             let off: &'static [(&'static str, &'static str)] =
                 Box::leak(Box::new([(key, "false")]));
             assert!(!feature_enabled(stored(off), feature));
-            for other in ["ai", "work", "notes", "tasks", "time"]
-                .iter()
-                .filter(|o| **o != feature)
-            {
+            for other in ["notes", "tasks", "time"].iter().filter(|o| **o != feature) {
                 assert!(
                     feature_enabled(stored(off), other),
                     "{feature} off turned {other} off"
                 );
             }
         }
-        assert!(carried(&[("work.enabled", "false"), ("ai.enabled", "false")]).is_empty());
     }
 
     #[test]

@@ -41,14 +41,3 @@ export function drawn(profile: Pick<ProfileEntryView, "id" | "name" | "avatar">)
     src: style === "photo" ? photoUrl(profile.id, revision) : null,
   };
 }
-
-/** Who the identity card shows: the window's profile as drawn, or, until one
- *  is chosen, the account's own picture, or else quiet initials for it. */
-export function identityAvatar(
-  profile: ProfileEntryView | null,
-  initials: string,
-  photo: string | null = null,
-): DrawnAvatar {
-  if (profile && profile.avatar.revision > 0) return drawn(profile);
-  return { style: photo ? "photo" : "initials", color: 0, symbol: 0, initials, src: photo };
-}

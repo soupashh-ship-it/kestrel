@@ -18,16 +18,9 @@ authors = ["crynta"]
 repository = "https://github.com/zephium/zephium"
 
 [workspace.dependencies]
-zephium-agentic = { path = "crates/zephium-agentic", version = "=0.1.0" }
-zephium-decision = { path = "crates/zephium-decision", version = "=0.1.0" }
-zephium-agent-model-catalog = { path = "crates/zephium-agent-model-catalog", version = "=0.1.0" }
-zephium-agent-runtime = { path = "crates/zephium-agent-runtime", version = "=0.1.0" }
-zephium-agent-provider-transport = { path = "crates/zephium-agent-provider-transport", version = "=0.1.0" }
-zephium-agent-controller = { path = "crates/zephium-agent-controller", version = "=0.1.0" }
 zephium-blocker = { path = "crates/zephium-blocker", version = "=0.1.0", default-features = false }
 zephium-blocker-service = { path = "crates/zephium-blocker-service", version = "=0.1.0", default-features = false }
 zephium-blocker-update = { path = "crates/zephium-blocker-update", version = "=0.1.0", default-features = false }
-zephium-account = { path = "crates/zephium-account", version = "=0.1.0" }
 zephium-core = { path = "crates/zephium-core", version = "=0.1.0" }
 zephium-credentials = { path = "crates/zephium-credentials", version = "=0.1.0" }
 zephium-ipc = { path = "crates/zephium-ipc", version = "=0.1.0" }
@@ -36,11 +29,8 @@ zephium-notes = { path = "crates/zephium-notes", version = "=0.1.0" }
 zephium-import = { path = "crates/zephium-import", version = "=0.1.0" }
 zephium-private-fs = { path = "crates/zephium-private-fs", version = "=0.1.0" }
 zephium-store = { path = "crates/zephium-store", version = "=0.1.0" }
-zephium-voice = { path = "crates/zephium-voice", version = "=0.1.0" }
 zephium-update-transport = { path = "crates/zephium-update-transport", version = "=0.1.0", default-features = false }
 zephium-app = { path = "crates/zephium-app", version = "=0.1.0" }
-zephium-work-composition = { path = "crates/zephium-work-composition", version = "=0.1.0" }
-zephium-page-assist = { path = "crates/zephium-page-assist", version = "=0.1.0" }
 
 tauri = { version = "=2.11.3", features = ["macos-private-api"] }
 tauri-build = "2"

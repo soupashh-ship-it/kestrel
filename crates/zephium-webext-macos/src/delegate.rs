@@ -23,7 +23,7 @@ pub(crate) struct Ivars {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumWebExtControllerDelegate"]
+    #[name = "KestrelWebExtControllerDelegate"]
     #[ivars = Ivars]
     pub(crate) struct Delegate;
 

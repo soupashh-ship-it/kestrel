@@ -85,7 +85,7 @@ impl Drop for Ivars {
 define_class!(
     #[unsafe(super(NSView, NSResponder, NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[name = "ZephiumWindowControls"]
+    #[name = "KestrelWindowControls"]
     #[ivars = Ivars]
     pub struct WindowControls;
 

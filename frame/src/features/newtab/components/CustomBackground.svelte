@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import { mediaUrl } from "$domain/resources/media";
+  import { mediaUrl } from "$domain/resources";
 
   let {
     profile,

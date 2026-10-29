@@ -581,11 +581,7 @@ fn erase_named_profile_data(erasure: ProfileErasure) {
         erasure.finish(zephium_core::ports::engine::ProfileDataErasureOutcome::Failed);
         return;
     }
-    // The profile's own store, then Work's own store for the profile.
-    let identifiers = vec![
-        erasure.profile.bytes(),
-        crate::work_website_data::identifier(erasure.profile),
-    ];
+    let identifiers = vec![erasure.profile.bytes()];
     remove_named_stores(identifiers, Vec::new(), erasure);
 }
 

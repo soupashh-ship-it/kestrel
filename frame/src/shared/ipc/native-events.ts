@@ -78,6 +78,7 @@ export const nativeEventNames = {
   focusChanged: "zephium:focus",
   swipeScroll: "zephium:swipe",
   profilesChanged: "zephium:profiles",
+  windowsReputationManaged: "zephium:windows-reputation-managed",
 } as const;
 
 export const events = {
@@ -124,4 +125,5 @@ export const events = {
   focusChanged: scopedEvent<FocusChanged>(nativeEventNames.focusChanged),
   swipeScroll: scopedEvent<SwipeScroll>(nativeEventNames.swipeScroll),
   profilesChanged: scopedEvent<ProfilesView>(nativeEventNames.profilesChanged),
+  windowsReputationManaged: scopedEvent<boolean>(nativeEventNames.windowsReputationManaged),
 };

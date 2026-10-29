@@ -23,7 +23,16 @@
   import { layout, type Box } from "../lib/layout";
   import { WORDMARK } from "$shared/lib/wordmark";
   import { reducedMotion } from "$shared/lib/motion";
-  import { decode, placeSky, SCENES, scene as skyScene, seen, type Scene } from "$shared/sky";
+  import {
+    decode,
+    FROSTS,
+    placeSky,
+    placeSkyInWindow,
+    SCENES,
+    scene as skyScene,
+    seen,
+    type Scene,
+  } from "$shared/sky";
 
   let {
     search,
@@ -158,7 +167,9 @@
     };
   });
   let controls = $derived([...(oncustomize ? [32] : [])]);
-  let page = $derived(layout(width, height, { controls, clock: showClock }));
+  let page = $derived(
+    layout(width, height, { controls, clock: showClock, wordmark: showWordmark }),
+  );
   const at = ({ x, y, w, h }: Box) => `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
 
   // Day over a light page, night over a dark one.
@@ -332,7 +343,7 @@
   {/if}
 
   <!-- The name, drawn only as large as itself. -->
-  <svg class="mark" role="img" aria-label="Kestrel" style={at(page.mark)}>
+  {#if showWordmark}<svg class="mark" role="img" aria-label="Kestrel" style={at(page.mark)}>
     <defs>
       <path id={`${id}-letters`} d={WORDMARK.d} transform={letters} />
       {#if glint}<linearGradient
@@ -362,7 +373,7 @@
     </defs>
     <use class="name" href={`#${id}-letters`} />
     {#if glint}<use href={`#${id}-letters`} fill={`url(#${id}-glint)`} />{/if}
-  </svg>
+  </svg>{/if}
 
   <div class="field" style:width={`${fieldWidth}px`} style:height={`${page.notch.height}px`}>
     {@render search()}
@@ -562,13 +573,6 @@
 
   .glint {
     stop-color: var(--sky-glint);
-  }
-
-  .drag {
-    position: absolute;
-    z-index: 1;
-    inset-block-start: 0;
-    inset-inline: 0;
   }
 
   /* The field fills the notch: the window's glass is its material. */

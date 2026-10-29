@@ -19,7 +19,10 @@ vi.mock("$shared/ipc/bindings", async () => {
   return mockBindings({
     pagePermissionCardHost: async () => {},
     tabsBootstrap: async () => {},
+    sidebarSetHidden: async () => {},
+    sidebarPeek: async () => {},
     sidebarSetWidth: async () => {},
+    settingSet: async () => ({ accepted: true, operation_id: null }),
     sidebarResize: async () => false,
     sidebarResizeGuide: async () => true,
     settingGet: async () => null,
@@ -29,7 +32,7 @@ vi.mock("$shared/ipc/bindings", async () => {
 });
 
 afterEach(() => {
-  sidebar.adoptMode("default");
+  sidebar.setMode("default");
   mediaPlayer.dispose();
   favicons.dispose();
   surface.dispose();
@@ -59,7 +62,7 @@ function view(over: Partial<MediaPlayerView> = {}): MediaPlayerView {
 async function rail() {
   await mediaPlayer.init();
   const screen = await render(Shell);
-  sidebar.adoptMode("compact");
+  sidebar.setMode("compact");
   // Paused, so the position is the one native sent and nothing moves.
   emitNativeEvent("mediaPlayerChanged", view({ playing: false }));
   await expect

@@ -7,6 +7,7 @@ import { wakeupCounter } from "$shared/testing/idle";
 import { tabs } from "$domain/tabs";
 import { surface } from "$domain/surface";
 import Shell from "../Shell.svelte";
+import { loadSettings } from "$features/settings";
 
 vi.mock("$shared/ipc/bindings", async () => {
   const { mockBindings } = await import("$shared/testing/bindings");
@@ -16,6 +17,8 @@ vi.mock("$shared/ipc/bindings", async () => {
   });
 });
 
+// Prepare the lazy screen before measuring its settled wakeups.
+await loadSettings();
 const counter = wakeupCounter();
 afterEach(() => {
   surface.dispose();

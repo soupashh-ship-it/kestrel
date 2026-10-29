@@ -98,3 +98,18 @@ it("takes a feature's page out of navigation and search while its switch is off"
   expect(searchSections("focus").some((section) => section.id === "focus")).toBe(false);
   vi.doUnmock("$domain/preferences");
 });
+
+it("offers SmartScreen search results only on Windows", async () => {
+  for (const windows of [false, true]) {
+    vi.resetModules();
+    vi.doMock("$shared/platform", () => ({ IS_WINDOWS: windows }));
+    const model = await import("../lib/settings-model");
+    expect(
+      model.searchSettings("SmartScreen").some((field) => field.target === "privacy.smartscreen"),
+    ).toBe(windows);
+    expect(model.searchSections("SmartScreen").some((section) => section.id === "privacy")).toBe(
+      windows,
+    );
+  }
+  vi.doUnmock("$shared/platform");
+});

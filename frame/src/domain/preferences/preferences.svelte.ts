@@ -17,6 +17,12 @@ const defaults = {
   "ui.newtab-clock": "true",
   "ui.newtab-clock-format": "system",
   "ui.newtab-tasks": "true",
+  "ui.newtab-background": "sky",
+  "ui.newtab-image": "",
+  "ui.newtab-dim": "false",
+  "ui.newtab-wordmark": "true",
+  "ui.newtab-trackers": "true",
+  "ui.newtab-focus": "true",
   "ui.tab-layout": "vertical",
   "ui.language": "system",
   "ui.density": "comfortable",
@@ -26,7 +32,7 @@ const defaults = {
   "tabs.after-close": "next",
   "tabs.switch-to-open": "true",
   "tabs.automatic-pip": "true",
-  "tabs.startup": "continue",
+  "tabs.startup": "new-tab",
   "tabs.startup-pages": "",
   "tabs.home": "",
   "network.proxy": "system",
@@ -56,6 +62,7 @@ const defaults = {
   "tasks.enabled": "true",
   "time.enabled": "true",
   "zoom.default": "100",
+  "privacy.smartscreen": "true",
 } as const;
 export type PreferenceKey = keyof typeof defaults;
 const values = $state<Record<PreferenceKey, string>>({ ...defaults });
@@ -208,6 +215,16 @@ export async function set(key: PreferenceKey, next: string) {
 export async function resetAll(): Promise<boolean> {
   for (const key of Object.keys(defaults) as PreferenceKey[]) {
     if (values[key] === defaults[key]) continue;
+    await set(key, defaults[key]);
+    if (failed || values[key] !== defaults[key]) return false;
+  }
+  return true;
+}
+
+/** Reset just this page, including choices whose feature is currently off. */
+export async function resetNewTab(): Promise<boolean> {
+  for (const key of Object.keys(defaults) as PreferenceKey[]) {
+    if (!key.startsWith("ui.newtab-") || values[key] === defaults[key]) continue;
     await set(key, defaults[key]);
     if (failed || values[key] !== defaults[key]) return false;
   }

@@ -4,6 +4,7 @@ mod adblock_provenance;
 mod blocker_seed;
 mod macos_process_family;
 mod password_manager_qa;
+mod updater_sign;
 mod webext_suite;
 
 use std::process::{exit, Command};
@@ -35,6 +36,12 @@ fn main() {
         Some("ci") => {
             CI_RESOURCE_PROFILE.store(true, Ordering::Release);
             ci();
+        }
+        Some("sign-windows-updater") => {
+            if let Err(error) = updater_sign::run(&arguments[1..]) {
+                eprintln!("Windows updater signing failed: {error}");
+                exit(1);
+            }
         }
         Some("check-frame-styles") => run("node", &["frame/scripts/check-styles.mjs"]),
         Some("check-engine-floors") => {

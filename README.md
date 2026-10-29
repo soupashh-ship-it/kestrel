@@ -10,10 +10,10 @@
   </p>
 </div>
 
-Kestrel is a fork of [Zephium](https://github.com/zephium-browser/Zephium) with
-the AI product removed. It is the same small Rust browser — WebKit on macOS,
-WebView2 on Windows, not a Chromium or Firefox fork — without Work, agents,
-model providers, an assistant panel, dictation, or an AI account.
+Kestrel is built from the open-source browser code of
+[Zephium](https://github.com/zephium-browser/Zephium). It keeps the browser
+experience—WebKit on macOS and WebView2 on Windows—without AI services, agents,
+an assistant panel, dictation, or an AI account.
 
 ## What it does
 
@@ -26,12 +26,13 @@ model providers, an assistant panel, dictation, or an AI account.
 - **History, downloads, bookmarks, reading list and site search** work as you
   expect, with import from other browsers.
 - **Nothing phones home.** No telemetry, no analytics, no account. Automatic
-  updates are disabled in this fork because it has no release channel of its
-  own; see [Updates](#updates).
+  updates stay off until Kestrel has its own release channel; see
+  [Updates](#updates).
 
-## What was removed
+## No AI services
 
-The fork removes the AI surface and everything that fed it:
+Kestrel does not include the hosted AI account, assistant, Work canvas, voice
+input, or model-provider integrations:
 
 | Removed | Detail |
 | --- | --- |
@@ -70,7 +71,7 @@ application identifier is `app.kestrel`.
 ## Sizes
 
 Measured on Windows 11 x64 with the pinned toolchain and a release build. The
-numbers below are the fork's own build, not the upstream release page.
+numbers below are from Kestrel's own build, not the upstream release page.
 
 | Piece | Size |
 | --- | --- |
@@ -87,13 +88,21 @@ makes up the installer.
 
 ## Updates
 
-This fork has no release channel and no Kestrel signing key, so self-update is
-off. Building it as-is can never install an upstream Zephium build over itself.
+Kestrel has no configured release channel or signing key yet, so self-update is
+off. A Zephium release cannot install over a Kestrel build.
 Installers are published by hand on the
 [releases page](https://github.com/soupashh-ship-it/kestrel/releases).
 To publish Kestrel releases, add your own updater endpoint and public key to
 `desktop/tauri.conf.json`, then set `SUPPORTED` back on in
 `desktop/src/updates.rs`.
+
+## Upstream browser changes
+
+Kestrel keeps its browser code aligned with Zephium while retaining Kestrel's
+AI-free feature set. Preview and merge upstream fixes with
+[`scripts/sync-upstream.ps1`](scripts/sync-upstream.ps1); see the
+[sync guide](docs/upstream-sync.md). The script never pushes a release or source
+change to GitHub.
 
 ## Privacy
 
@@ -103,6 +112,7 @@ list update check and, if you enable it, the search engine's suggestions.
 
 ## License
 
-Kestrel is licensed under the [Mozilla Public License 2.0](LICENSE). It is a
-derivative of Zephium, also MPL-2.0, and keeps the upstream copyright notices.
+Kestrel is licensed under the [Mozilla Public License 2.0](LICENSE). Its
+browser code is derived from Zephium, also MPL-2.0, and keeps the upstream
+copyright notices.
 The bundled blocker seed is CC-BY-SA-3.0; its notice ships with the app.

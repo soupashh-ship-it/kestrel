@@ -51,6 +51,7 @@ pub use store_reads::{ImportWork, ImportedSite, StoreReadResult};
 pub use api::{
     BookmarkCompletion, BrowsingDataCompletion, ExportCompletion, FaviconPageSource, FaviconProbe,
     FaviconProber, FaviconProberAttachment, HistoryCompletion, HistoryListCompletion,
-    ImportCompletion, NoteCompletion, NotesAttachment, PageSource, ResourceCompletion,
-    SourceCompletion, SpaceCommand, TabAction, TabCompletion, TimeCompletion, ZoomCompletion,
+    ImportCompletion, ImportDestination, ImportDestinationCompletion, NoteCompletion,
+    NotesAttachment, PageSource, ResourceCompletion, SourceCompletion, SpaceCommand, TabAction,
+    TabCompletion, TimeCompletion, ZoomCompletion,
 };

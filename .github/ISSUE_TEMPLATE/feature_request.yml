@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Kestrel has a focused product direction, so a clear problem matters more than a proposed solution. Please read [CONTRIBUTING.md](https://github.com/zephium-browser/Zephium/blob/main/CONTRIBUTING.md) before proposing larger changes. For open-ended ideas, start a [Discussion](https://github.com/zephium-browser/Zephium/discussions).
+        Kestrel has a focused product direction, so a clear problem matters more than a proposed solution. Please read [CONTRIBUTING.md](https://github.com/soupashh-ship-it/kestrel/blob/main/CONTRIBUTING.md) before proposing larger changes. For open-ended ideas, start a [Discussion](https://github.com/soupashh-ship-it/kestrel/discussions).
 
   - type: textarea
     id: problem

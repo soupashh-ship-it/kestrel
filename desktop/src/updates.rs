@@ -54,10 +54,8 @@ static RELAUNCH_AFTER_EXIT: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "windows")]
 static INSTALL_AFTER_EXIT: Mutex<Option<(Parked, std::path::PathBuf)>> = Mutex::new(None);
 
-// This fork has no release channel of its own and must never install the
-// upstream project's builds over itself, so self-update stays off until a
-// Kestrel release endpoint and signing key are configured.
-const SUPPORTED: bool = false;
+// Only signed builds from Kestrel's own GitHub Releases channel are trusted.
+const SUPPORTED: bool = true;
 /// The release's highlights, kept from its download for the first launch of it.
 const HIGHLIGHTS: &str = "updates.highlights";
 const MAX_HIGHLIGHTS: usize = 5;

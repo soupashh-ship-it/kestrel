@@ -88,13 +88,9 @@ makes up the installer.
 
 ## Updates
 
-Kestrel has no configured release channel or signing key yet, so self-update is
-off. A Zephium release cannot install over a Kestrel build.
-Installers are published by hand on the
-[releases page](https://github.com/soupashh-ship-it/kestrel/releases).
-To publish Kestrel releases, add your own updater endpoint and public key to
-`desktop/tauri.conf.json`, then set `SUPPORTED` back on in
-`desktop/src/updates.rs`.
+Kestrel checks its own GitHub Releases channel for signed updates. A Zephium
+release cannot install over a Kestrel build. Installers and release notes are
+published on the [releases page](https://github.com/soupashh-ship-it/kestrel/releases).
 
 ## Upstream browser changes
 

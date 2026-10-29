@@ -108,7 +108,6 @@ mod updates;
 mod webext;
 #[cfg(all(target_os = "windows", feature = "webext-qa"))]
 mod webext_qa;
-#[cfg(target_os = "windows")]
 mod windows_privacy;
 
 use std::collections::{HashMap, VecDeque};

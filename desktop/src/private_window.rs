@@ -89,7 +89,7 @@ fn rebuild_menu_bar(app: &AppHandle) {
     let Some(keymap) = app.try_state::<crate::keymap::Keymap>() else {
         return;
     };
-    if crate::install_menu_bar(app, &keymap.overrides(), keymap.work_pane_shown()).is_err() {
+    if crate::install_menu_bar(app, &keymap.overrides()).is_err() {
         crate::write_diagnostic(format_args!("menu: private window was not applied"));
     }
 }

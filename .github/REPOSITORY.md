@@ -92,7 +92,7 @@ once its approach is agreed.
 | Group | Labels |
 | --- | --- |
 | Type | `bug`, `enhancement`, `performance`, `security`, `refactor`, `documentation`, `question` |
-| Area | `area: browse`, `area: work`, `area: engine`, `area: blocker`, `area: extensions`, `area: notes & tasks`, `area: build & ci` |
+| Area | `area: browse`, `area: engine`, `area: blocker`, `area: extensions`, `area: notes & tasks`, `area: build & ci` |
 | Platform | `platform: macos`, `platform: windows` |
 | Size | `size: S`, `size: M`, `size: L`, `size: XL` |
 | Triage | `accepted`, `slop`, `skip-review`, `good first issue`, `help wanted`, `duplicate`, `invalid`, `wontfix` |

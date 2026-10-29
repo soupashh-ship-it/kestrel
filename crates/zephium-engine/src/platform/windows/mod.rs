@@ -42,8 +42,8 @@ mod native_paths;
 #[cfg(feature = "agentic-browser")]
 pub(crate) mod page_glow;
 pub(crate) use apps::{external_app_name, open_external_app};
-mod page_memory;
 mod page_layer;
+mod page_memory;
 mod paint;
 mod sidebar_card;
 pub(crate) use page_memory::{main_frame_id, sample_renderers};

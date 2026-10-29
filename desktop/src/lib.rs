@@ -92,8 +92,6 @@ mod presence;
 mod private_window;
 #[cfg(target_os = "windows")]
 mod privileged_runtime_windows;
-#[cfg(target_os = "windows")]
-mod windows_privacy;
 mod profiles;
 mod recently_closed;
 #[cfg(any(target_os = "macos", target_os = "windows", test))]
@@ -110,6 +108,8 @@ mod updates;
 mod webext;
 #[cfg(all(target_os = "windows", feature = "webext-qa"))]
 mod webext_qa;
+#[cfg(target_os = "windows")]
+mod windows_privacy;
 
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, AtomicU8, AtomicUsize, Ordering};

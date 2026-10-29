@@ -40,8 +40,8 @@ pub use platform::windows::{
 #[cfg(target_os = "windows")]
 pub use reputation::{
     configure as configure_windows_reputation_checking,
-    initialize as initialize_windows_reputation_checking,
-    managed as windows_reputation_managed, on_managed as on_windows_reputation_managed,
+    initialize as initialize_windows_reputation_checking, managed as windows_reputation_managed,
+    on_managed as on_windows_reputation_managed,
 };
 
 #[cfg(all(target_os = "windows", feature = "agentic-browser"))]

@@ -589,6 +589,13 @@ pub struct CallbackHandle {
 }
 
 impl CallbackHandle {
+    pub fn is_accepting_commands(&self) -> bool {
+        let Some(inner) = self.queue.upgrade() else {
+            return false;
+        };
+        CommandQueue { inner }.is_accepting_commands()
+    }
+
     pub fn dispatch(&self, command: Command) -> bool {
         let Some(inner) = self.queue.upgrade() else {
             return false;

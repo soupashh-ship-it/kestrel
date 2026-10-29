@@ -29,10 +29,20 @@ mod navigation_epoch;
 mod network;
 mod pane_geometry;
 mod platform;
+#[cfg(target_os = "windows")]
+mod reputation;
 #[cfg(any(target_os = "macos", target_os = "windows"))]
 pub use haptics::{haptic, Haptic};
 #[cfg(target_os = "windows")]
-pub use platform::windows::{forget_window_caption_offset, set_window_caption_offset};
+pub use platform::windows::{
+    bridge_caption_keys, forget_window_caption_offset, set_window_caption_offset,
+};
+#[cfg(target_os = "windows")]
+pub use reputation::{
+    configure as configure_windows_reputation_checking,
+    initialize as initialize_windows_reputation_checking,
+    managed as windows_reputation_managed, on_managed as on_windows_reputation_managed,
+};
 
 #[cfg(all(target_os = "windows", feature = "agentic-browser"))]
 pub use platform::windows::{install_work_rendering_backing, remove_work_rendering_backing};

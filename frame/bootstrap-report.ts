@@ -8,6 +8,8 @@ import {
 import type { Plugin } from "vite";
 
 const BUDGETS = new URL("./bundle-budgets.json", import.meta.url);
+// Leave seven slots below the native protocol's 32-request admission cap.
+const NATIVE_STARTUP_ASSET_LIMIT = 25;
 
 /** A page native loads into a privileged WebView. */
 export type Page = "browser" | "panel" | "onboarding";
@@ -140,9 +142,9 @@ export function bootstrapReport(pages: readonly Page[]): Plugin {
             css.add(style);
         };
         walk(root.file);
-        if (root.surface && visited.size + css.size > 24) {
+        if (root.surface && visited.size + css.size > NATIVE_STARTUP_ASSET_LIMIT) {
           this.error(
-            `${name} startup requests exceed the native asset budget: ${visited.size + css.size} (limit 24)`,
+            `${name} startup requests exceed the native asset budget: ${visited.size + css.size} (limit ${NATIVE_STARTUP_ASSET_LIMIT})`,
           );
         }
         if (root.surface) surfaceStyles.set(name, css);

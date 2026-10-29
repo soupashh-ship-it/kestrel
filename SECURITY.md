@@ -15,10 +15,7 @@ Only the latest release receives security fixes.
 
 **Do not open a public issue for security problems.**
 
-Report privately in either way:
-
-- Use GitHub's [private vulnerability reporting](https://github.com/soupashh-ship-it/kestrel/security/advisories/new).
-- Email **security@zephium.app**.
+Report privately through [Kestrel's private vulnerability reporting](https://github.com/soupashh-ship-it/kestrel/security/advisories/new).
 
 Include:
 

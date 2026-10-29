@@ -6,7 +6,7 @@ This document is about *whether* and *how* to contribute in a way that's likely 
 
 ## How this project is run
 
-- Kestrel has one active maintainer ([@crynta](https://github.com/crynta)).
+- Kestrel has one active maintainer ([@soupashh-ship-it](https://github.com/soupashh-ship-it)).
 - Review bandwidth is limited.
 - Not every contribution can be accepted, even if it's technically correct. Alignment with project direction matters as much as code quality.
 - For scope and direction, read [docs/README.md](docs/README.md) before opening anything non-trivial.
@@ -68,7 +68,7 @@ The [documentation index](docs/README.md) lists the rest.
 
 - **Small fixes and improvements** (a bug fix, a typo, a small UX polish): open a PR directly. No issue needed.
 - **A bigger feature or change**: please open an issue first, with the feature template, so we can agree on the approach before you put time into it. Then open the PR and link the issue in its description (`Closes #123`).
-- **Questions and ideas** ("should I work on X?", design or scope questions): start a [Discussion](https://github.com/zephium-browser/Zephium/discussions).
+- **Questions and ideas** ("should I work on X?", design or scope questions): start a [Discussion](https://github.com/soupashh-ship-it/kestrel/discussions).
 
 ## What makes a good contribution
 
@@ -196,7 +196,7 @@ Mixed-concern PRs · large architectural PRs without prior discussion · new dep
 
 ## Security issues
 
-Don't file them as public issues. See [SECURITY.md](SECURITY.md) or use [private vulnerability reporting](https://github.com/zephium-browser/Zephium/security/advisories/new).
+Don't file them as public issues. See [SECURITY.md](SECURITY.md) or use [private vulnerability reporting](https://github.com/soupashh-ship-it/kestrel/security/advisories/new).
 
 ## License
 

@@ -146,9 +146,7 @@ pub(crate) fn follow(app: &AppHandle, state: &ItemsState) {
             if !membership && sync_menu_bar(&handle).is_ok_and(|synced| synced) {
                 return;
             }
-            if super::install_menu_bar(&handle, &keymap.overrides(), keymap.work_pane_shown())
-                .is_err()
-            {
+            if super::install_menu_bar(&handle, &keymap.overrides()).is_err() {
                 super::write_diagnostic(format_args!("menu: spaces were not applied"));
             }
         });

@@ -232,21 +232,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_profile_store_is_never_the_work_store_or_another_profiles() {
+    fn the_profile_store_is_never_another_profiles() {
         let first = ProfileId::generate();
         let second = ProfileId::generate();
         assert_eq!(profile_store_identifier(first), first.bytes());
         assert_ne!(
             profile_store_identifier(first),
-            crate::work_website_data::identifier(first)
-        );
-        assert_ne!(
-            profile_store_identifier(first),
             profile_store_identifier(second)
-        );
-        assert_ne!(
-            profile_store_identifier(first),
-            crate::work_website_data::identifier(second)
         );
     }
 

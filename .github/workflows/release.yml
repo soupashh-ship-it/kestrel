@@ -14,6 +14,14 @@ on:
         required: false
         default: false
         type: boolean
+      # Kestrel ships Windows by default. The macOS build pulls in Apple
+      # signing and notarization, so it is opt-in and never blocks a Windows,
+      # installer, which is what the download page links.
+      macos:
+        description: Also build and publish the macOS download (needs the Apple secrets)
+        required: false
+        default: false
+        type: boolean
 
 permissions: {}
 
@@ -40,23 +48,30 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       pubkey: ${{ steps.version.outputs.pubkey }}
       signpath: ${{ steps.signpath.outputs.enabled }}
+      macos: ${{ steps.platforms.outputs.macos }}
     steps:
-      - name: Require release secrets
+      - name: Resolve the release platform set
+        id: platforms
         env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+          MACOS_ENABLED: ${{ inputs.macos }}
+        run: |
+          if [[ "${MACOS_ENABLED:-}" == true ]]; then
+            echo "macos=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "macos=false" >> "${GITHUB_OUTPUT}"
+            echo "::notice::Windows-only release: the macOS job and the WebKit component shards are skipped."
+          fi
+
+      # The updater signature is the one asset every install trusts, so it is
+      # required even for a Windows-only release. Apple credentials belong to
+      # the macOS job, which asks for them itself.
+      - name: Require the updater signing secrets
+        env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           missing=()
-          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY \
-            APPLE_TEAM_ID APPLE_API_ISSUER APPLE_API_KEY APPLE_API_KEY_PATH \
-            TAURI_SIGNING_PRIVATE_KEY TAURI_SIGNING_PRIVATE_KEY_PASSWORD; do
+          for name in TAURI_SIGNING_PRIVATE_KEY TAURI_SIGNING_PRIVATE_KEY_PASSWORD; do
             [[ -n "${!name}" ]] || missing+=("${name}")
           done
           if (( ${#missing[@]} )); then
@@ -110,6 +125,19 @@ jobs:
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
           echo "pubkey=${pubkey}" >> "${GITHUB_OUTPUT}"
 
+      # A mismatched key pair would otherwise surface only in the draft job,
+      # after both platform builds. The probe signs and verifies with the real
+      # pair, so a wrong secret fails the gate in about a minute.
+      - name: Prove the updater key pair matches the embedded public key
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          probe="${RUNNER_TEMP}/key-probe.exe"
+          printf 'kestrel updater key probe' > "${probe}"
+          cargo run --quiet --locked -p xtask -- sign-windows-updater "${probe}" "${{ steps.version.outputs.version }}"
+          test -s "${probe}.sig"
+
       # Strict engine and advisory reviews, blocker seed freshness, and
       # outstanding vendor fixes.
       - name: Release security gate
@@ -159,7 +187,9 @@ jobs:
   # Components gate drafts unless an explicit emergency dispatch skips them.
   # Builds run concurrently; a failed component shard always blocks publication.
   components:
-    if: ${{ !inputs.emergency }}
+    # The shards mount the frame UI in headless WebKit on macOS. A Windows-only
+    # release skips them with the macOS job rather than waiting on them.
+    if: ${{ !inputs.emergency && needs.gate.outputs.macos == 'true' }}
     needs: gate
     permissions:
       contents: read
@@ -168,6 +198,7 @@ jobs:
   macos:
     name: macOS (Apple Silicon)
     needs: gate
+    if: ${{ needs.gate.outputs.macos == 'true' }}
     runs-on: macos-latest
     timeout-minutes: 90
     permissions:
@@ -189,6 +220,26 @@ jobs:
         with:
           shared-key: release-macos
       - run: pnpm install --frozen-lockfile
+
+      - name: Require the Apple signing secrets
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+        run: |
+          missing=()
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY \
+            APPLE_TEAM_ID APPLE_API_ISSUER APPLE_API_KEY APPLE_API_KEY_PATH; do
+            [[ -n "${!name}" ]] || missing+=("${name}")
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error title=Missing macOS release secrets::Add ${missing[*]} as repository Actions secrets, or dispatch this release with macos disabled."
+            exit 1
+          fi
 
       - name: Write the App Store Connect API key
         env:
@@ -444,7 +495,9 @@ jobs:
   publish:
     name: Draft release
     needs: [gate, ci, components, macos, windows]
-    if: ${{ !cancelled() && needs.gate.result == 'success' && needs.ci.result == 'success' && needs.macos.result == 'success' && needs.windows.result == 'success' && (needs.components.result == 'success' || (inputs.emergency && needs.components.result == 'skipped')) }}
+    # A Windows-only release leaves the macOS job and the component shards
+    # skipped; those are not-applicable, not failures.
+    if: ${{ !cancelled() && needs.gate.result == 'success' && needs.ci.result == 'success' && needs.windows.result == 'success' && (needs.macos.result == 'success' || needs.macos.result == 'skipped') && (needs.components.result == 'success' || needs.components.result == 'skipped') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -455,6 +508,7 @@ jobs:
       VERSION: ${{ needs.gate.outputs.version }}
       UPDATER_PUBKEY: ${{ needs.gate.outputs.pubkey }}
       SIGNPATH_ENABLED: ${{ needs.gate.outputs.signpath }}
+      MACOS_ENABLED: ${{ needs.gate.outputs.macos }}
       EMERGENCY_SKIP_COMPONENTS: ${{ inputs.emergency }}
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -466,7 +520,12 @@ jobs:
       - name: Verify the asset set and updater signatures
         working-directory: dist
         run: |
-          expected="Kestrel-Windows-x64-setup.exe Kestrel-Windows-x64-setup.exe.sig Kestrel-macOS-arm64.app.tar.gz Kestrel-macOS-arm64.app.tar.gz.sig Kestrel-macOS-arm64.dmg"
+          expected="Kestrel-Windows-x64-setup.exe Kestrel-Windows-x64-setup.exe.sig"
+          assets=(Kestrel-Windows-x64-setup.exe)
+          if [[ "${MACOS_ENABLED:-}" == true ]]; then
+            expected="${expected} Kestrel-macOS-arm64.app.tar.gz Kestrel-macOS-arm64.app.tar.gz.sig Kestrel-macOS-arm64.dmg"
+            assets+=(Kestrel-macOS-arm64.app.tar.gz)
+          fi
           actual="$(printf '%s\n' * | LC_ALL=C sort | paste -sd ' ')"
           if [[ "${actual}" != "${expected}" ]]; then
             echo "::error title=Unexpected release assets::Got [${actual}]."
@@ -475,7 +534,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq minisign
           base64 -d <<<"${UPDATER_PUBKEY}" > "${RUNNER_TEMP}/updater.pub"
-          for asset in Kestrel-macOS-arm64.app.tar.gz Kestrel-Windows-x64-setup.exe; do
+          for asset in "${assets[@]}"; do
             base64 -d < "${asset}.sig" > "${RUNNER_TEMP}/${asset}.minisig"
             if ! minisign -V -q -p "${RUNNER_TEMP}/updater.pub" -m "${asset}" -x "${RUNNER_TEMP}/${asset}.minisig"; then
               echo "::error title=Updater signature rejected::${asset} does not verify against the public key in desktop/tauri.conf.json."
@@ -487,34 +546,45 @@ jobs:
         working-directory: dist
         run: |
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          # Only advertise platforms this release actually built; an entry for a
+          # missing asset would 404 every installed copy that asks for it.
+          extra='{}'
+          if [[ "${MACOS_ENABLED:-}" == true ]]; then
+            mac_sig="$(cat Kestrel-macOS-arm64.app.tar.gz.sig)"
+            mac_url="${base}/Kestrel-macOS-arm64.app.tar.gz"
+            extra="$(jq -n --arg sig "${mac_sig}" --arg url "${mac_url}" \
+              '{"darwin-aarch64": {signature: $sig, url: $url}, "darwin-aarch64-app": {signature: $sig, url: $url}}')"
+          fi
+          win_sig="$(cat Kestrel-Windows-x64-setup.exe.sig)"
+          win_url="${base}/Kestrel-Windows-x64-setup.exe"
           jq -n \
             --arg version "${VERSION}" \
             --arg notes "https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}" \
             --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg mac_url "${base}/Kestrel-macOS-arm64.app.tar.gz" \
-            --arg mac_sig "$(cat Kestrel-macOS-arm64.app.tar.gz.sig)" \
-            --arg win_url "${base}/Kestrel-Windows-x64-setup.exe" \
-            --arg win_sig "$(cat Kestrel-Windows-x64-setup.exe.sig)" \
+            --arg win_url "${win_url}" \
+            --arg win_sig "${win_sig}" \
+            --argjson extra "${extra}" \
             '{
               version: $version,
               notes: $notes,
               pub_date: $pub_date,
-              platforms: {
-                "darwin-aarch64": {signature: $mac_sig, url: $mac_url},
-                "darwin-aarch64-app": {signature: $mac_sig, url: $mac_url},
+              platforms: ({
                 "windows-x86_64": {signature: $win_sig, url: $win_url},
                 "windows-x86_64-nsis": {signature: $win_sig, url: $win_url}
-              }
+              } + $extra)
             }' > latest.json
           sha256sum Kestrel-* latest.json > SHA256SUMS
           cat latest.json SHA256SUMS
 
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
+          subject-path: dist/Kestrel-Windows-x64-setup.exe
+      - if: needs.gate.outputs.macos == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
           subject-path: |
             dist/Kestrel-macOS-arm64.dmg
             dist/Kestrel-macOS-arm64.app.tar.gz
-            dist/Kestrel-Windows-x64-setup.exe
 
       - name: Create the draft release
         env:
@@ -531,16 +601,23 @@ jobs:
           if [[ "${SIGNPATH_ENABLED}" == true ]]; then
             windows_signing="The Windows installer carries a verified Authenticode publisher signature and timestamp. SmartScreen reputation checks still apply."
           fi
+          downloads="- Windows (x64): [Kestrel-Windows-x64-setup.exe](https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/Kestrel-Windows-x64-setup.exe)"
+          if [[ "${MACOS_ENABLED:-}" == true ]]; then
+            downloads="- macOS (Apple Silicon): [Kestrel-macOS-arm64.dmg](https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/Kestrel-macOS-arm64.dmg)
+          ${downloads}"
+          fi
           cat > "${RUNNER_TEMP}/notes.md" <<EOF
           Download Kestrel ${VERSION}:
 
-          - macOS (Apple Silicon): [Kestrel-macOS-arm64.dmg](https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/Kestrel-macOS-arm64.dmg)
-          - Windows (x64): [Kestrel-Windows-x64-setup.exe](https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/Kestrel-Windows-x64-setup.exe)
+          ${downloads}
 
           Installed copies update themselves. ${windows_signing}
 
           Verify a download with \`SHA256SUMS\` or \`gh attestation verify <file> --repo ${GITHUB_REPOSITORY}\`.
           EOF
+          if [[ "${MACOS_ENABLED:-}" != true ]]; then
+            printf '\n**Windows-only release: the macOS build and the WebKit component suite were not run.**\n' >> "${RUNNER_TEMP}/notes.md"
+          fi
           if [[ "${EMERGENCY_SKIP_COMPONENTS}" == true ]]; then
             printf '\n**EMERGENCY: Component tests were skipped for this release.**\n' >> "${RUNNER_TEMP}/notes.md"
             echo "::warning::Emergency release: component tests were skipped; release notes disclose the bypass."

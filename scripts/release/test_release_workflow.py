@@ -18,31 +18,40 @@ def job(text, name):
 
 
 class ReleaseWorkflowTests(unittest.TestCase):
-    def test_components_have_one_retry_and_an_explicit_emergency_opt_out(self):
+    def test_components_have_one_retry_and_skip_with_a_windows_only_release(self):
         workflow = WORKFLOW.read_text()
         self.assertRegex(workflow, r'emergency:\n(?:.*\n){1,4}?        type: boolean')
-        self.assertIn("if: ${{ !inputs.emergency }}", job(workflow, 'components'))
+        self.assertIn("if: ${{ !inputs.emergency && needs.gate.outputs.macos == 'true' }}",
+                      job(workflow, 'components'))
         self.assertIn('--retry=1', (ROOT / '.github/workflows/components.yml').read_text())
 
 
-    def test_draft_gates_all_required_jobs_including_skipped_component_cases(self):
+    def test_draft_gates_every_job_that_runs_and_allows_a_windows_only_release(self):
         publish = job(WORKFLOW.read_text(), 'publish')
         dependencies = re.search(r'^    needs: \[([^]]+)\]', publish, re.M).group(1).split(', ')
         self.assertEqual(set(dependencies), {'gate', 'ci', 'components', 'macos', 'windows'})
-        match = re.search(r'^    if: \$\{\{ (.+) \}\}', publish, re.M)
-        self.assertIsNotNone(match, 'draft needs an explicit condition for emergency skipped components')
+        match = re.search(r'^    if: \$\{\{ (.+) \}\}$', publish, re.M)
+        self.assertIsNotNone(match, 'draft needs an explicit condition for skipped macOS and component cases')
         expression = match.group(1)
         for statuses in itertools.product(['success', 'failure', 'skipped', 'cancelled'], repeat=5):
             results = dict(zip(dependencies, statuses))
-            for emergency, cancelled in itertools.product([False, True], repeat=2):
+            for cancelled in (False, True):
                 condition = expression.replace('!cancelled()', str(not cancelled))
-                condition = condition.replace('inputs.emergency', str(emergency))
                 condition = re.sub(r'needs\.(\w+)\.result', lambda m: repr(results[m[1]]), condition)
                 condition = condition.replace('&&', ' and ').replace('||', ' or ')
                 actual = eval(condition, {'__builtins__': {}}, {})
-                expected = not cancelled and all(results[n] == 'success' for n in dependencies if n != 'components') and (
-                    results['components'] == 'success' or (emergency and results['components'] == 'skipped'))
-                self.assertEqual(actual, expected, (results, emergency, cancelled))
+                # Every job that runs must succeed. A Windows-only release skips
+                # the macOS build and the WebKit component shards, and skipping
+                # them is not a failure.
+                expected = (
+                    not cancelled
+                    and results['gate'] == 'success'
+                    and results['ci'] == 'success'
+                    and results['windows'] == 'success'
+                    and results['macos'] in ('success', 'skipped')
+                    and results['components'] in ('success', 'skipped')
+                )
+                self.assertEqual(actual, expected, (results, cancelled))
 
 
     def test_emergency_component_bypass_is_visible_in_created_release_notes(self):

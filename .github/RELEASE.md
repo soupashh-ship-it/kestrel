@@ -1,8 +1,9 @@
 # Releasing Kestrel
 
 Pushing a `v*` tag runs [`release.yml`](workflows/release.yml). It builds and
-verifies macOS (Apple Silicon) and Windows (x64), then creates a **draft**
-GitHub release. Nothing is public until a maintainer publishes the draft.
+verifies Windows (x64) — and macOS (Apple Silicon) as well when dispatched with
+`macos=true` — then creates a **draft** GitHub release. Nothing is public until
+a maintainer publishes the draft.
 
 ## One-time setup
 
@@ -23,7 +24,10 @@ secrets. The release gate fails with the names of any that are missing.
 | `TAURI_SIGNING_PRIVATE_KEY` | The updater private key (file contents) |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Its password |
 
-The API key needs the Developer role to notarize.
+The API key needs the Developer role to notarize. The seven Apple secrets are
+required only when a release is dispatched with `macos=true`; the two
+`TAURI_SIGNING_*` secrets are required for every release, because the Windows
+installer's updater signature is what an installed copy verifies.
 
 ### Updater key
 
@@ -117,6 +121,19 @@ without `--ref`. Release refuses a different workflow ref or checkout commit so
 its workflow `head_sha` and provenance describe the candidate's tag commit.
 An existing draft for that tag is replaced; a published release is never
 touched.
+
+### Windows-only releases
+
+The `macos` dispatch input defaults to `false`, so a tag push builds, signs and
+publishes `Kestrel-Windows-x64-setup.exe` only. That path skips the macOS job
+and the WebKit component shards, publishes no `darwin-*` updater entries, and
+writes the omission into the release notes. Dispatch with `-f macos=true` to
+add the macOS download; only that path needs the Apple secrets and runs the
+component shards.
+
+```sh
+gh workflow run release.yml --ref v1.0.4 -f tag=v1.0.4
+```
 
 ## Draft review and stable publication
 

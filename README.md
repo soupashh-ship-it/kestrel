@@ -89,8 +89,10 @@ makes up the installer.
 ## Updates
 
 Kestrel checks its own GitHub Releases channel for signed updates. A Zephium
-release cannot install over a Kestrel build. Installers and release notes are
-published on the [releases page](https://github.com/soupashh-ship-it/kestrel/releases).
+release cannot install over a Kestrel build. Release notes are published on the
+[releases page](https://github.com/soupashh-ship-it/kestrel/releases), and the
+Windows installer downloads directly as
+[Kestrel-Windows-x64-setup.exe](https://github.com/soupashh-ship-it/kestrel/releases/latest/download/Kestrel-Windows-x64-setup.exe).
 
 ## Upstream browser changes
 

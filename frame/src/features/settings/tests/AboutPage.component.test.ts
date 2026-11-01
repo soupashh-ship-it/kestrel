@@ -153,11 +153,9 @@ test("the links open Kestrel's own pages in a tab", async () => {
   const screen = await render(AboutPage);
   const links = screen.getByRole("navigation", { name: "Kestrel on the web" });
   for (const [name, url] of [
-    ["Website", "https://zephium.app"],
-    [IS_MAC ? "Docs" : "Help", "https://zephium.app/docs"],
-    ["GitHub", "https://github.com/zephium-browser/Zephium"],
-    ["Discord", "https://discord.gg/tyveTUyEp7"],
-    ["YouTube", "https://www.youtube.com/@crynta"],
+    ["Website", "https://github.com/soupashh-ship-it/kestrel"],
+    [IS_MAC ? "Docs" : "Help", "https://github.com/soupashh-ship-it/kestrel#readme"],
+    ["GitHub", "https://github.com/soupashh-ship-it/kestrel"],
   ] as const) {
     await links.getByRole("link", { name }).click();
     expect(native.openUrl).toHaveBeenLastCalledWith(url, true);

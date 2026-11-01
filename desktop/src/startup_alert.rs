@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicU8, Ordering};
 use zephium_core::webview2::AdmissionError;
 
 const TITLE: &str = "Kestrel couldn't start";
-const ISSUES_URL: &str = "https://github.com/zephium-browser/Zephium/issues";
+const ISSUES_URL: &str = "https://github.com/soupashh-ship-it/kestrel/issues";
 const WEBVIEW2_URL: &str = "https://developer.microsoft.com/microsoft-edge/webview2/";
 const SHOW_LOG: &str = "Show log folder";
 const CLOSE: &str = "Close";

@@ -8,6 +8,8 @@
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MPL--2.0-blue" alt="License: MPL-2.0" /></a>
     <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgrey" alt="Platforms: macOS and Windows" />
   </p>
+
+  <p><strong><a href="https://github.com/soupashh-ship-it/kestrel/releases/latest/download/Kestrel-Windows-x64-setup.exe">Download the Windows installer</a></strong></p>
 </div>
 
 Kestrel is built from the open-source browser code of

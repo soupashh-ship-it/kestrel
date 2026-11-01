@@ -59,22 +59,26 @@ pub const REVIEWED_STABLE_MAJOR: u32 = 156;
 /// review found no such notice on Microsoft's security page and Stable
 /// security releases 155.0.4283.45 (October 8), 155.0.4283.60 (October 15),
 /// 155.0.4283.62 (October 16) and 156.0.4314.42 (October 22), the last with
-/// WebView2 packages for x86, x64 and ARM64. The previous notice (July 14) was
-/// resolved the same way. Clearing the flag alone cannot establish release
-/// proof: the reviewed release must also postdate the notice.
+/// WebView2 packages for x86, x64 and ARM64. The November 1 review again
+/// found no such notice and only Edge-only Stable servicing releases
+/// 156.0.4314.56 (October 29) and 156.0.4314.58 (October 30), neither with a
+/// corresponding Runtime build, so the reviewed floor stands at 156.0.4314.42.
+/// The previous notice (July 14) was resolved the same way. Clearing the flag
+/// alone cannot establish release proof: the reviewed release must also
+/// postdate the notice.
 pub const PRODUCTION_RELEASE_BLOCKED_ON_OUTSTANDING_VENDOR_FIX: bool = false;
 /// 2026-10-06T00:00:00Z, the date of Microsoft's pending-fix notice.
 pub const OUTSTANDING_VENDOR_FIX_NOTICE_UNIX_SECONDS: u64 = 1_791_244_800;
 pub const OUTSTANDING_VENDOR_FIX_NOTICE_ON: &str = "2026-10-06";
-pub const OUTSTANDING_VENDOR_FIX_REVIEWED_ON: &str = "2026-10-24";
+pub const OUTSTANDING_VENDOR_FIX_REVIEWED_ON: &str = "2026-11-01";
 pub const OUTSTANDING_VENDOR_FIX_SOURCE_URL: &str = SECURITY_FLOOR_SOURCE_URL;
 
 /// The last UTC date on which CI may accept this review without an update.
-// Reviewed against vendor security releases and WebView2 packages on 2026-10-24.
-// Evidence: docs/windows-webview2-security-review-2026-10-24.md.
-pub const SECURITY_FLOOR_REVIEW_BY: &str = "2026-10-31";
-/// 2026-11-01T00:00:00Z. The human-readable review date above is inclusive.
-pub const SECURITY_FLOOR_REVIEW_DEADLINE_EXCLUSIVE_UNIX_SECONDS: u64 = 1_793_491_200;
+// Reviewed against vendor security releases and WebView2 packages on 2026-11-01.
+// Evidence: docs/windows-webview2-security-review-2026-11-01.md.
+pub const SECURITY_FLOOR_REVIEW_BY: &str = "2026-11-07";
+/// 2026-11-08T00:00:00Z. The human-readable review date above is inclusive.
+pub const SECURITY_FLOOR_REVIEW_DEADLINE_EXCLUSIVE_UNIX_SECONDS: u64 = 1_794_096_000;
 
 /// Loader/debugger environment variables that can replace the selected
 /// runtime or UDF, change channel selection, append browser flags (including

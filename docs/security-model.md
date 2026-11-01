@@ -1380,7 +1380,7 @@ These inherited properties must not be overstated:
   environment overrides that
   can replace runtime/UDF selection, append browser flags such as `--no-sandbox`, select
   another channel, or attach script debuggers. CI and release publication
-  expire this review after October 31, 2026; runtime reports an overdue-review
+  expire this review after November 7, 2026; runtime reports an overdue-review
   advisory instead. Per-view Environment7/UDF/runtime, Environment10, Settings7, and
   CoreWebView2_18 checks remain independent capability gates.
 - Microsoft acknowledged on July 14 that additional Chromium security fixes
@@ -1398,6 +1398,11 @@ These inherited properties must not be overstated:
   found no such notice remaining and four later Stable security releases, and
   raised both to `156.0.4314.42`, clearing the publication blocker. See
   [the review evidence](windows-webview2-security-review-2026-10-24.md).
+  The November 1 review found no remaining notice and only Edge-only Stable
+  servicing releases (156.0.4314.56 on October 29 and 156.0.4314.58 on
+  October 30), neither with a corresponding WebView2 Runtime build, so the
+  floor is unchanged and the review was renewed through November 7. See
+  [the review evidence](windows-webview2-security-review-2026-11-01.md).
   The release gate preserves the
   historical notice and requires both a cleared blocker and a floor published
   after it, so changing a boolean cannot turn a known vendor patch gap into

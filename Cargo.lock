@@ -7170,7 +7170,7 @@ dependencies = [
 
 [[package]]
 name = "zephium-desktop"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "async-io",
  "base64 0.22.1",

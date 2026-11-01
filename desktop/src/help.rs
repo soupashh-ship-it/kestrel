@@ -20,7 +20,7 @@ pub(crate) fn url(id: &str) -> Option<&'static str> {
     match id {
         DOCS => Some("https://zephium.app/docs"),
         RELEASES => Some("https://zephium.app/changelog"),
-        ISSUES => Some("https://github.com/zephium-browser/Zephium/issues"),
+        ISSUES => Some("https://github.com/soupashh-ship-it/kestrel/issues"),
         _ => None,
     }
 }

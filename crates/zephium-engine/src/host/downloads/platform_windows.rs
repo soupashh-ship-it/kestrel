@@ -873,7 +873,7 @@ impl Downloads {
         };
         let dialog = match dialog(
             true,
-            "Choose where Zephium saves downloads",
+            "Choose where Kestrel saves downloads",
             preferences.directory.as_deref().map(Path::new),
             None,
         ) {

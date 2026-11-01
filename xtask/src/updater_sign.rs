@@ -82,7 +82,7 @@ fn sign(
                 .or_else(|_| key.into_secret_key(Some(password)))
         })
         .map_err(|_| "cannot unlock updater signing key")?;
-    let comment = format!("zephium-updater-v1 version={version} target={TARGET}");
+    let comment = format!("kestrel-updater-v1 version={version} target={TARGET}");
     let signature = minisign::sign(
         Some(&public),
         &secret,
@@ -126,7 +126,7 @@ mod tests {
         let parsed = minisign::SignatureBox::from_string(&decoded).unwrap();
         assert_eq!(
             parsed.trusted_comment().unwrap(),
-            "zephium-updater-v1 version=1.2.4 target=windows-x86_64-nsis"
+            "kestrel-updater-v1 version=1.2.4 target=windows-x86_64-nsis"
         );
         let other = minisign::KeyPair::generate_unencrypted_keypair().unwrap();
         assert!(sign(

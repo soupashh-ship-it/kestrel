@@ -31,7 +31,7 @@ test("SmartScreen defaults on, explains disclosure and restart, and writes its o
   const toggle = page.getByRole("switch", { name: "Microsoft Defender SmartScreen" });
   await expect.element(toggle).toBeChecked();
   expect(screen.container.textContent).toContain("website addresses and download information");
-  expect(screen.container.textContent).toContain("Restart Zephium to apply changes");
+  expect(screen.container.textContent).toContain("Restart Kestrel to apply changes");
   expect(screen.container.textContent).toContain("required diagnostic data");
   expect(screen.container.textContent).toContain("even when optional diagnostics are off");
   await toggle.click();
@@ -87,7 +87,7 @@ test("a saved OFF choice with unavailable launch read shows read-only ON and its
   await expect
     .element(
       page.getByText(
-        "SmartScreen is on for this launch because your saved choice could not be read. Restart Zephium to try again.",
+        "SmartScreen is on for this launch because your saved choice could not be read. Restart Kestrel to try again.",
       ),
     )
     .toBeVisible();

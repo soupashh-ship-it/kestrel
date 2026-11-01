@@ -75,7 +75,7 @@ async-io = "=2.6.0"
 futures-lite = "=2.6.1"
 x11rb = { version = "=0.13.2", features = ["xkb"] }
 xkeysym = "=0.2.1"
-zbus = { version = "=5.17.0", default-features = false, features = ["async-io"] }
+zbus = { version = "=5.19.0", default-features = false, features = ["async-io"] }
 
 [target.'cfg(target_os = "windows")'.dev-dependencies]
 # Exercise native parent paint without creating a WebView or user profile.
@@ -98,7 +98,7 @@ async-io = "=2.6.0"
 futures-lite = "=2.6.1"
 x11rb = { version = "=0.13.2", features = ["xkb"] }
 xkeysym = "=0.2.1"
-zbus = { version = "=5.17.0", default-features = false, features = ["async-io"] }
+zbus = { version = "=5.19.0", default-features = false, features = ["async-io"] }
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]
 tauri-plugin-global-shortcut.workspace = true
